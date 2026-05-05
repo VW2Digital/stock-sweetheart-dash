@@ -5,14 +5,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+import { encodeMimeSubject, sanitizeEmailHtml, sanitizeEmailText, normalizeEmailSubject } from "../_shared/mime.ts";
 
-function encodeMimeSubject(subject: string): string {
-  // eslint-disable-next-line no-control-regex
-  if (!/[^\x20-\x7e]/.test(subject)) return subject;
-  const bytes = new TextEncoder().encode(subject);
-  let bin = "";
-  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-  return `=?UTF-8?B?${btoa(bin)}?=`;
+function escapeHtml(s: string) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 const corsHeaders = {
@@ -64,19 +60,21 @@ serve(async (req) => {
       }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const finalSubject = subject?.trim() || "Teste de envio - SMTP Hostinger";
-    const finalMessage = message?.trim() || "Este é um e-mail de teste enviado pelo painel administrativo. Se você está vendo esta mensagem, sua integração SMTP está funcionando corretamente.";
+    const finalSubject = normalizeEmailSubject(subject?.trim() || "Teste de envio - SMTP Hostinger");
+    const finalMessage = sanitizeEmailText(message?.trim() || "Olá, usuários de Tirze + Bônus. Este é um email automático: pagamento não aprovado.");
+    const escapedMessage = escapeHtml(finalMessage).replace(/\n/g, "<br/>");
 
     const html = `
       <!DOCTYPE html>
       <html lang="pt-BR">
+        <head><meta charset="UTF-8"/></head>
         <body style="margin:0;padding:0;background:#f6f7f9;font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;">
           <div style="max-width:560px;margin:32px auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
             <div style="background:#0f172a;color:#fff;padding:24px 28px;">
-              <h1 style="margin:0;font-size:20px;">${finalSubject}</h1>
+              <h1 style="margin:0;font-size:20px;">${escapeHtml(finalSubject)}</h1>
             </div>
             <div style="padding:28px;line-height:1.6;font-size:15px;">
-              <p style="margin:0 0 16px;">${finalMessage.replace(/\n/g, "<br/>")}</p>
+              <p style="margin:0 0 16px;">${escapedMessage}</p>
               <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;" />
               <p style="margin:0;font-size:12px;color:#6b7280;">
                 Enviado de: <strong>${smtpFromEmail || smtpUser}</strong><br/>
@@ -98,6 +96,9 @@ serve(async (req) => {
         auth: { username: smtpUser, password: smtpPass },
       },
       pool: false,
+      client: {
+        preprocessors: [(mail) => ({ ...mail, subject: encodeMimeSubject(mail.subject) })],
+      },
     });
 
     try {
@@ -107,9 +108,9 @@ serve(async (req) => {
       await client.send({
         from: fromHeader,
         to: [to],
-        subject: encodeMimeSubject(finalSubject),
-        content: "auto",
-        html,
+        subject: finalSubject,
+        content: finalMessage,
+        html: sanitizeEmailHtml(html),
       });
       await client.close();
       return new Response(JSON.stringify({
