@@ -2,20 +2,12 @@
 // por email (com anexo) usando SMTP Hostinger (denomailer).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+import { encodeMimeSubject, sanitizeEmailHtml } from "../_shared/mime.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-function encodeMimeSubject(subject: string): string {
-  // eslint-disable-next-line no-control-regex
-  if (!/[^\x20-\x7e]/.test(subject)) return subject;
-  const bytes = new TextEncoder().encode(subject);
-  let bin = "";
-  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-  return `=?UTF-8?B?${btoa(bin)}?=`;
-}
 
 const TABLES = [
   "addresses", "banner_slides", "banners", "cart_abandonment_logs", "cart_items",
@@ -195,6 +187,9 @@ Deno.serve(async (req) => {
         auth: { username: smtpUser, password: smtpPass },
       },
       pool: false,
+      client: {
+        preprocessors: [(mail) => ({ ...mail, subject: encodeMimeSubject(mail.subject) })],
+      },
     });
 
     const fromHeader = smtpFromName
@@ -205,9 +200,9 @@ Deno.serve(async (req) => {
       await client.send({
         from: fromHeader,
         to: [recipient],
-        subject: encodeMimeSubject(`Backup Semanal - ${dateStr} (${sizeMB} MB)`),
+        subject: `Backup Semanal - ${dateStr} (${sizeMB} MB)`,
         content: "auto",
-        html,
+        html: sanitizeEmailHtml(html),
         attachments: [{
           filename,
           contentType: "application/zip",

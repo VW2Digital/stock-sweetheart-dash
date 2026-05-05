@@ -15,6 +15,7 @@ import { createLogger } from "../_shared/logger.ts";
 import { authorizeAdminOrServiceRole } from "../_shared/auth.ts";
 import { createSmtpProvider } from "../_shared/email-provider.ts";
 import { maskSecretInMessage } from "../_shared/email-errors.ts";
+import { normalizeEmailSubject, sanitizeEmailHtml, sanitizeEmailText } from "../_shared/mime.ts";
 
 type TemplateName =
   | "order_created"
@@ -85,12 +86,7 @@ function escapeHtml(s: string) {
 }
 
 function normalizeTemplateHtml(html: string) {
-  return html
-    .replace(/\r\n/g, "\n")
-    .replace(/[ \t]+$/gm, "")
-    .replace(/^\s+$/gm, "")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  return sanitizeEmailHtml(html);
 }
 
 // Adiciona margem superior e inferior em torno do template enviado,
@@ -362,12 +358,12 @@ serve(async (req) => {
         return json(400, { error: "custom requer html ou text", correlation_id: correlationId }, correlationId);
       }
       rendered = {
-        subject: body.subject || `Mensagem de ${storeName}`,
-        html: body.html || `<pre>${escapeHtml(body.text!)}</pre>`,
+        subject: normalizeEmailSubject(body.subject || `Mensagem de ${storeName}`),
+        html: body.html ? sanitizeEmailHtml(body.html) : `<pre>${escapeHtml(sanitizeEmailText(body.text!))}</pre>`,
       };
     } else {
       rendered = renderTemplate(body.template, body.data || {}, storeName, storePublicUrl);
-      if (body.subject) rendered.subject = body.subject;
+      if (body.subject) rendered.subject = normalizeEmailSubject(body.subject);
     }
 
     // Apply admin overrides from site_settings (if defined).
@@ -390,9 +386,9 @@ serve(async (req) => {
         s.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (_m, key) =>
           vars[key] !== undefined ? vars[key] : "",
         );
-      if (overrideSubject) rendered.subject = interpolate(overrideSubject);
+      if (overrideSubject) rendered.subject = normalizeEmailSubject(interpolate(overrideSubject));
       if (overrideHtml) rendered.html = addVerticalSpacing(normalizeTemplateHtml(interpolate(overrideHtml)));
-      if (body.subject) rendered.subject = body.subject;
+      if (body.subject) rendered.subject = normalizeEmailSubject(body.subject);
     }
 
     const usedFrom = smtpFromEmail || smtpUser;

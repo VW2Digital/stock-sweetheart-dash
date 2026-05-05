@@ -17,55 +17,7 @@ import {
 } from "./email-errors.ts";
 import type { Logger } from "./logger.ts";
 import { withRetry } from "./retry.ts";
-
-/**
- * Strip HTML tags + entidades comuns para gerar fallback text/plain.
- * Usado quando o caller não envia `text` explícito.
- */
-function htmlToPlainText(html: string): string {
-  return html
-    .replace(/<style[\s\S]*?<\/style>/gi, "")
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
-    .replace(/<\/(p|div|tr|h[1-6]|li)>/gi, "\n")
-    .replace(/<br\s*\/?>(\s*)/gi, "\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
-function cleanEmailMarkup(input: string): string {
-  return input
-    .replace(/\r\n/g, "\n")
-    .replace(/[ \t]+$/gm, "")
-    .replace(/^\s+$/gm, "")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
-/**
- * Codifica o Subject em MIME "encoded-word" (RFC 2047) usando Base64/UTF-8
- * sempre que o texto contiver caracteres não-ASCII. Isso evita que o
- * cliente de e-mail (ou um forward via Gmail) exiba o assunto como
- * "u=c3=a1rios" — quoted-printable cru sem o cabeçalho `=?UTF-8?Q?...?=`.
- *
- * Usa B-encoding (base64) por ser mais robusto contra quebras de linha em
- * "=" do que Q-encoding.
- */
-function encodeMimeSubject(subject: string): string {
-   // ASCII puro (sem control chars) → não precisa codificar.
-   // eslint-disable-next-line no-control-regex
-   if (!/[^\x20-\x7e]/.test(subject)) return subject;
-   const bytes = new TextEncoder().encode(subject);
-   let bin = "";
-   for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-   const b64 = btoa(bin);
-   return `=?UTF-8?B?${b64}?=`;
-}
+import { encodeMimeSubject, htmlToPlainText, sanitizeEmailHtml, sanitizeEmailText } from "./mime.ts";
 
 export interface SendEmailInput {
   from: string;          // "Name <addr@host>"
@@ -127,9 +79,9 @@ export function createSmtpProvider(cfg: SmtpConfig): EmailProvider {
 
       // Tentativa única — invocada a cada round pelo `withRetry`.
       const attemptOnce = async (): Promise<SendEmailResult> => {
-        const cleanedHtml = cleanEmailMarkup(input.html);
+        const cleanedHtml = sanitizeEmailHtml(input.html);
         const cleanedText = input.text && input.text.trim().length > 0
-          ? cleanEmailMarkup(input.text)
+          ? sanitizeEmailText(input.text)
           : htmlToPlainText(cleanedHtml);
 
         const client = new SMTPClient({
@@ -146,6 +98,9 @@ export function createSmtpProvider(cfg: SmtpConfig): EmailProvider {
             encodeLB: true,
             noStartTLS: false,
           },
+          client: {
+            preprocessors: [(mail) => ({ ...mail, subject: encodeMimeSubject(mail.subject) })],
+          },
         });
         try {
           const headers: Record<string, string> = {
@@ -158,7 +113,7 @@ export function createSmtpProvider(cfg: SmtpConfig): EmailProvider {
             from: input.from,
             to: input.to,
             replyTo: input.replyTo,
-            subject: encodeMimeSubject(input.subject),
+            subject: input.subject,
             content: cleanedText,
             html: cleanedHtml,
             headers,
