@@ -324,17 +324,31 @@ const Dashboard = () => {
     <div className="space-y-5">
       {/* Alertas operacionais */}
       {paidWithoutLabel > 0 && !dismissedLabelsAlert && (
-        <Alert
-          className="relative border-amber-500 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-200 cursor-pointer pr-12 [&>svg]:text-amber-600"
+        <div
+          role="button"
+          tabIndex={0}
           onClick={() => navigate('/admin/pedidos')}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') navigate('/admin/pedidos');
+          }}
+          className="group relative flex items-center gap-3 rounded-lg border border-amber-400/70 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 pr-14 text-amber-900 dark:text-amber-100 shadow-sm hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors cursor-pointer"
         >
-          <Tag className="h-4 w-4 text-amber-600" />
-          <AlertTitle className="font-semibold">Etiquetas pendentes</AlertTitle>
-          <AlertDescription>
-            {paidWithoutLabel === 1
-              ? 'Há 1 pedido pago aguardando geração de etiqueta de envio.'
-              : `Há ${paidWithoutLabel} pedidos pagos aguardando geração de etiqueta de envio.`}
-          </AlertDescription>
+          <div className="flex-shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300">
+            <Tag className="w-4 h-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-sm leading-tight">Etiquetas pendentes</p>
+              <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-amber-600 text-white text-[11px] font-bold leading-none">
+                {paidWithoutLabel}
+              </span>
+            </div>
+            <p className="text-xs sm:text-[13px] text-amber-800/90 dark:text-amber-200/80 mt-0.5">
+              {paidWithoutLabel === 1
+                ? 'pedido pago aguardando geração de etiqueta de envio.'
+                : 'pedidos pagos aguardando geração de etiqueta de envio.'}
+            </p>
+          </div>
           <button
             type="button"
             aria-label="Fechar notificação"
@@ -343,11 +357,11 @@ const Dashboard = () => {
               sessionStorage.setItem('dismiss_labels_alert', '1');
               setDismissedLabelsAlert(true);
             }}
-            className="absolute top-1/2 -translate-y-1/2 right-3 z-10 inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-600 hover:bg-amber-700 transition-colors shadow-md ring-2 ring-amber-200 text-white"
+            className="absolute top-1/2 -translate-y-1/2 right-3 inline-flex items-center justify-center w-7 h-7 rounded-full text-amber-700 hover:bg-amber-200/70 dark:text-amber-200 dark:hover:bg-amber-900/50 transition-colors"
           >
-            <X className="w-4 h-4" strokeWidth={3} />
+            <X className="w-4 h-4" strokeWidth={2.5} />
           </button>
-        </Alert>
+        </div>
       )}
 
       {/* KPIs do topo (Receita Hoje, Pedidos, Clientes) */}
