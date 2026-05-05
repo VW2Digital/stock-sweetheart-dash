@@ -113,7 +113,7 @@ export function encodeMimeSubject(subject: string) {
   let encoded = "";
   for (const byte of bytes) {
     if (byte === 0x20) encoded += "_";
-    else if ((byte >= 0x41 && byte <= 0x5a) || (byte >= 0x61 && byte <= 0x7a) || (byte >= 0x30 && byte <= 0x39)) encoded += String.fromCharCode(byte);
+    else if ((byte >= 0x41 && byte <= 0x5a) || (byte >= 0x61 && byte <= 0x7a) || (byte >= 0x30 && byte <= 0x39) || byte === 0x2b) encoded += String.fromCharCode(byte);
     else encoded += `=${byte.toString(16).toUpperCase().padStart(2, "0")}`;
   }
   return `=?UTF-8?Q?${encoded}?=`;
