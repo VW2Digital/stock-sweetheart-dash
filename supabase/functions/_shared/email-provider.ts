@@ -98,6 +98,9 @@ export function createSmtpProvider(cfg: SmtpConfig): EmailProvider {
             encodeLB: true,
             noStartTLS: false,
           },
+          client: {
+            preprocessors: [(mail) => ({ ...mail, subject: encodeMimeSubject(mail.subject) })],
+          },
         });
         try {
           const headers: Record<string, string> = {
@@ -111,11 +114,9 @@ export function createSmtpProvider(cfg: SmtpConfig): EmailProvider {
             from: input.from,
             to: input.to,
             replyTo: input.replyTo,
-            subject: encodeMimeSubject(input.subject),
+            subject: input.subject,
             content: cleanedText,
             html: cleanedHtml,
-            contentType: "text/plain; charset=UTF-8",
-            htmlContentType: "text/html; charset=UTF-8",
             headers,
           });
           try { await client.close(); } catch (_) { /* noop */ }
