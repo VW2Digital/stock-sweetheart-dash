@@ -47,6 +47,26 @@ function cleanEmailMarkup(input: string): string {
     .trim();
 }
 
+/**
+ * Codifica o Subject em MIME "encoded-word" (RFC 2047) usando Base64/UTF-8
+ * sempre que o texto contiver caracteres não-ASCII. Isso evita que o
+ * cliente de e-mail (ou um forward via Gmail) exiba o assunto como
+ * "u=c3=a1rios" — quoted-printable cru sem o cabeçalho `=?UTF-8?Q?...?=`.
+ *
+ * Usa B-encoding (base64) por ser mais robusto contra quebras de linha em
+ * "=" do que Q-encoding.
+ */
+function encodeMimeSubject(subject: string): string {
+   // ASCII puro (sem control chars) → não precisa codificar.
+   // eslint-disable-next-line no-control-regex
+   if (!/[^\x20-\x7e]/.test(subject)) return subject;
+   const bytes = new TextEncoder().encode(subject);
+   let bin = "";
+   for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+   const b64 = btoa(bin);
+   return `=?UTF-8?B?${b64}?=`;
+}
+
 export interface SendEmailInput {
   from: string;          // "Name <addr@host>"
   replyTo?: string;
@@ -138,7 +158,7 @@ export function createSmtpProvider(cfg: SmtpConfig): EmailProvider {
             from: input.from,
             to: input.to,
             replyTo: input.replyTo,
-            subject: input.subject,
+            subject: encodeMimeSubject(input.subject),
             content: cleanedText,
             html: cleanedHtml,
             headers,
