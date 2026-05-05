@@ -51,7 +51,8 @@ Deno.test("encaminhamento: assunto reenviado é codificado em RFC 2047", () => {
   const encoded = encodeMimeSubject(FORWARDED_SUBJECT);
   assert(encoded.startsWith("=?UTF-8?Q?"), `esperado encoded-word, recebi: ${encoded}`);
   assert(encoded.endsWith("?="), `encoded-word mal terminado: ${encoded}`);
-  assert(!/=c3=/i.test(encoded), `encoded-word contém bytes minúsculos brutos: ${encoded}`);
+  // Q-encoding deve usar hex MAIÚSCULO (=C3=A1). Falha se aparecer minúsculo (=c3=a1).
+  assert(!/=c3=/.test(encoded), `encoded-word contém bytes minúsculos brutos: ${encoded}`);
 });
 
 Deno.test("encaminhamento: corpo text/plain é decodificado para UTF-8", () => {
