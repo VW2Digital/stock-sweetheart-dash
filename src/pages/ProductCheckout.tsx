@@ -145,6 +145,8 @@ const ProductCheckout = () => {
   const [manualCep, setManualCep] = useState('');
   const [cepSource, setCepSource] = useState<'auto' | 'manual'>('auto');
   const [detailLabels, setDetailLabels] = useState<Record<string, string>>({});
+  const installmentReqIdRef = useRef(0);
+  const shippingReqIdRef = useRef(0);
 
   useEffect(() => {
     if (!id) return;
@@ -229,10 +231,14 @@ const ProductCheckout = () => {
     const simTotal = effectiveUnit * quantity;
     if (simTotal <= 0) return;
 
+    const reqId = ++installmentReqIdRef.current;
+    // Clear stale data immediately so the skeleton shows for THIS variation/qty
+    setSimulatedInstallments([]);
     setLoadingSimulation(true);
     supabase.functions.invoke('asaas-checkout', {
       body: { action: 'simulate_installments', value: simTotal, installmentCount: maxInstallments },
     }).then(({ data }) => {
+      if (reqId !== installmentReqIdRef.current) return; // stale
       if (data?.creditCard?.installments && Array.isArray(data.creditCard.installments) && data.creditCard.installments.length > 0) {
         const opts: InstallmentResult[] = data.creditCard.installments.map((inst: any) => ({
           parcelas: inst.installmentCount,
@@ -246,15 +252,20 @@ const ProductCheckout = () => {
         setSimulatedInstallments(gerarOpcoesParcelamento(simTotal, maxInstallments));
       }
     }).catch(() => {
+      if (reqId !== installmentReqIdRef.current) return;
       // Fallback: cálculo local quando a API falha
       setSimulatedInstallments(gerarOpcoesParcelamento(simTotal, maxInstallments));
-    }).finally(() => setLoadingSimulation(false));
+    }).finally(() => {
+      if (reqId !== installmentReqIdRef.current) return;
+      setLoadingSimulation(false);
+    });
   }, [product, selectedVariation, quantity, wholesaleTiers, maxInstallments]);
 
   const fetchShippingByPostalCode = async (postalCode: string) => {
     if (!product || !postalCode || postalCode.replace(/\D/g, '').length !== 8) return;
     const cleanCep = postalCode.replace(/\D/g, '');
     setUserPostalCode(cleanCep);
+    const reqId = ++shippingReqIdRef.current;
     setLoadingShipping(true);
     setShippingOptions([]);
     const vars = product?.product_variations || [];
@@ -266,8 +277,11 @@ const ProductCheckout = () => {
       const { data, error } = await supabase.functions.invoke('melhor-envio-shipment', {
         body: { action: 'quote', postal_code: cleanCep, insurance_value: tot, quantity },
       });
+      if (reqId !== shippingReqIdRef.current) return; // stale (variação/quantidade trocou)
       if (!error && data?.services?.length > 0) setShippingOptions(data.services);
-    } catch { /* silent */ } finally { setLoadingShipping(false); }
+    } catch { /* silent */ } finally {
+      if (reqId === shippingReqIdRef.current) setLoadingShipping(false);
+    }
   };
 
   // Auto-fetch shipping for logged-in users with saved address
@@ -652,10 +666,18 @@ const ProductCheckout = () => {
                         <ChevronRight className={`w-3 h-3 transition-transform ${showInstallments ? 'rotate-90' : ''}`} />
                       </button>
                       {showInstallments && (
-                        <div className="bg-muted rounded-lg p-3 mt-1 space-y-1 animate-in slide-in-from-top-2 duration-200">
+                        <div
+                          key={`inst-${variation?.id || 'v'}-${quantity}`}
+                          className="bg-muted rounded-lg p-3 mt-1 space-y-1 animate-in slide-in-from-top-2 duration-200"
+                        >
                           {loadingSimulation ? (
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground py-1">
-                              <Loader2 className="w-3 h-3 animate-spin" /> Carregando parcelas...
+                            <div className="space-y-1.5 py-0.5" aria-busy="true">
+                              {Array.from({ length: Math.min(maxInstallments, 4) }).map((_, i) => (
+                                <div key={i} className="flex justify-between items-center">
+                                  <div className="h-3 bg-muted-foreground/20 rounded animate-pulse" style={{ width: `${40 + i * 8}%` }} />
+                                  <div className="h-3 w-16 bg-muted-foreground/20 rounded animate-pulse" />
+                                </div>
+                              ))}
                             </div>
                           ) : simulatedInstallments.length > 0 ? simulatedInstallments.map((opt) => (
                             <div key={opt.parcelas} className="flex justify-between text-xs text-foreground">
@@ -715,9 +737,17 @@ const ProductCheckout = () => {
                 </p>
               )}
               {loadingShipping && !shippingOptions.length ? (
-                <div className="flex items-center gap-2 py-1">
-                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">Calculando frete...</span>
+                <div
+                  key={`ship-${variation?.id || 'v'}-${quantity}-${userPostalCode}`}
+                  className="space-y-1.5"
+                  aria-busy="true"
+                >
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex justify-between items-center">
+                      <div className="h-3 bg-muted-foreground/20 rounded animate-pulse" style={{ width: `${55 + i * 6}%` }} />
+                      <div className="h-3 w-14 bg-muted-foreground/20 rounded animate-pulse" />
+                    </div>
+                  ))}
                 </div>
               ) : shippingOptions.length > 0 ? (
                 <div className="space-y-1.5">
