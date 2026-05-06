@@ -121,6 +121,7 @@ const ProductCheckout = () => {
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
   const [searchParams] = useSearchParams();
+  const { publicUrl } = usePublicBaseUrl();
   const [product, setProduct] = useState<any>(null);
   const [dynamicTestimonials, setDynamicTestimonials] = useState<any[]>([]);
   const [banners, setBanners] = useState<any[]>([]);
