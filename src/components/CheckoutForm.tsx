@@ -1178,6 +1178,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
   const handleFallbackToGateway = async (target: AvailableCardGateway) => {
     if (fallbackProcessing) return;
     setFallbackProcessing(target.gateway);
+    const fallbackOriginalReason = cardFailMessage || 'Cartão recusado';
     try {
       const holderCpfDigits = (holderCpf || cpf).replace(/\D/g, '');
       const holderPhoneDigits = (holderPhone || phone).replace(/\D/g, '');
@@ -1282,6 +1283,22 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
       onSuccess?.();
 
       toast({ title: 'Pagamento aprovado!', description: `Processado via ${target.label}.` });
+
+      // Log fallback success
+      try {
+        await supabase.from('gateway_fallback_logs' as any).insert({
+          order_id: result?.orderId || orderId,
+          customer_email: email.trim(),
+          customer_name: name.trim(),
+          payment_method: 'credit_card',
+          amount: valorFinalCartao,
+          original_gateway: activeGateway,
+          fallback_gateway: target.gateway,
+          reason: fallbackOriginalReason,
+          outcome: 'success',
+          outcome_message: `Aprovado via ${target.label}`,
+        });
+      } catch { /* non-blocking */ }
     } catch (err: any) {
       const rawMsg = err?.message || 'Falha no fallback';
       const friendly = mapPaymentErrorMessage(rawMsg);
@@ -1294,6 +1311,20 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
           error_message: `[Fallback ${target.gateway}] ${rawMsg}`,
           error_source: 'checkout_fallback',
           request_payload: { fallbackGateway: target.gateway, productName, totalValue },
+        });
+      } catch { /* non-blocking */ }
+      try {
+        await supabase.from('gateway_fallback_logs' as any).insert({
+          customer_email: email.trim(),
+          customer_name: name.trim(),
+          payment_method: 'credit_card',
+          amount: totalValue,
+          original_gateway: activeGateway,
+          fallback_gateway: target.gateway,
+          reason: fallbackOriginalReason,
+          outcome: 'failure',
+          outcome_message: friendly,
+          metadata: { rawError: rawMsg },
         });
       } catch { /* non-blocking */ }
 
