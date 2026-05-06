@@ -27,12 +27,16 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { TRUST_BAR_ICONS, DEFAULT_TRUST_BAR, DEFAULT_TRUST_BAR_BG, DEFAULT_TRUST_BAR_SPEED, type TrustBarItem } from '@/pages/settings/SettingsTrustBar';
 import { ProductCardSkeletonGrid } from '@/components/ProductCardSkeleton';
 import { getAbContext, trackAbEvent } from '@/lib/abTest';
+import { loadAbConfig, getCachedAbConfig, formatDiscountBadge, DEFAULT_AB_CONFIG, type AbTestConfig } from '@/lib/abTestConfig';
 import ProductCardImageCarousel from '@/components/ProductCardImageCarousel';
 
 const Catalog = () => {
   const { totalItems, addToCart } = useCart();
   // A/B test do card de produto
   const ab = useMemo(() => getAbContext(), []);
+  const [abConfig, setAbConfig] = useState<AbTestConfig>(getCachedAbConfig());
+  useEffect(() => { loadAbConfig().then(setAbConfig).catch(() => {}); }, []);
+  const variantCfg = abConfig[ab.variant] || DEFAULT_AB_CONFIG[ab.variant];
   const impressionsLogged = useRef<Set<string>>(new Set());
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -405,12 +409,12 @@ const Catalog = () => {
                         {ab.variant === 'B' ? (
                           <>
                             <div className="absolute top-2 left-2 z-20 flex flex-col gap-1 items-start">
-                              {offer && offerPrice && price && (
+                              {variantCfg.showOfferBadge && offer && offerPrice && price && (
                                 <Badge className="bg-destructive text-destructive-foreground text-[11px] sm:text-xs font-extrabold px-2 py-0.5 shadow-md shadow-destructive/30 rounded-md">
-                                  -{Math.round(((price - offerPrice) / price) * 100)}% OFF
+                                  {formatDiscountBadge(variantCfg.discountBadgeTemplate, Math.round(((price - offerPrice) / price) * 100))}
                                 </Badge>
                               )}
-                              {product.free_shipping && (
+                              {variantCfg.showFreeShippingImageBadge && product.free_shipping && (
                                 <Badge className="bg-success text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 shadow-sm gap-0.5 rounded-md">
                                   <Truck className="w-2.5 h-2.5" />
                                   FRETE GRÁTIS
@@ -421,7 +425,7 @@ const Catalog = () => {
                               )}
                             </div>
                             <div className="absolute top-2 right-2 z-20 flex flex-col gap-1 items-end">
-                              {product.is_bestseller && (
+                              {variantCfg.showBestsellerBadge && product.is_bestseller && (
                                 <Badge className="bg-warning text-white text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 shadow-md rounded-md">
                                   Mais Vendido
                                 </Badge>
@@ -431,9 +435,15 @@ const Catalog = () => {
                         ) : (
                           <>
                             <div className="absolute top-2 left-2 z-20 flex flex-col gap-1">
-                              {offer && offerPrice && price && (
+                              {variantCfg.showOfferBadge && offer && offerPrice && price && (
                                 <Badge className="bg-destructive text-destructive-foreground text-[10px] font-bold">
-                                  -{Math.round(((price - offerPrice) / price) * 100)}%
+                                  {formatDiscountBadge(variantCfg.discountBadgeTemplate, Math.round(((price - offerPrice) / price) * 100))}
+                                </Badge>
+                              )}
+                              {variantCfg.showFreeShippingImageBadge && product.free_shipping && (
+                                <Badge className="bg-success text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 gap-0.5">
+                                  <Truck className="w-2.5 h-2.5" />
+                                  FRETE GRÁTIS
                                 </Badge>
                               )}
                               {!inStock && (
@@ -441,7 +451,7 @@ const Catalog = () => {
                               )}
                             </div>
                             <div className="absolute top-2 right-2 z-20 flex flex-col gap-1 items-end">
-                              {product.is_bestseller && (
+                              {variantCfg.showBestsellerBadge && product.is_bestseller && (
                                 <Badge className="bg-success text-white text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5">
                                   Mais Vendido
                                 </Badge>
@@ -556,8 +566,8 @@ const Catalog = () => {
                       </div>
                     </Link>
 
-                    {/* Free Shipping Banner — apenas variante A */}
-                    {ab.variant === 'A' && product.free_shipping && (
+                    {/* Free Shipping Banner */}
+                    {variantCfg.showFreeShippingBanner && product.free_shipping && (
                       <div className="mx-3 mb-1.5 rounded-md bg-transparent border border-transparent px-2 py-1 flex items-center gap-1">
                         <Truck className="w-3 h-3 text-success flex-shrink-0" />
                         <span className="text-success text-[10px] font-semibold">Frete Grátis</span>
@@ -615,12 +625,12 @@ const Catalog = () => {
                           {ab.variant === 'B' ? (
                             <>
                               <ShoppingCart className="w-4 h-4 mr-1.5" />
-                              Adicionar ao Carrinho
+                              {variantCfg.ctaText}
                             </>
                           ) : (
                             <>
                               <ShoppingCart className="w-3.5 h-3.5 mr-1" />
-                              <span className="text-[11px]">Adicionar ao Carrinho</span>
+                              <span className="text-[11px]">{variantCfg.ctaText}</span>
                             </>
                           )}
                         </Button>

@@ -14,6 +14,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import {
+  loadAbConfig,
+  saveAbConfig,
+  DEFAULT_AB_CONFIG,
+  formatDiscountBadge,
+  type AbTestConfig,
+  type AbVariantConfig,
+} from '@/lib/abTestConfig';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -86,6 +97,8 @@ export default function AbTestPage() {
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<PreviewProduct[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string>('');
+  const [config, setConfig] = useState<AbTestConfig>(DEFAULT_AB_CONFIG);
+  const [savingConfig, setSavingConfig] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -105,6 +118,7 @@ export default function AbTestPage() {
   useEffect(() => {
     load();
     loadProducts();
+    loadAbConfig(true).then(setConfig).catch(() => {});
   }, []);
 
   const loadProducts = async () => {
@@ -132,6 +146,32 @@ export default function AbTestPage() {
     () => products.find((p) => p.id === selectedProductId) || null,
     [products, selectedProductId],
   );
+
+  const updateVariant = (variant: 'A' | 'B', patch: Partial<AbVariantConfig>) => {
+    setConfig((prev) => ({ ...prev, [variant]: { ...prev[variant], ...patch } }));
+  };
+
+  const handleSaveConfig = async () => {
+    setSavingConfig(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('Sessão expirada.');
+        return;
+      }
+      await saveAbConfig(config, user.id);
+      toast.success('Configuração das variantes salva.');
+    } catch (e: any) {
+      toast.error('Falha ao salvar: ' + (e?.message || 'erro desconhecido'));
+    } finally {
+      setSavingConfig(false);
+    }
+  };
+
+  const handleResetConfig = () => {
+    setConfig(DEFAULT_AB_CONFIG);
+    toast.info('Valores padrão restaurados (não salvo ainda).');
+  };
 
   const statsA = useMemo(() => aggregate(rows, 'A'), [rows]);
   const statsB = useMemo(() => aggregate(rows, 'B'), [rows]);
@@ -256,8 +296,8 @@ export default function AbTestPage() {
           {previewProduct ? (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <PreviewCard variant="A" product={previewProduct} />
-                <PreviewCard variant="B" product={previewProduct} />
+                <PreviewCard variant="A" product={previewProduct} cfg={config.A} />
+                <PreviewCard variant="B" product={previewProduct} cfg={config.B} />
               </div>
               <p className="text-xs text-muted-foreground mt-4">
                 Prévias reproduzem o card de catálogo usando dados reais do produto selecionado.
@@ -266,6 +306,27 @@ export default function AbTestPage() {
           ) : (
             <p className="text-sm text-muted-foreground">Nenhum produto com variação disponível para preview.</p>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Editor de configuração das variantes */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <CardTitle className="text-base">Configuração das variantes</CardTitle>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleResetConfig}>
+                Restaurar padrão
+              </Button>
+              <Button size="sm" onClick={handleSaveConfig} disabled={savingConfig}>
+                {savingConfig ? 'Salvando…' : 'Salvar configuração'}
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <VariantEditor variant="A" cfg={config.A} onChange={(p) => updateVariant('A', p)} />
+          <VariantEditor variant="B" cfg={config.B} onChange={(p) => updateVariant('B', p)} />
         </CardContent>
       </Card>
 
@@ -287,7 +348,7 @@ export default function AbTestPage() {
   );
 }
 
-function PreviewCard({ variant, product }: { variant: 'A' | 'B'; product: PreviewProduct }) {
+function PreviewCard({ variant, product, cfg }: { variant: 'A' | 'B'; product: PreviewProduct; cfg: AbVariantConfig }) {
   const isB = variant === 'B';
   // Pega primeira variação (preferindo uma em oferta)
   const variation =
@@ -343,19 +404,19 @@ function PreviewCard({ variant, product }: { variant: 'A' | 'B'; product: Previe
             {isB ? (
               <>
                 <div className="absolute top-2 left-2 z-20 flex flex-col gap-1 items-start">
-                  {discount > 0 && (
+                  {cfg.showOfferBadge && discount > 0 && (
                     <Badge className="bg-destructive text-destructive-foreground text-[11px] font-extrabold px-2 py-0.5 shadow-md shadow-destructive/30 rounded-md">
-                      -{discount}% OFF
+                      {formatDiscountBadge(cfg.discountBadgeTemplate, discount)}
                     </Badge>
                   )}
-                  {product.free_shipping && (
+                  {cfg.showFreeShippingImageBadge && product.free_shipping && (
                     <Badge className="bg-success text-white text-[9px] font-bold px-1.5 py-0.5 shadow-sm gap-0.5 rounded-md">
                       <Truck className="w-2.5 h-2.5" />
                       FRETE GRÁTIS
                     </Badge>
                   )}
                 </div>
-                {product.is_bestseller && (
+                {cfg.showBestsellerBadge && product.is_bestseller && (
                   <div className="absolute top-2 right-2 z-20">
                     <Badge className="bg-warning text-white text-[9px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 shadow-md rounded-md">
                       Mais Vendido
@@ -365,14 +426,20 @@ function PreviewCard({ variant, product }: { variant: 'A' | 'B'; product: Previe
               </>
             ) : (
               <>
-                {discount > 0 && (
-                  <div className="absolute top-2 left-2 z-20 flex flex-col gap-1">
+                <div className="absolute top-2 left-2 z-20 flex flex-col gap-1">
+                  {cfg.showOfferBadge && discount > 0 && (
                     <Badge className="bg-destructive text-destructive-foreground text-[10px] font-bold">
-                      -{discount}%
+                      {formatDiscountBadge(cfg.discountBadgeTemplate, discount)}
                     </Badge>
-                  </div>
-                )}
-                {product.is_bestseller && (
+                  )}
+                  {cfg.showFreeShippingImageBadge && product.free_shipping && (
+                    <Badge className="bg-success text-white text-[9px] font-bold gap-0.5 px-1.5 py-0.5">
+                      <Truck className="w-2.5 h-2.5" />
+                      FRETE GRÁTIS
+                    </Badge>
+                  )}
+                </div>
+                {cfg.showBestsellerBadge && product.is_bestseller && (
                   <div className="absolute top-2 right-2 z-20">
                     <Badge className="bg-success text-white text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5">
                       Mais Vendido
@@ -411,7 +478,7 @@ function PreviewCard({ variant, product }: { variant: 'A' | 'B'; product: Previe
             </div>
           </div>
 
-          {!isB && product.free_shipping && (
+          {cfg.showFreeShippingBanner && product.free_shipping && (
             <div className="mx-3 mb-1.5 px-2 py-1 flex items-center gap-1">
               <Truck className="w-3 h-3 text-success flex-shrink-0" />
               <span className="text-success text-[10px] font-semibold">Frete Grátis</span>
@@ -432,18 +499,95 @@ function PreviewCard({ variant, product }: { variant: 'A' | 'B'; product: Previe
               {isB ? (
                 <>
                   <ShoppingCart className="w-4 h-4 mr-1.5" />
-                  Adicionar ao Carrinho
+                  {cfg.ctaText}
                 </>
               ) : (
                 <>
                   <ShoppingCart className="w-3.5 h-3.5 mr-1" />
-                  <span className="text-[11px]">Adicionar ao Carrinho</span>
+                  <span className="text-[11px]">{cfg.ctaText}</span>
                 </>
               )}
             </Button>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function VariantEditor({
+  variant,
+  cfg,
+  onChange,
+}: {
+  variant: 'A' | 'B';
+  cfg: AbVariantConfig;
+  onChange: (patch: Partial<AbVariantConfig>) => void;
+}) {
+  return (
+    <div className="space-y-4 border rounded-lg p-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-sm">
+          Variante {variant} {variant === 'A' ? '(controle)' : '(conversão agressiva)'}
+        </h3>
+        <Badge variant={variant === 'B' ? 'default' : 'secondary'} className="text-[10px]">
+          {variant === 'B' ? 'Novo' : 'Atual'}
+        </Badge>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor={`cta-${variant}`} className="text-xs">Texto do botão (CTA)</Label>
+        <Input
+          id={`cta-${variant}`}
+          value={cfg.ctaText}
+          onChange={(e) => onChange({ ctaText: e.target.value })}
+          placeholder="Adicionar ao Carrinho"
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor={`badge-${variant}`} className="text-xs">
+          Template do badge de desconto · use <code className="text-[10px]">{'{pct}'}</code> para o percentual
+        </Label>
+        <Input
+          id={`badge-${variant}`}
+          value={cfg.discountBadgeTemplate}
+          onChange={(e) => onChange({ discountBadgeTemplate: e.target.value })}
+          placeholder="-{pct}% OFF"
+        />
+      </div>
+
+      <div className="space-y-2 pt-1">
+        <ToggleRow
+          label="Mostrar badge de oferta (-X%)"
+          checked={cfg.showOfferBadge}
+          onChange={(v) => onChange({ showOfferBadge: v })}
+        />
+        <ToggleRow
+          label="Badge FRETE GRÁTIS sobre a imagem"
+          checked={cfg.showFreeShippingImageBadge}
+          onChange={(v) => onChange({ showFreeShippingImageBadge: v })}
+        />
+        <ToggleRow
+          label="Faixa Frete Grátis abaixo do preço"
+          checked={cfg.showFreeShippingBanner}
+          onChange={(v) => onChange({ showFreeShippingBanner: v })}
+        />
+        <ToggleRow
+          label="Mostrar selo Mais Vendido"
+          checked={cfg.showBestsellerBadge}
+          onChange={(v) => onChange({ showBestsellerBadge: v })}
+        />
+      </div>
+    </div>
+  );
+}
+
+function ToggleRow({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-xs">{label}</span>
+      <Switch checked={checked} onCheckedChange={onChange} />
     </div>
   );
 }
