@@ -125,6 +125,11 @@ const PagBankSettings = ({ isActive, onActivate }: Props) => {
         readOnly
         className="bg-muted text-xs cursor-pointer"
         hint="Clique para copiar."
+        onClick={(e) => {
+          (e.target as HTMLInputElement).select();
+          navigator.clipboard.writeText(redirectUrl);
+          toast({ title: 'URL copiada!' });
+        }}
       />
       <SaveTestButtons
         isActive={isActive}
