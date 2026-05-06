@@ -4,68 +4,74 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CartProvider } from "@/contexts/CartContext";
-import Login from "./pages/Login";
-import AdminLayout from "./pages/AdminLayout";
-import Dashboard from "./pages/Dashboard";
-import ProductList from "./pages/ProductList";
-import ProductForm from "./pages/ProductForm";
-import ProductImportCSV from "./pages/ProductImportCSV";
-import ProductCheckout from "./pages/ProductCheckout";
+
+// Páginas públicas críticas (eager - carregam de imediato)
 import Catalog from "./pages/Catalog";
-import BannerList from "./pages/BannerList";
-import SettingsIndex from "./pages/settings/SettingsIndex";
-import SettingsDesign from "./pages/settings/SettingsDesign";
-import SettingsColors from "./pages/settings/SettingsColors";
-import SettingsFonts from "./pages/settings/SettingsFonts";
-import SettingsCSS from "./pages/settings/SettingsCSS";
-import SettingsHomePage from "./pages/settings/SettingsHomePage";
-import SettingsPayment from "./pages/settings/SettingsPayment";
-import GatewaySettingsPage from "./pages/settings/payment/GatewaySettingsPage";
-import GatewayAuditLog from "./pages/settings/payment/GatewayAuditLog";
-import SettingsShipping from "./pages/settings/SettingsShipping";
-import SettingsCommunication from "./pages/settings/SettingsCommunication";
-import SettingsFooter from "./pages/settings/SettingsFooter";
-import SettingsAdvanced from "./pages/settings/SettingsAdvanced";
-import SettingsAPI from "./pages/settings/SettingsAPI";
-import SettingsCategories from "./pages/settings/SettingsCategories";
-import SettingsProductDetails from "./pages/settings/SettingsProductDetails";
-import SettingsTrustBar from "./pages/settings/SettingsTrustBar";
-import SettingsBackup from "./pages/settings/SettingsBackup";
-import SettingsGuides from "./pages/settings/SettingsGuides";
-import OrdersPage from "./pages/OrdersPage";
-import OrderDetailPage from "./pages/OrderDetailPage";
-import UsersPage from "./pages/UsersPage";
-import UserDetailPage from "./pages/UserDetailPage";
+import ProductCheckout from "./pages/ProductCheckout";
 import Checkout from "./pages/Checkout";
-import CustomerLogin from "./pages/CustomerLogin";
-import CustomerDashboard from "./pages/CustomerDashboard";
 import CartPage from "./pages/CartPage";
 import CartCheckout from "./pages/CartCheckout";
+import CustomerLogin from "./pages/CustomerLogin";
+import CustomerDashboard from "./pages/CustomerDashboard";
 import ResetPassword from "./pages/ResetPassword";
 import ForgotPassword from "./pages/ForgotPassword";
-import AdminSupportPage from "./pages/AdminSupportPage";
-import AdminReviewsPage from "./pages/AdminReviewsPage";
-import PopupList from "./pages/PopupList";
-import PaymentLogsPage from "./pages/PaymentLogsPage";
-import WholesalePricingPage from "./pages/WholesalePricingPage";
-import WebhookLogsPage from "./pages/WebhookLogsPage";
-import CartAbandonmentLogsPage from "./pages/CartAbandonmentLogsPage";
-import PaymentLinksPage from "./pages/PaymentLinksPage";
-import CouponsPage from "./pages/CouponsPage";
-import ReportsPage from "./pages/ReportsPage";
-import AbTestPage from "./pages/AbTestPage";
-import EmailTemplatesPage from "./pages/EmailTemplatesPage";
-import EmailLogsPage from "./pages/EmailLogsPage";
-import EmailEventsPage from "./pages/EmailEventsPage";
-import BulkEmailPage from "./pages/BulkEmailPage";
-import PaymentLinkCheckout from "./pages/PaymentLinkCheckout";
-import PromoPopup from "./components/PromoPopup";
-import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfUse from "./pages/TermsOfUse";
 import ContactPage from "./pages/ContactPage";
+import PaymentLinkCheckout from "./pages/PaymentLinkCheckout";
+import Login from "./pages/Login";
+import NotFound from "./pages/NotFound";
+
+// Admin (lazy - só carrega quando acessado)
+const AdminLayout = lazy(() => import("./pages/AdminLayout"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const ProductList = lazy(() => import("./pages/ProductList"));
+const ProductForm = lazy(() => import("./pages/ProductForm"));
+const ProductImportCSV = lazy(() => import("./pages/ProductImportCSV"));
+const BannerList = lazy(() => import("./pages/BannerList"));
+const SettingsIndex = lazy(() => import("./pages/settings/SettingsIndex"));
+const SettingsDesign = lazy(() => import("./pages/settings/SettingsDesign"));
+const SettingsColors = lazy(() => import("./pages/settings/SettingsColors"));
+const SettingsFonts = lazy(() => import("./pages/settings/SettingsFonts"));
+const SettingsCSS = lazy(() => import("./pages/settings/SettingsCSS"));
+const SettingsHomePage = lazy(() => import("./pages/settings/SettingsHomePage"));
+const SettingsPayment = lazy(() => import("./pages/settings/SettingsPayment"));
+const GatewaySettingsPage = lazy(() => import("./pages/settings/payment/GatewaySettingsPage"));
+const GatewayAuditLog = lazy(() => import("./pages/settings/payment/GatewayAuditLog"));
+const SettingsShipping = lazy(() => import("./pages/settings/SettingsShipping"));
+const SettingsCommunication = lazy(() => import("./pages/settings/SettingsCommunication"));
+const SettingsFooter = lazy(() => import("./pages/settings/SettingsFooter"));
+const SettingsAdvanced = lazy(() => import("./pages/settings/SettingsAdvanced"));
+const SettingsAPI = lazy(() => import("./pages/settings/SettingsAPI"));
+const SettingsCategories = lazy(() => import("./pages/settings/SettingsCategories"));
+const SettingsProductDetails = lazy(() => import("./pages/settings/SettingsProductDetails"));
+const SettingsTrustBar = lazy(() => import("./pages/settings/SettingsTrustBar"));
+const SettingsBackup = lazy(() => import("./pages/settings/SettingsBackup"));
+const SettingsGuides = lazy(() => import("./pages/settings/SettingsGuides"));
+const OrdersPage = lazy(() => import("./pages/OrdersPage"));
+const OrderDetailPage = lazy(() => import("./pages/OrderDetailPage"));
+const UsersPage = lazy(() => import("./pages/UsersPage"));
+const UserDetailPage = lazy(() => import("./pages/UserDetailPage"));
+const AdminSupportPage = lazy(() => import("./pages/AdminSupportPage"));
+const AdminReviewsPage = lazy(() => import("./pages/AdminReviewsPage"));
+const PopupList = lazy(() => import("./pages/PopupList"));
+const PaymentLogsPage = lazy(() => import("./pages/PaymentLogsPage"));
+const WholesalePricingPage = lazy(() => import("./pages/WholesalePricingPage"));
+const WebhookLogsPage = lazy(() => import("./pages/WebhookLogsPage"));
+const CartAbandonmentLogsPage = lazy(() => import("./pages/CartAbandonmentLogsPage"));
+const PaymentLinksPage = lazy(() => import("./pages/PaymentLinksPage"));
+const CouponsPage = lazy(() => import("./pages/CouponsPage"));
+const ReportsPage = lazy(() => import("./pages/ReportsPage"));
+const AbTestPage = lazy(() => import("./pages/AbTestPage"));
+const EmailTemplatesPage = lazy(() => import("./pages/EmailTemplatesPage"));
+const EmailLogsPage = lazy(() => import("./pages/EmailLogsPage"));
+const EmailEventsPage = lazy(() => import("./pages/EmailEventsPage"));
+const BulkEmailPage = lazy(() => import("./pages/BulkEmailPage"));
+
+import PromoPopup from "./components/PromoPopup";
 import { SessionGuard } from "./components/SessionGuard";
 import ChatWidgetEmbed from "./components/ChatWidgetEmbed";
 import MercadoPagoSecurity from "./components/MercadoPagoSecurity";
@@ -76,6 +82,11 @@ import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
+const AdminFallback = () => (
+  <div className="flex items-center justify-center min-h-[60vh] text-muted-foreground text-sm">
+    Carregando...
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -92,6 +103,7 @@ const App = () => (
         <ErrorBoundary silent name="ChatWidgetEmbed"><ChatWidgetEmbed /></ErrorBoundary>
         <ErrorBoundary silent name="MercadoPagoSecurity"><MercadoPagoSecurity /></ErrorBoundary>
         <ErrorBoundary name="Routes">
+        <Suspense fallback={<AdminFallback />}>
         <Routes>
           <Route path="/" element={<Catalog />} />
           <Route path="/catalogo" element={<Catalog />} />
@@ -156,6 +168,7 @@ const App = () => (
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
         </ErrorBoundary>
         <MobileBottomNav />
       </BrowserRouter>
