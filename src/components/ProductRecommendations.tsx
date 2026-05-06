@@ -53,6 +53,10 @@ const ProductRecommendations = ({ productId }: Props) => {
     if (!productId) return;
     (async () => {
       setLoading(true);
+      const startTs = performance.now();
+      const skeletonStart = startTs;
+      let hadError = false;
+      let itemsCount = 0;
       try {
         const { data: assoc } = await supabase
           .from('product_upsells' as any)
@@ -114,10 +118,29 @@ const ProductRecommendations = ({ productId }: Props) => {
           .sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
 
         setItems(enriched);
+        itemsCount = enriched.length;
       } catch (err) {
         console.error('Recommendations fetch error:', err);
+        hadError = true;
       } finally {
         setLoading(false);
+        const endTs = performance.now();
+        const loadTime = Math.round(endTs - startTs);
+        const skeletonTime = Math.round(endTs - skeletonStart);
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          await supabase.from('recommendation_performance_metrics' as any).insert({
+            user_id: user?.id ?? null,
+            session_id: getSessionId(),
+            source_product_id: productId,
+            load_time_ms: loadTime,
+            skeleton_time_ms: skeletonTime,
+            items_count: itemsCount,
+            had_error: hadError,
+          });
+        } catch (e) {
+          console.error('recommendation_performance_metrics insert error:', e);
+        }
       }
     })();
   }, [productId]);

@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Package, LogOut, LayoutDashboard, Settings, ShoppingBag, Users, MessageCircle, Star, AlertTriangle, Mail, LinkIcon, Ticket, FileBarChart, ChevronDown, Activity, Send, Wallet, FlaskConical, Layers, Shuffle, Sparkles } from 'lucide-react';
+import { Package, LogOut, LayoutDashboard, Settings, ShoppingBag, Users, MessageCircle, Star, AlertTriangle, Mail, LinkIcon, Ticket, FileBarChart, ChevronDown, Activity, Send, Wallet, FlaskConical, Layers, Shuffle, Sparkles, Gauge } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import {
   Sidebar,
@@ -35,6 +35,7 @@ const menuCategories = [
       { title: 'Produtos', url: '/admin/produtos', icon: Package },
       { title: 'Atacado', url: '/admin/atacado', icon: Layers },
       { title: 'Upsells', url: '/admin/upsells', icon: Sparkles },
+      { title: 'Métricas Recom.', url: '/admin/metricas-recomendacoes', icon: Gauge },
     ],
   },
   {

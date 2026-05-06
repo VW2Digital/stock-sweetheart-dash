@@ -72,6 +72,7 @@ const EmailLogsPage = lazy(() => import("./pages/EmailLogsPage"));
 const EmailEventsPage = lazy(() => import("./pages/EmailEventsPage"));
 const BulkEmailPage = lazy(() => import("./pages/BulkEmailPage"));
 const UpsellManagerPage = lazy(() => import("./pages/UpsellManagerPage"));
+const RecommendationMetricsPage = lazy(() => import("./pages/RecommendationMetricsPage"));
 
 import PromoPopup from "./components/PromoPopup";
 import { SessionGuard } from "./components/SessionGuard";
@@ -130,6 +131,7 @@ const App = () => (
             <Route path="produtos/:id" element={<ProductForm />} />
             <Route path="atacado" element={<WholesalePricingPage />} />
             <Route path="upsells" element={<UpsellManagerPage />} />
+            <Route path="metricas-recomendacoes" element={<RecommendationMetricsPage />} />
             <Route path="banners" element={<BannerList />} />
             <Route path="popups" element={<PopupList />} />
             <Route path="pedidos" element={<OrdersPage />} />
