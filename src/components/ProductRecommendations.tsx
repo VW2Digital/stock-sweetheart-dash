@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles } from 'lucide-react';
 import { AnimatedSection } from '@/components/AnimatedSection';
+import { Skeleton } from '@/components/ui/skeleton';
 import productHeroImg from '@/assets/product-hero.png';
 
 interface RecVariation {
@@ -89,7 +90,32 @@ const ProductRecommendations = ({ productId }: Props) => {
     })();
   }, [productId]);
 
-  if (loading || items.length === 0) return null;
+  if (loading) {
+    return (
+      <section className="max-w-6xl mx-auto px-4 py-10" aria-busy="true" aria-label="Carregando recomendações">
+        <div className="flex items-center gap-2 mb-5">
+          <Sparkles className="w-5 h-5 text-primary/40" />
+          <Skeleton className="h-6 w-56" />
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="overflow-hidden border-border/50 h-full flex flex-col">
+              <Skeleton className="aspect-square w-full rounded-none" />
+              <div className="p-3 flex-1 flex flex-col gap-2">
+                <Skeleton className="h-4 w-11/12" />
+                <Skeleton className="h-3 w-2/3" />
+                <div className="mt-auto pt-2">
+                  <Skeleton className="h-5 w-24" />
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (items.length === 0) return null;
 
   return (
     <AnimatedSection variant="fadeUp" className="max-w-6xl mx-auto px-4 py-10">
