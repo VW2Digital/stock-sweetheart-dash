@@ -1096,6 +1096,42 @@ export type Database = {
         }
         Relationships: []
       }
+      recommendation_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          position: number | null
+          recommended_product_id: string
+          recommended_variation_id: string | null
+          session_id: string | null
+          source_product_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          position?: number | null
+          recommended_product_id: string
+          recommended_variation_id?: string | null
+          session_id?: string | null
+          source_product_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          position?: number | null
+          recommended_product_id?: string
+          recommended_variation_id?: string | null
+          session_id?: string | null
+          source_product_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           comment: string | null
