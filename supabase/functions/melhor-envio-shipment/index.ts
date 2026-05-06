@@ -29,6 +29,7 @@ async function attemptTokenRefresh(): Promise<string | null> {
 
   if (!refreshToken || !clientId || !clientSecret) {
     console.error('[ME] Missing refresh credentials. Manual reconnection required.');
+    await notifyRefreshFailure('Credenciais OAuth ausentes (client_id/secret/refresh_token).');
     return null;
   }
 
@@ -51,6 +52,7 @@ async function attemptTokenRefresh(): Promise<string | null> {
     const tokenText = await tokenRes.text();
     if (!tokenRes.ok) {
       console.error(`[ME] Token refresh failed [${tokenRes.status}]: ${tokenText}`);
+      await notifyRefreshFailure(`Refresh token recusado [${tokenRes.status}]: ${tokenText.slice(0, 300)}`);
       return null;
     }
 
@@ -68,7 +70,96 @@ async function attemptTokenRefresh(): Promise<string | null> {
     return tokenData.access_token;
   } catch (err: any) {
     console.error('[ME] Token refresh error:', err.message);
+    await notifyRefreshFailure(`Erro de rede ao tentar refresh: ${err.message}`);
     return null;
+  }
+}
+
+// Notifica admin quando refresh do Melhor Envio falha (debounce 6h via site_settings).
+async function notifyRefreshFailure(reason: string): Promise<void> {
+  if (!_supabaseRef) return;
+  try {
+    const ALERT_KEY = 'melhor_envio_refresh_alert_last_sent';
+    const DEBOUNCE_MS = 6 * 60 * 60 * 1000; // 6h
+    const last = await getSetting(_supabaseRef, ALERT_KEY);
+    if (last) {
+      const lastMs = new Date(last).getTime();
+      if (!isNaN(lastMs) && Date.now() - lastMs < DEBOUNCE_MS) {
+        console.log('[ME] Alerta de refresh já enviado nas últimas 6h, pulando.');
+        return;
+      }
+    }
+
+    const { data: settings } = await _supabaseRef
+      .from('site_settings')
+      .select('key, value')
+      .in('key', [
+        'admin_notification_email', 'whatsapp_number', 'store_name',
+        'evolution_api_url', 'evolution_api_key', 'evolution_instance_name',
+      ]);
+    const cfg: Record<string, string> = {};
+    for (const s of settings || []) cfg[s.key] = s.value;
+
+    const storeName = cfg.store_name || 'Liberty Pharma';
+    const adminUrl = `${Deno.env.get('SUPABASE_URL')!.replace('.supabase.co', '')}.lovable.app/admin/configuracoes/logistica`;
+    const subject = `[${storeName}] Melhor Envio: token expirado — reconexão necessária`;
+    const message = [
+      `O refresh token do Melhor Envio (${_currentEnv}) falhou e a integração está parada.`,
+      ``,
+      `Motivo: ${reason}`,
+      ``,
+      `Acesse o admin e refaça a conexão OAuth:`,
+      `${adminUrl}`,
+      ``,
+      `Enquanto isso, etiquetas e cálculos de frete via Melhor Envio não funcionarão.`,
+    ].join('\n');
+
+    // Email
+    const adminEmail = cfg.admin_notification_email;
+    if (adminEmail) {
+      try {
+        await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+          },
+          body: JSON.stringify({
+            to: adminEmail,
+            subject,
+            html: `<pre style="font-family:Inter,sans-serif;white-space:pre-wrap">${message}</pre>`,
+            text: message,
+          }),
+        });
+      } catch (e: any) {
+        console.error('[ME alert] email falhou:', e.message);
+      }
+    }
+
+    // WhatsApp via Evolution
+    const adminWhats = cfg.whatsapp_number;
+    if (adminWhats && cfg.evolution_api_url && cfg.evolution_api_key && cfg.evolution_instance_name) {
+      try {
+        const phone = adminWhats.replace(/\D/g, '');
+        const number = phone.startsWith('55') ? phone : `55${phone}`;
+        await fetch(`${cfg.evolution_api_url.replace(/\/+$/, '')}/message/sendText/${cfg.evolution_instance_name}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', apikey: cfg.evolution_api_key },
+          body: JSON.stringify({ number, text: `*${storeName} — Melhor Envio*\n\n${message}` }),
+        });
+      } catch (e: any) {
+        console.error('[ME alert] whatsapp falhou:', e.message);
+      }
+    }
+
+    // Salva timestamp do alerta (debounce)
+    await _supabaseRef.from('site_settings').upsert(
+      { key: ALERT_KEY, value: new Date().toISOString() },
+      { onConflict: 'key' }
+    );
+    console.log('[ME] Alerta de falha de refresh enviado ao admin.');
+  } catch (e: any) {
+    console.error('[ME] notifyRefreshFailure erro:', e.message);
   }
 }
 
