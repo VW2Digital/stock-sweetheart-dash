@@ -140,6 +140,35 @@ const StepIndicator = ({ currentStep }: { currentStep: CheckoutStep }) => {
   );
 };
 
+const TotalsSkeleton = ({ withCoupon = false, withPixDiscount = false }: { withCoupon?: boolean; withPixDiscount?: boolean }) => (
+  <div className="space-y-1.5" aria-busy="true" aria-label="Recalculando totais">
+    <div className="flex justify-between items-center">
+      <Skeleton className="h-3 w-16" />
+      <Skeleton className="h-3 w-20" />
+    </div>
+    <div className="flex justify-between items-center">
+      <Skeleton className="h-3 w-24" />
+      <Skeleton className="h-3 w-16" />
+    </div>
+    {withCoupon && (
+      <div className="flex justify-between items-center">
+        <Skeleton className="h-3 w-28" />
+        <Skeleton className="h-3 w-14" />
+      </div>
+    )}
+    {withPixDiscount && (
+      <div className="flex justify-between items-center">
+        <Skeleton className="h-3 w-28" />
+        <Skeleton className="h-3 w-14" />
+      </div>
+    )}
+    <div className="flex justify-between items-center pt-1">
+      <Skeleton className="h-4 w-12" />
+      <Skeleton className="h-5 w-24" />
+    </div>
+  </div>
+);
+
 const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescription, dosage, quantity, unitPrice, freeShipping, freeShippingMinValue, pixDiscountPercentProp, maxInstallmentsProp, installmentsInterestProp, onSuccess }: CheckoutFormProps) => {
   const { toast } = useToast();
   const { t } = useLanguage();
