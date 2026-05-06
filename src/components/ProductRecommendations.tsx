@@ -31,6 +31,20 @@ interface Props {
   productId: string;
 }
 
+const getSessionId = (): string => {
+  try {
+    const KEY = 'rec_session_id';
+    let sid = sessionStorage.getItem(KEY);
+    if (!sid) {
+      sid = (crypto as any).randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      sessionStorage.setItem(KEY, sid);
+    }
+    return sid;
+  } catch {
+    return 'anon';
+  }
+};
+
 const ProductRecommendations = ({ productId }: Props) => {
   const [items, setItems] = useState<RecProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,6 +131,23 @@ const ProductRecommendations = ({ productId }: Props) => {
 
   if (items.length === 0) return null;
 
+  const handleClick = async (recProductId: string, recVariationId: string, position: number) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.from('recommendation_events' as any).insert({
+        user_id: user?.id ?? null,
+        session_id: getSessionId(),
+        source_product_id: productId,
+        recommended_product_id: recProductId,
+        recommended_variation_id: recVariationId,
+        event_type: 'click',
+        position,
+      });
+    } catch (err) {
+      console.error('recommendation_events insert error:', err);
+    }
+  };
+
   return (
     <AnimatedSection variant="fadeUp" className="max-w-6xl mx-auto px-4 py-10">
       <div className="flex items-center gap-2 mb-5">
@@ -124,7 +155,7 @@ const ProductRecommendations = ({ productId }: Props) => {
         <h2 className="text-xl sm:text-2xl font-bold text-foreground">Você também pode gostar</h2>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-        {items.map(product => {
+        {items.map((product, idx) => {
           const variation = product.variations[0];
           const effectivePrice =
             variation.is_offer && variation.offer_price > 0 ? variation.offer_price : variation.price;
@@ -137,7 +168,11 @@ const ProductRecommendations = ({ productId }: Props) => {
             variation.images?.[0] || variation.image_url || product.images?.[0] || productHeroImg;
 
           return (
-            <Link key={product.id} to={`/produto/${product.id}?variation=${variation.id}`}>
+            <Link
+              key={product.id}
+              to={`/produto/${product.id}?variation=${variation.id}`}
+              onClick={() => handleClick(product.id, variation.id, idx)}
+            >
               <Card className="group overflow-hidden border-border/50 hover:border-primary/40 hover:shadow-md transition-all h-full flex flex-col">
                 <div className="relative aspect-square bg-muted/40 flex items-center justify-center p-3">
                   <img
