@@ -1921,34 +1921,40 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
             )}
           </div>
 
-          <div className="border-t border-border/50 pt-3">
-            <div className="space-y-1 mb-3">
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Produtos</span>
-                <span>R$ {baseProductTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-              </div>
-              {selectedShipping && (
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Frete ({selectedShipping.company})</span>
-                  {qualifiesForFreeShipping ? (
-                    <span className="text-primary font-medium">Grátis</span>
-                  ) : (
-                    <span>R$ {shippingCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+          <div className="border-t border-border/50 pt-3" key={`totals-redir-${totalsKey}`}>
+            <div className="mb-3">
+              {totalsRecalculating ? (
+                <TotalsSkeleton withCoupon={couponDiscount > 0} />
+              ) : (
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Produtos</span>
+                    <span>R$ {baseProductTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  {selectedShipping && (
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Frete ({selectedShipping.company})</span>
+                      {qualifiesForFreeShipping ? (
+                        <span className="text-primary font-medium">Grátis</span>
+                      ) : (
+                        <span>R$ {shippingCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                      )}
+                    </div>
                   )}
+                  {couponDiscount > 0 && (
+                    <div className="flex justify-between text-xs text-success">
+                      <span>Cupom {appliedCouponCode} ({couponLabel})</span>
+                      <span>- R$ {couponDiscount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center pt-1">
+                    <span className="text-sm text-muted-foreground">Total</span>
+                    <span className="text-lg font-bold text-foreground">
+                      R$ {totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
                 </div>
               )}
-              {couponDiscount > 0 && (
-                <div className="flex justify-between text-xs text-success">
-                  <span>Cupom {appliedCouponCode} ({couponLabel})</span>
-                  <span>- R$ {couponDiscount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                </div>
-              )}
-              <div className="flex justify-between items-center pt-1">
-                <span className="text-sm text-muted-foreground">Total</span>
-                <span className="text-lg font-bold text-foreground">
-                  R$ {totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                </span>
-              </div>
             </div>
             <Button onClick={isPagBank ? handlePagBankRedirect : handleMpRedirect} disabled={processing} className="w-full">
               {processing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
