@@ -14,6 +14,7 @@ import Header from '@/components/Header';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import JsonLd from '@/components/seo/JsonLd';
+import ProductRecommendations from '@/components/ProductRecommendations';
 import usePublicBaseUrl from '@/hooks/usePublicBaseUrl';
 import productHeroImg from '@/assets/product-hero.png';
 import testimonial1 from '@/assets/testimonial-1.jpg';
@@ -884,6 +885,8 @@ const ProductCheckout = () => {
       )}
 
       {/* WhatsApp FAB */}
+      <ProductRecommendations productId={product.id} />
+
       {whatsappNumber && /\d/.test(whatsappNumber) &&
       <a
         href={`https://wa.me/${whatsappNumber.replace(/\D/g, '')}`}
