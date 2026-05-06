@@ -3,17 +3,15 @@ import { useState, useEffect } from 'react';
 import { fetchSetting, upsertSetting, getCurrentUser } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import WebhookUrlCard from '@/components/admin/WebhookUrlCard';
 import GatewayToggles from '@/components/admin/settings/GatewayToggles';
+import EnvironmentSelect from '@/components/admin/settings/payment/EnvironmentSelect';
+import PasswordField from '@/components/admin/settings/payment/PasswordField';
 
-interface Props {
-  isActive: boolean;
-  onActivate: () => void;
-}
+interface Props { isActive: boolean; onActivate: () => void }
 
 const MercadoPagoSettings = ({ isActive, onActivate }: Props) => {
   const { toast } = useToast();
@@ -25,8 +23,6 @@ const MercadoPagoSettings = ({ isActive, onActivate }: Props) => {
   const [clientSecret, setClientSecret] = useState('');
   const [env, setEnv] = useState('sandbox');
   const [mode, setMode] = useState<'transparent' | 'redirect'>('transparent');
-  const [showToken, setShowToken] = useState(false);
-  const [showSecret, setShowSecret] = useState(false);
 
   const loadCreds = async (e: string) => {
     const [t, p, c, s] = await Promise.all([
@@ -93,16 +89,7 @@ const MercadoPagoSettings = ({ isActive, onActivate }: Props) => {
   return (
     <div className="space-y-4">
       <GatewayToggles gateway="mercadopago" />
-      <div className="space-y-2">
-        <Label>Ambiente</Label>
-        <Select value={env} onValueChange={handleEnvChange}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="sandbox">Sandbox (Testes)</SelectItem>
-            <SelectItem value="production">Produção</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <EnvironmentSelect value={env} onChange={handleEnvChange} />
       <div className="space-y-2">
         <Label>Modo de Checkout</Label>
         <Select value={mode} onValueChange={(v) => setMode(v as any)}>
@@ -116,15 +103,12 @@ const MercadoPagoSettings = ({ isActive, onActivate }: Props) => {
           {mode === 'transparent' ? 'O cliente paga direto na sua loja, sem sair do site.' : 'O cliente é redirecionado para o Mercado Pago.'}
         </p>
       </div>
-      <div className="space-y-2">
-        <Label>Access Token</Label>
-        <div className="relative">
-          <Input type={showToken ? 'text' : 'password'} value={accessToken} onChange={(e) => setAccessToken(e.target.value)} placeholder={env === 'sandbox' ? 'TEST-...' : 'APP_USR-...'} className="pr-10" />
-          <button type="button" onClick={() => setShowToken(!showToken)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-            {showToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-          </button>
-        </div>
-      </div>
+      <PasswordField
+        label="Access Token"
+        value={accessToken}
+        onChange={setAccessToken}
+        placeholder={env === 'sandbox' ? 'TEST-...' : 'APP_USR-...'}
+      />
       <div className="space-y-2">
         <Label>Public Key</Label>
         <Input value={publicKey} onChange={(e) => setPublicKey(e.target.value)} placeholder={env === 'sandbox' ? 'TEST-...' : 'APP_USR-...'} />
@@ -133,15 +117,7 @@ const MercadoPagoSettings = ({ isActive, onActivate }: Props) => {
         <Label>Client ID</Label>
         <Input value={clientId} onChange={(e) => setClientId(e.target.value)} placeholder="Ex: 3427228834545577" />
       </div>
-      <div className="space-y-2">
-        <Label>Client Secret</Label>
-        <div className="relative">
-          <Input type={showSecret ? 'text' : 'password'} value={clientSecret} onChange={(e) => setClientSecret(e.target.value)} placeholder="Ex: gCED4b..." className="pr-10" />
-          <button type="button" onClick={() => setShowSecret(!showSecret)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-            {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-          </button>
-        </div>
-      </div>
+      <PasswordField label="Client Secret" value={clientSecret} onChange={setClientSecret} placeholder="Ex: gCED4b..." />
       <WebhookUrlCard
         gatewayName="Mercado Pago"
         functionSlug="mercadopago-webhook"
