@@ -147,6 +147,20 @@ const ProductCheckout = () => {
   const [detailLabels, setDetailLabels] = useState<Record<string, string>>({});
   const installmentReqIdRef = useRef(0);
   const shippingReqIdRef = useRef(0);
+  const [currentUserId, setCurrentUserId] = useState<string>('anon');
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (active) setCurrentUserId(session?.user?.id ?? 'anon');
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
+      setCurrentUserId(session?.user?.id ?? 'anon');
+    });
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
     if (!id) return;
