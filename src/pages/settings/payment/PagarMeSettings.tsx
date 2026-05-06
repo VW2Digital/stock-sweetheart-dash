@@ -3,33 +3,28 @@ import { useState, useEffect } from 'react';
 import { fetchSetting, upsertSetting, getCurrentUser } from '@/lib/api';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, CheckCircle2, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import PagarMeWebhooksPanel from '@/components/admin/PagarMeWebhooksPanel';
 import WebhookUrlCard from '@/components/admin/WebhookUrlCard';
 import GatewayToggles from '@/components/admin/settings/GatewayToggles';
+import EnvironmentSelect from '@/components/admin/settings/payment/EnvironmentSelect';
+import PasswordField from '@/components/admin/settings/payment/PasswordField';
+import SaveTestButtons from '@/components/admin/settings/payment/SaveTestButtons';
+import { useGatewayConnectionTest } from '@/components/admin/settings/payment/useGatewayConnectionTest';
 
-interface Props {
-  isActive: boolean;
-  onActivate: () => void;
-}
+interface Props { isActive: boolean; onActivate: () => void }
 
 const PagarMeSettings = ({ isActive, onActivate }: Props) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [testing, setTesting] = useState(false);
   const [secretKey, setSecretKey] = useState('');
   const [publicKey, setPublicKey] = useState('');
   const [webhookSecret, setWebhookSecret] = useState('');
   const [env, setEnv] = useState('sandbox');
   const [antifraud, setAntifraud] = useState(true);
-  const [showSecret, setShowSecret] = useState(false);
-  const [showWebhook, setShowWebhook] = useState(false);
+  const { testing, test } = useGatewayConnectionTest('pagarme');
 
   const loadCreds = async (e: string) => {
     const [s, p] = await Promise.all([
@@ -88,59 +83,25 @@ const PagarMeSettings = ({ isActive, onActivate }: Props) => {
     } finally { setSaving(false); }
   };
 
-  const handleTest = async () => {
-    setTesting(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('payment-checkout', {
-        body: { action: 'test_connection', environment: env, api_key: secretKey, gateway: 'pagarme' },
-      });
-      if (error) throw new Error(error.message);
-      if (data?.error) throw new Error(data.error);
-      toast({ title: 'Conexão OK!', description: `Ambiente: ${env === 'production' ? 'Produção' : 'Sandbox'}` });
-    } catch (err: any) {
-      toast({ title: 'Falha', description: err.message, variant: 'destructive' });
-    } finally { setTesting(false); }
-  };
-
   if (loading) return <SettingsSkeleton />;
 
   return (
     <div className="space-y-4">
       <GatewayToggles gateway="pagarme" />
-      <div className="space-y-2">
-        <Label>Ambiente</Label>
-        <Select value={env} onValueChange={handleEnvChange}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="sandbox">Sandbox (Testes)</SelectItem>
-            <SelectItem value="production">Produção</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="space-y-2">
-        <Label>Secret Key (sk_)</Label>
-        <div className="relative">
-          <Input type={showSecret ? 'text' : 'password'} value={secretKey} onChange={(e) => setSecretKey(e.target.value)} placeholder={env === 'sandbox' ? 'sk_test_...' : 'sk_...'} className="pr-10" />
-          <button type="button" onClick={() => setShowSecret(!showSecret)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-            {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-          </button>
-        </div>
-        <p className="text-xs text-muted-foreground">Usada no servidor para criar pedidos.</p>
-      </div>
+      <EnvironmentSelect value={env} onChange={handleEnvChange} />
+      <PasswordField
+        label="Secret Key (sk_)"
+        value={secretKey}
+        onChange={setSecretKey}
+        placeholder={env === 'sandbox' ? 'sk_test_...' : 'sk_...'}
+        hint="Usada no servidor para criar pedidos."
+      />
       <div className="space-y-2">
         <Label>Public Key (pk_)</Label>
         <Input value={publicKey} onChange={(e) => setPublicKey(e.target.value)} placeholder={env === 'sandbox' ? 'pk_test_...' : 'pk_...'} />
         <p className="text-xs text-muted-foreground">Usada para tokenização do cartão no navegador.</p>
       </div>
-      <div className="space-y-2">
-        <Label>Webhook Secret (HMAC-SHA1)</Label>
-        <div className="relative">
-          <Input type={showWebhook ? 'text' : 'password'} value={webhookSecret} onChange={(e) => setWebhookSecret(e.target.value)} placeholder="Segredo do painel Pagar.me" className="pr-10" />
-          <button type="button" onClick={() => setShowWebhook(!showWebhook)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-            {showWebhook ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-          </button>
-        </div>
-      </div>
+      <PasswordField label="Webhook Secret (HMAC-SHA1)" value={webhookSecret} onChange={setWebhookSecret} placeholder="Segredo do painel Pagar.me" />
       <div className="flex items-center justify-between rounded-md border border-border/50 p-3">
         <div>
           <Label className="text-sm">Antifraude</Label>
@@ -154,15 +115,14 @@ const PagarMeSettings = ({ isActive, onActivate }: Props) => {
         cadastroHint="no painel da Pagar.me, em Configurações → Webhooks (assinatura HMAC-SHA1)"
         eventos={["order.paid", "order.payment_failed", "charge.paid", "charge.refunded"]}
       />
-      <div className="flex gap-2 pt-2">
-        <Button onClick={handleSave} disabled={saving} className="flex-1">
-          {saving ? 'Salvando...' : (isActive ? 'Salvar' : 'Salvar e Ativar')}
-        </Button>
-        <Button variant="outline" disabled={testing || !secretKey} onClick={handleTest}>
-          {testing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle2 className="w-4 h-4 mr-2" />}
-          Testar
-        </Button>
-      </div>
+      <SaveTestButtons
+        isActive={isActive}
+        saving={saving}
+        testing={testing}
+        testDisabled={!secretKey}
+        onSave={handleSave}
+        onTest={() => test(secretKey, env)}
+      />
 
       {isActive && secretKey ? (
         <div className="pt-2">
