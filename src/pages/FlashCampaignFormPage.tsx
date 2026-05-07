@@ -36,6 +36,7 @@ export default function FlashCampaignFormPage() {
   const [ctaText, setCtaText] = useState('GARANTIR AGORA');
   const [paymentLinkId, setPaymentLinkId] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
+  const [startsAt, setStartsAt] = useState('');
   const [bgImage, setBgImage] = useState('');
   const [bgColor, setBgColor] = useState('#0a0000');
   const [accentColor, setAccentColor] = useState('#ef4444');
@@ -61,6 +62,7 @@ export default function FlashCampaignFormPage() {
         setSubheadline(camp.subheadline); setCtaText(camp.cta_text);
         setPaymentLinkId(camp.payment_link_id);
         setExpiresAt(camp.expires_at?.slice(0, 16) || '');
+        setStartsAt(camp.starts_at?.slice(0, 16) || '');
         setBgImage(camp.background_image || '');
         setBgColor(camp.bg_color || '#0a0000');
         setAccentColor(camp.accent_color || '#ef4444');
@@ -82,6 +84,7 @@ export default function FlashCampaignFormPage() {
       title: title.trim(), slug: finalSlug, headline: headline.trim(), subheadline: subheadline.trim(),
       cta_text: ctaText.trim() || 'GARANTIR AGORA', payment_link_id: paymentLinkId,
       expires_at: new Date(expiresAt).toISOString(), background_image: bgImage.trim() || null,
+      starts_at: startsAt ? new Date(startsAt).toISOString() : null,
       bg_color: bgColor, accent_color: accentColor, active,
     };
     let error;
@@ -138,13 +141,21 @@ export default function FlashCampaignFormPage() {
               </p>
             )}
           </div>
-          <div>
-            <Label>Validade *</Label>
-            <Input type="datetime-local" value={expiresAt} onChange={e => setExpiresAt(e.target.value)} />
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <Label>Início agendado (opcional)</Label>
+              <Input type="datetime-local" value={startsAt} onChange={e => setStartsAt(e.target.value)} />
+              <p className="text-xs text-muted-foreground mt-1">Antes desta data a página fica indisponível.</p>
+            </div>
+            <div>
+              <Label>Validade *</Label>
+              <Input type="datetime-local" value={expiresAt} onChange={e => setExpiresAt(e.target.value)} />
+              <p className="text-xs text-muted-foreground mt-1">Após esta data a campanha expira automaticamente.</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Switch checked={active} onCheckedChange={setActive} />
-            <Label>Campanha ativa</Label>
+            <Label>Campanha ativa (master switch)</Label>
           </div>
         </div>
       </AdminSection>
