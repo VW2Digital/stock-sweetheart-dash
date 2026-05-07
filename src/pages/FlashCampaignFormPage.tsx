@@ -214,19 +214,110 @@ export default function FlashCampaignFormPage() {
             </div>
           </div>
           <div>
-            <Label>Link de pagamento *</Label>
-            <Select value={paymentLinkId} onValueChange={setPaymentLinkId}>
-              <SelectTrigger><SelectValue placeholder="Selecione um link de pagamento" /></SelectTrigger>
+            <Label>Origem do checkout *</Label>
+            <Select value={source} onValueChange={(v) => setSource(v as Source)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {links.map(l => <SelectItem key={l.id} value={l.id}>{l.title}</SelectItem>)}
+                <SelectItem value="product">Produto + preço promocional (criar link automaticamente)</SelectItem>
+                <SelectItem value="existing">Usar link de pagamento existente</SelectItem>
               </SelectContent>
             </Select>
-            {links.length === 0 && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Crie um link em "Links de Pagamento" antes.
-              </p>
-            )}
           </div>
+
+          {source === 'existing' && (
+            <div>
+              <Label>Link de pagamento *</Label>
+              <Select value={paymentLinkId} onValueChange={setPaymentLinkId}>
+                <SelectTrigger><SelectValue placeholder="Selecione um link de pagamento" /></SelectTrigger>
+                <SelectContent>
+                  {links.map(l => <SelectItem key={l.id} value={l.id}>{l.title}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {links.length === 0 && (
+                <p className="text-xs text-muted-foreground mt-1">Crie um link em "Links de Pagamento" antes.</p>
+              )}
+            </div>
+          )}
+
+          {source === 'product' && (
+            <div className="grid gap-4 rounded-md border border-border/60 bg-muted/30 p-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <Label>Produto *</Label>
+                  <Select value={productId} onValueChange={(v) => { setProductId(v); setVariationId(''); }}>
+                    <SelectTrigger><SelectValue placeholder="Selecione um produto" /></SelectTrigger>
+                    <SelectContent>
+                      {products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Variação *</Label>
+                  <Select value={variationId} onValueChange={setVariationId} disabled={!selectedProduct}>
+                    <SelectTrigger><SelectValue placeholder={selectedProduct ? 'Selecione' : 'Escolha o produto'} /></SelectTrigger>
+                    <SelectContent>
+                      {selectedProduct?.variations.map(v => (
+                        <SelectItem key={v.id} value={v.id}>
+                          {v.dosage} — R$ {v.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-3">
+                <div>
+                  <Label>Quantidade</Label>
+                  <Input type="number" min="1" step="1" value={quantity} onChange={e => setQuantity(e.target.value)} />
+                </div>
+                <div>
+                  <Label>Tipo de desconto</Label>
+                  <Select value={discountMode} onValueChange={(v) => setDiscountMode(v as DiscountMode)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="percent">% de desconto</SelectItem>
+                      <SelectItem value="fixed">Preço final em R$</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  {discountMode === 'percent' ? (
+                    <>
+                      <Label>Desconto (%)</Label>
+                      <Input type="number" min="0" max="99" step="1" value={discountValue} onChange={e => setDiscountValue(e.target.value)} />
+                    </>
+                  ) : (
+                    <>
+                      <Label>Preço promocional (R$)</Label>
+                      <Input type="number" min="0.01" step="0.01" value={promoPrice} onChange={e => setPromoPrice(e.target.value)} placeholder={basePrice ? basePrice.toFixed(2) : '0,00'} />
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <Label>Máx. parcelas (cartão)</Label>
+                  <Input type="number" min="1" max="12" step="1" value={maxInstallments} onChange={e => setMaxInstallments(e.target.value)} />
+                </div>
+                <div>
+                  <Label>Desconto extra PIX (%)</Label>
+                  <Input type="number" min="0" max="100" step="1" value={pixDiscount} onChange={e => setPixDiscount(e.target.value)} />
+                </div>
+              </div>
+
+              {basePrice > 0 && (
+                <div className="rounded-md bg-background border border-border p-3 grid gap-1 text-sm">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Preço original</span><span className="line-through">R$ {basePrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Preço promocional unitário</span><span className="font-semibold text-primary">R$ {finalUnit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Desconto</span><span>{discountPct}%</span></div>
+                  <div className="flex justify-between border-t border-border pt-2 mt-1"><span className="font-medium">Total ({quantity}x)</span><span className="text-lg font-bold text-primary">R$ {totalAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span></div>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <Label>Início agendado (opcional)</Label>
