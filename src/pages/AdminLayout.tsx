@@ -140,10 +140,10 @@ const AdminLayout = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full overflow-x-hidden">
+      <div className="admin-theme min-h-screen flex w-full overflow-x-hidden bg-background">
         <AdminSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-16 flex items-center gap-2 sm:gap-3 border-b border-border/50 bg-card/80 backdrop-blur-xl px-3 sm:px-5 fixed top-0 right-0 left-0 md:left-[var(--sidebar-width)] z-40 transition-[left] duration-200 ease-linear group-data-[state=collapsed]/sidebar-wrapper:md:left-[--sidebar-width-icon]">
+          <header className="h-16 flex items-center gap-2 sm:gap-3 border-b border-border bg-card px-3 sm:px-5 fixed top-0 right-0 left-0 md:left-[var(--sidebar-width)] z-40 transition-[left] duration-200 ease-linear group-data-[state=collapsed]/sidebar-wrapper:md:left-[--sidebar-width-icon]">
             {/* Esquerda: trigger */}
             <div className="flex items-center gap-2 shrink-0">
               <SidebarTrigger className="hidden md:inline-flex" />
@@ -168,7 +168,7 @@ const AdminLayout = () => {
                 <DropdownMenuTrigger asChild>
                   <Button
                     size="sm"
-                    className="hidden sm:inline-flex rounded-full h-9 px-4 gap-1.5 bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-95 shadow-md shadow-primary/25 border-0"
+                    className="hidden sm:inline-flex rounded-full h-9 px-4 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm border-0"
                   >
                     <Plus className="h-4 w-4" />
                     <span className="text-xs font-semibold">Criar novo</span>
@@ -233,7 +233,7 @@ const AdminLayout = () => {
             </div>
           </header>
 
-          <main className="flex-1 p-3 sm:p-6 overflow-x-auto min-w-0 mt-16 bg-gradient-to-b from-background via-background to-primary/[0.02]">
+          <main className="flex-1 p-3 sm:p-6 overflow-x-auto min-w-0 mt-16 bg-background">
             <div className="mx-auto w-full max-w-[1600px] space-y-5">
               <Outlet />
             </div>
