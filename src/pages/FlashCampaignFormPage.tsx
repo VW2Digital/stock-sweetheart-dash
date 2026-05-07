@@ -13,6 +13,14 @@ import { AdminSection } from '@/components/admin/AdminSection';
 import { Zap, ArrowLeft, Save } from 'lucide-react';
 
 interface PaymentLinkOpt { id: string; title: string; slug: string; }
+interface ProductOpt {
+  id: string;
+  name: string;
+  variations: { id: string; dosage: string; price: number; offer_price: number | null; is_offer: boolean }[];
+}
+
+type Source = 'existing' | 'product';
+type DiscountMode = 'fixed' | 'percent';
 
 const slugify = (s: string) =>
   s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -26,6 +34,7 @@ export default function FlashCampaignFormPage() {
   const { toast } = useToast();
 
   const [links, setLinks] = useState<PaymentLinkOpt[]>([]);
+  const [products, setProducts] = useState<ProductOpt[]>([]);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
 
@@ -35,6 +44,17 @@ export default function FlashCampaignFormPage() {
   const [subheadline, setSubheadline] = useState('Por tempo limitadíssimo. Garanta antes que acabe.');
   const [ctaText, setCtaText] = useState('GARANTIR AGORA');
   const [paymentLinkId, setPaymentLinkId] = useState('');
+  // Product-based source
+  const [source, setSource] = useState<Source>('product');
+  const [productId, setProductId] = useState('');
+  const [variationId, setVariationId] = useState('');
+  const [quantity, setQuantity] = useState('1');
+  const [discountMode, setDiscountMode] = useState<DiscountMode>('percent');
+  const [discountValue, setDiscountValue] = useState('20');
+  const [promoPrice, setPromoPrice] = useState('');
+  const [autoLinkId, setAutoLinkId] = useState<string | null>(null);
+  const [maxInstallments, setMaxInstallments] = useState('6');
+  const [pixDiscount, setPixDiscount] = useState('0');
   const [expiresAt, setExpiresAt] = useState('');
   const [startsAt, setStartsAt] = useState('');
   const [bgImage, setBgImage] = useState('');
@@ -49,6 +69,20 @@ export default function FlashCampaignFormPage() {
         .order('created_at', { ascending: false });
       setLinks((pls as any) || []);
 
+      const { data: prods } = await supabase
+        .from('products')
+        .select('id,name,product_variations(id,dosage,price,offer_price,is_offer)')
+        .eq('active', true)
+        .order('name');
+      setProducts(((prods as any[]) || []).map(p => ({
+        id: p.id, name: p.name,
+        variations: (p.product_variations || []).map((v: any) => ({
+          id: v.id, dosage: v.dosage, price: Number(v.price) || 0,
+          offer_price: v.offer_price != null ? Number(v.offer_price) : null,
+          is_offer: !!v.is_offer,
+        })),
+      })));
+
       if (isEdit) {
         const { data: c, error } = await supabase
           .from('flash_campaigns' as any).select('*').eq('id', id).maybeSingle();
@@ -61,6 +95,7 @@ export default function FlashCampaignFormPage() {
         setTitle(camp.title); setSlug(camp.slug); setHeadline(camp.headline);
         setSubheadline(camp.subheadline); setCtaText(camp.cta_text);
         setPaymentLinkId(camp.payment_link_id);
+        setSource('existing');
         setExpiresAt(camp.expires_at?.slice(0, 16) || '');
         setStartsAt(camp.starts_at?.slice(0, 16) || '');
         setBgImage(camp.background_image || '');
@@ -72,17 +107,68 @@ export default function FlashCampaignFormPage() {
     })();
   }, [id, isEdit, navigate, toast]);
 
+  const selectedProduct = products.find(p => p.id === productId);
+  const selectedVariation = selectedProduct?.variations.find(v => v.id === variationId);
+  const basePrice = selectedVariation?.price || 0;
+
+  const computedPromoPrice = (() => {
+    if (discountMode === 'fixed') return Number(promoPrice) || 0;
+    const pct = Math.min(Math.max(Number(discountValue) || 0, 0), 99);
+    return Number((basePrice * (1 - pct / 100)).toFixed(2));
+  })();
+  const finalUnit = computedPromoPrice > 0 ? computedPromoPrice : basePrice;
+  const totalAmount = Number((finalUnit * (Number(quantity) || 1)).toFixed(2));
+  const discountPct = basePrice > 0 ? Math.round((1 - finalUnit / basePrice) * 100) : 0;
+
   const save = async () => {
-    if (!title.trim() || !paymentLinkId || !expiresAt) {
-      toast({ title: 'Campos obrigatórios', description: 'Preencha título, link de pagamento e validade.', variant: 'destructive' });
+    if (!title.trim() || !expiresAt) {
+      toast({ title: 'Campos obrigatórios', description: 'Preencha título e validade.', variant: 'destructive' });
+      return;
+    }
+    if (source === 'existing' && !paymentLinkId) {
+      toast({ title: 'Selecione um link de pagamento', variant: 'destructive' });
+      return;
+    }
+    if (source === 'product' && (!productId || !variationId || finalUnit <= 0)) {
+      toast({ title: 'Selecione produto, variação e preço promocional válido', variant: 'destructive' });
       return;
     }
     setSaving(true);
     const { data: { user } } = await supabase.auth.getUser();
     const finalSlug = (slug.trim() || slugify(title)).toLowerCase();
+
+    // Resolve payment_link_id (auto-create/update when source = product)
+    let resolvedLinkId = paymentLinkId;
+    if (source === 'product') {
+      const linkPayload = {
+        title: `[Campanha] ${title.trim()}`,
+        description: `${selectedProduct?.name} ${selectedVariation?.dosage} — ${quantity}x R$ ${finalUnit.toFixed(2)}`,
+        amount: totalAmount,
+        quantity: Number(quantity) || 1,
+        unit_price: finalUnit,
+        active: true,
+        pix_discount_percent: Number(pixDiscount) || 0,
+        max_installments: Number(maxInstallments) || 1,
+      };
+      if (autoLinkId) {
+        const { error: upErr } = await supabase.from('payment_links').update(linkPayload).eq('id', autoLinkId);
+        if (upErr) { setSaving(false); toast({ title: 'Erro ao atualizar link', description: upErr.message, variant: 'destructive' }); return; }
+        resolvedLinkId = autoLinkId;
+      } else {
+        const linkSlug = `camp-${finalSlug}-${Math.random().toString(36).slice(2, 6)}`;
+        const { data: newLink, error: insErr } = await supabase
+          .from('payment_links')
+          .insert({ ...linkPayload, slug: linkSlug, user_id: user?.id })
+          .select('id').single();
+        if (insErr || !newLink) { setSaving(false); toast({ title: 'Erro ao criar link', description: insErr?.message, variant: 'destructive' }); return; }
+        resolvedLinkId = newLink.id;
+        setAutoLinkId(newLink.id);
+      }
+    }
+
     const payload: any = {
       title: title.trim(), slug: finalSlug, headline: headline.trim(), subheadline: subheadline.trim(),
-      cta_text: ctaText.trim() || 'GARANTIR AGORA', payment_link_id: paymentLinkId,
+      cta_text: ctaText.trim() || 'GARANTIR AGORA', payment_link_id: resolvedLinkId,
       expires_at: new Date(expiresAt).toISOString(), background_image: bgImage.trim() || null,
       starts_at: startsAt ? new Date(startsAt).toISOString() : null,
       bg_color: bgColor, accent_color: accentColor, active,
