@@ -18,6 +18,7 @@ interface Campaign {
   cta_text: string;
   payment_link_id: string;
   expires_at: string;
+  starts_at: string | null;
   background_image: string | null;
   bg_color: string | null;
   accent_color: string | null;
@@ -81,6 +82,7 @@ export default function FlashCampaignsPage() {
           {campaigns.map(c => {
             const s = stats[c.id] || { views: 0, clicks: 0, conversions: 0, conversion_rate: 0 };
             const expired = new Date(c.expires_at) < new Date();
+            const scheduled = c.starts_at && new Date(c.starts_at) > new Date();
             return (
               <Card key={c.id} className="overflow-hidden">
                 <div className="h-2" style={{ background: c.accent_color || '#ef4444' }} />
@@ -92,6 +94,7 @@ export default function FlashCampaignsPage() {
                     </div>
                     <div className="flex flex-col gap-1 items-end">
                       {c.active ? <Badge variant="default">Ativa</Badge> : <Badge variant="secondary">Inativa</Badge>}
+                      {scheduled && <Badge variant="outline">Agendada</Badge>}
                       {expired && <Badge variant="destructive">Expirada</Badge>}
                     </div>
                   </div>
