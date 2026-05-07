@@ -18,7 +18,7 @@ interface AdminKpiCardProps {
 
 const toneRing: Record<NonNullable<AdminKpiCardProps['tone']>, string> = {
   default: 'bg-muted text-foreground',
-  primary: 'bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-sm shadow-primary/20',
+  primary: 'bg-primary text-primary-foreground shadow-sm shadow-primary/20',
   success: 'bg-success/10 text-success',
   warning: 'bg-warning/10 text-warning',
   destructive: 'bg-destructive/10 text-destructive',

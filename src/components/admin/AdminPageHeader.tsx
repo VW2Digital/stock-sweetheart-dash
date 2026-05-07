@@ -51,8 +51,8 @@ function sanitizeText(input: unknown): string {
 
 /**
  * Cabeçalho padrão das páginas do admin.
- * Aplica a identidade gold/amber Liberty: hero suave com gradiente,
- * círculo dourado com ícone à esquerda, ações à direita.
+ * Hero suave com leve tinta da cor primária, ícone destacado à esquerda
+ * e ações à direita. Usa apenas tokens semânticos do admin-theme.
  */
 export function AdminPageHeader({
   title,
@@ -73,13 +73,12 @@ export function AdminPageHeader({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-br from-card via-card to-primary/5 px-5 py-5 sm:px-7 sm:py-6 shadow-sm',
+        'relative overflow-hidden rounded-2xl border border-border/60 bg-card px-5 py-5 sm:px-7 sm:py-6 shadow-sm',
         className,
       )}
     >
-      {/* glow decorativo */}
-      <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-24 -left-10 h-48 w-48 rounded-full bg-accent/10 blur-3xl" />
+      {/* glow decorativo sutil */}
+      <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-primary/5 blur-3xl" />
 
       {safeBreadcrumbs.length > 0 && (
         <nav
@@ -116,7 +115,7 @@ export function AdminPageHeader({
               <img src={iconImage} alt="" className="h-14 w-14 object-contain drop-shadow-sm" />
             </div>
           ) : Icon && (
-            <div className="hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-md shadow-primary/20">
+            <div className="hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-md shadow-primary/20">
               <Icon className="h-5 w-5" />
             </div>
           )}
