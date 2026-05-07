@@ -164,34 +164,34 @@ div[class*="chat-widget"] {
   --popover: 0 0% 100%;
   --popover-foreground: 222 22% 14%;
 
-  --primary: 245 70% 58%;
+  --primary: 36 80% 45%;
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 220 16% 94%;
-  --secondary-foreground: 222 22% 22%;
+  --secondary: 36 30% 94%;
+  --secondary-foreground: 30 20% 22%;
 
-  --muted: 220 16% 95%;
-  --muted-foreground: 222 12% 45%;
+  --muted: 36 20% 95%;
+  --muted-foreground: 30 10% 45%;
 
-  --accent: 48 98% 55%;
-  --accent-foreground: 222 22% 14%;
+  --accent: 36 90% 55%;
+  --accent-foreground: 30 20% 14%;
 
-  --border: 220 16% 90%;
-  --input: 220 16% 90%;
-  --ring: 245 70% 58%;
+  --border: 36 25% 90%;
+  --input: 36 25% 90%;
+  --ring: 36 80% 45%;
 
   --sidebar-background: 0 0% 100%;
-  --sidebar-foreground: 222 18% 28%;
-  --sidebar-primary: 245 70% 58%;
+  --sidebar-foreground: 30 15% 28%;
+  --sidebar-primary: 36 80% 45%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 220 30% 96%;
-  --sidebar-accent-foreground: 222 22% 14%;
-  --sidebar-border: 220 16% 92%;
-  --sidebar-ring: 245 70% 58%;
+  --sidebar-accent: 36 40% 96%;
+  --sidebar-accent-foreground: 30 20% 14%;
+  --sidebar-border: 36 25% 92%;
+  --sidebar-ring: 36 80% 45%;
 }
 
 .admin-theme .admin-card,
 .admin-theme [data-admin-card] {
   border-radius: 1rem;
-  box-shadow: 0 1px 2px hsl(222 22% 14% / 0.04), 0 4px 16px -8px hsl(222 22% 14% / 0.08);
+  box-shadow: 0 1px 2px hsl(30 20% 14% / 0.04), 0 4px 16px -8px hsl(30 20% 14% / 0.08);
 }
