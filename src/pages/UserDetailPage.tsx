@@ -8,6 +8,7 @@ import { ArrowLeft, Loader2, ShieldCheck, User as UserIcon } from 'lucide-react'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import iconUsuarioDetalhe from '@/assets/icon-usuario-detalhe-3d.png';
 import { useToast } from '@/hooks/use-toast';
+import AdminUserAddresses from '@/components/admin/AdminUserAddresses';
 
 interface UserDetail {
   id: string;
@@ -140,6 +141,7 @@ const UserDetailPage = () => {
           <InfoRow label="ID" value={user.id} />
         </CardContent>
       </Card>
+      <AdminUserAddresses userId={user.id} />
       </div>
     </div>
   );
