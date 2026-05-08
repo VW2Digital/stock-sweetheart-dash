@@ -231,6 +231,11 @@ const ProductCheckout = () => {
       .then(({ data }) => {
         const tiers = (data || []).map((w: any) => ({ min_quantity: w.min_quantity, price: Number(w.price) }));
         setWholesaleTiers(tiers);
+        // Atacado: força quantidade mínima quando há tiers configurados.
+        if (tiers.length > 0) {
+          const minTier = Math.min(...tiers.map(t => t.min_quantity));
+          setQuantity((q) => (q < minTier ? minTier : q));
+        }
       });
   }, [product, selectedVariation]);
 
@@ -600,9 +605,14 @@ const ProductCheckout = () => {
                     </p>
                     <div className="flex items-center gap-0">
                       <button
-                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                        onClick={() => {
+                          const minTier = wholesaleTiers.length > 0
+                            ? Math.min(...wholesaleTiers.map(t => t.min_quantity))
+                            : 1;
+                          setQuantity((q) => Math.max(minTier, q - 1));
+                        }}
                         className="w-10 h-10 border border-border rounded-l-lg flex items-center justify-center hover:bg-muted transition-colors"
-                        disabled={quantity <= 1}
+                        disabled={quantity <= (wholesaleTiers.length > 0 ? Math.min(...wholesaleTiers.map(t => t.min_quantity)) : 1)}
                       >
                         <Minus className="w-4 h-4 text-foreground" />
                       </button>

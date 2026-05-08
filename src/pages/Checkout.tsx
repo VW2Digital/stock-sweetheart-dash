@@ -23,7 +23,11 @@ const Checkout = () => {
   const [loading, setLoading] = useState(true);
   const [selectedVariation, setSelectedVariation] = useState(0);
   const [wholesaleTiers, setWholesaleTiers] = useState<WholesaleTier[]>([]);
-  const quantity = Number(searchParams.get('qty')) || 1;
+  const requestedQty = Number(searchParams.get('qty')) || 1;
+  const wholesaleMinQty = wholesaleTiers.length > 0
+    ? Math.min(...wholesaleTiers.map(t => t.min_quantity))
+    : 1;
+  const quantity = Math.max(requestedQty, wholesaleMinQty);
 
   useEffect(() => {
     // Auth guard - redirect to login if not authenticated

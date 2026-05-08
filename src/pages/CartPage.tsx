@@ -311,7 +311,10 @@ const CartPage = () => {
                     {/* Bottom row: quantity + subtotal + remove */}
                     <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/30">
                        {(() => {
-                         const minQty = 1;
+                         const tiers = item.wholesale_prices || [];
+                         const minQty = tiers.length > 0
+                           ? Math.min(...tiers.map(t => t.min_quantity))
+                           : 1;
                          if (bulkMode) {
                           const draftQty = drafts[item.variation_id] ?? item.quantity;
                           return (
@@ -319,13 +322,13 @@ const CartPage = () => {
                               <label className="text-xs text-muted-foreground">Qtd:</label>
                                <Input
                                  type="number"
-                                 min={1}
+                                 min={minQty}
                                 value={draftQty}
                                 onChange={(e) => {
                                   const v = parseInt(e.target.value, 10);
                                   setDrafts(prev => ({
                                     ...prev,
-                                    [item.variation_id]: Number.isFinite(v) && v >= 1 ? v : 1,
+                                    [item.variation_id]: Number.isFinite(v) && v >= minQty ? v : minQty,
                                   }));
                                 }}
                                 className="w-20 h-8 text-sm"

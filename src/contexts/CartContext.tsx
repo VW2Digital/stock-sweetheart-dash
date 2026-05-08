@@ -291,8 +291,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const updateQuantity = async (variationId: string, quantity: number) => {
     if (quantity < 1) return;
-    // Atacado é benefício opcional: aceitamos qualquer quantidade ≥ 1.
-    const finalQuantity = quantity;
+    // Atacado: quando há tiers configurados, a quantidade mínima de compra
+    // é a do menor tier (ex.: tier 5+ ⇒ não permitir comprar menos de 5).
+    const item = items.find(i => i.variation_id === variationId);
+    const tiers = item?.wholesale_prices || [];
+    const wholesaleMin = tiers.length > 0
+      ? Math.min(...tiers.map(t => t.min_quantity))
+      : 1;
+    const finalQuantity = Math.max(quantity, wholesaleMin);
     try {
       if (!userId) {
         const anon = readAnonCart();
@@ -344,8 +350,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       .filter(u => u.quantity >= 1)
       .map(({ variationId, quantity }) => {
         const item = items.find(i => i.variation_id === variationId);
-        // Atacado não força mínimo — apenas aplica desconto quando atingido.
-        return { variationId, quantity, currentQty: item?.quantity ?? null };
+        const tiers = item?.wholesale_prices || [];
+        const wholesaleMin = tiers.length > 0
+          ? Math.min(...tiers.map(t => t.min_quantity))
+          : 1;
+        const finalQty = Math.max(quantity, wholesaleMin);
+        if (finalQty !== quantity && item) {
+          adjusted.push({ name: item.product_name, minQty: wholesaleMin });
+        }
+        return { variationId, quantity: finalQty, currentQty: item?.quantity ?? null };
       })
       // Skip no-ops to reduce DB writes
       .filter(u => u.currentQty !== u.quantity);
