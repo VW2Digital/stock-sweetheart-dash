@@ -231,6 +231,11 @@ const ProductCheckout = () => {
       .then(({ data }) => {
         const tiers = (data || []).map((w: any) => ({ min_quantity: w.min_quantity, price: Number(w.price) }));
         setWholesaleTiers(tiers);
+        // Atacado: força quantidade mínima quando há tiers configurados.
+        if (tiers.length > 0) {
+          const minTier = Math.min(...tiers.map(t => t.min_quantity));
+          setQuantity((q) => (q < minTier ? minTier : q));
+        }
       });
   }, [product, selectedVariation]);
 
