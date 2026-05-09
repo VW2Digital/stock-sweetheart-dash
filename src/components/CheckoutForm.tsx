@@ -1973,7 +1973,11 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
                 </div>
               )}
             </div>
-            <Button onClick={isPagBank ? handlePagBankRedirect : handleMpRedirect} disabled={processing} className="w-full">
+            <Button
+              onClick={isPagBank ? handlePagBankRedirect : handleMpRedirect}
+              disabled={processing}
+              className={`w-full ${!isPagBank ? 'bg-[#00BCFF] hover:bg-[#00BCFF]/90 text-white' : ''}`}
+            >
               {processing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               {isPagBank ? 'Pagar via PagBank' : 'Pagar via Mercado Pago'}
             </Button>
