@@ -315,30 +315,12 @@ serve(async (req) => {
       });
     }
 
-    // Get Mercado Pago environment and access token from settings
-    const { data: mpEnvRow } = await supabase
-      .from('site_settings')
-      .select('value')
-      .eq('key', 'mercadopago_environment')
-      .maybeSingle();
-    const mpEnv = mpEnvRow?.value || 'sandbox';
-
-    // Try env-specific token first, fallback to generic
-    const { data: tokenEnvRow } = await supabase
-      .from('site_settings')
-      .select('value')
-      .eq('key', `mercadopago_access_token_${mpEnv}`)
-      .maybeSingle();
-
-    let accessToken = tokenEnvRow?.value;
-    if (!accessToken) {
-      const { data: tokenRow } = await supabase
-        .from('site_settings')
-        .select('value')
-        .eq('key', 'mercadopago_access_token')
-        .maybeSingle();
-      accessToken = tokenRow?.value;
+    // Use the access_token from the resolved account; if unknown (no signature
+    // match path), fall back to legacy site_settings via resolveAccountForOrder.
+    if (!resolvedAcc) {
+      resolvedAcc = await resolveAccountForOrder(supabase, 'mercadopago', null);
     }
+    const accessToken = (resolvedAcc.credentials.access_token as string) || '';
 
     if (!accessToken) {
       console.error('[MP Webhook] Access token not configured');
