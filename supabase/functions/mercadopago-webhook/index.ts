@@ -1,25 +1,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  resolveAccountForOrder,
+  findAccountBySignature,
+  type ResolvedGatewayCredentials,
+} from "../_shared/gateway-credentials.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-async function verifyWebhookSignature(req: Request, body: string): Promise<boolean> {
-  const secret = Deno.env.get('MP_WEBHOOK_SECRET');
-  if (!secret) {
-    console.warn('[MP Webhook] MP_WEBHOOK_SECRET not set — skipping signature verification');
-    return true; // allow through if not configured
-  }
-
+async function computeMpSignatureMatch(req: Request, secret: string): Promise<boolean> {
+  if (!secret) return false;
   const xSignature = req.headers.get('x-signature');
   const xRequestId = req.headers.get('x-request-id');
-
-  if (!xSignature || !xRequestId) {
-    console.warn('[MP Webhook] Missing x-signature or x-request-id headers');
-    return false;
-  }
+  if (!xSignature || !xRequestId) return false;
 
   // Parse x-signature: "ts=...,v1=..."
   const parts: Record<string, string> = {};
@@ -30,19 +26,12 @@ async function verifyWebhookSignature(req: Request, body: string): Promise<boole
 
   const ts = parts['ts'];
   const v1 = parts['v1'];
-  if (!ts || !v1) {
-    console.warn('[MP Webhook] Invalid x-signature format');
-    return false;
-  }
+  if (!ts || !v1) return false;
 
-  // Extract data.id from the query string (MP sends it as ?data.id=xxx)
   const url = new URL(req.url);
   const dataId = url.searchParams.get('data.id') || '';
-
-  // Build the manifest: id:{data.id};request-id:{x-request-id};ts:{ts};
   const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
 
-  // HMAC-SHA256
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     'raw',
@@ -55,14 +44,7 @@ async function verifyWebhookSignature(req: Request, body: string): Promise<boole
   const computed = Array.from(new Uint8Array(signature))
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
-
-  if (computed !== v1) {
-    console.error(`[MP Webhook] Signature mismatch. Expected: ${v1}, Got: ${computed}`);
-    return false;
-  }
-
-  console.log('[MP Webhook] Signature verified successfully');
-  return true;
+  return computed === v1;
 }
 
 interface ReviewNotificationData {
@@ -249,19 +231,6 @@ serve(async (req) => {
     // Read body as text for signature verification, then parse
     const bodyText = await req.text();
 
-    // Verify webhook signature
-    const isValid = await verifyWebhookSignature(req, bodyText);
-    __logCtx.signature_valid = isValid;
-    if (!isValid) {
-      console.error('[MP Webhook] Invalid signature — rejecting');
-      __logCtx.signature_error = 'HMAC-SHA256 mismatch (manifest id+request-id+ts)';
-      try { __logCtx.request_payload = JSON.parse(bodyText); } catch { __logCtx.request_payload = { raw: bodyText.slice(0, 500) }; }
-      return new Response(JSON.stringify({ received: true, error: 'invalid_signature' }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -271,6 +240,44 @@ serve(async (req) => {
     const { action, type, id: notificationId, data: notificationData, topic } = body;
     __logCtx.event_type = action || topic || type || null;
     __logCtx.external_id = notificationData?.id || notificationId || null;
+
+    // ─── IDENTIFY ACCOUNT + VERIFY SIGNATURE ───
+    // MP doesn't include our orderId in the notification; we must fetch the
+    // payment from MP's API to discover external_reference. So at this stage
+    // we try every active account's webhook_secret. If none matches, fall back
+    // to MP_WEBHOOK_SECRET env var (back-compat). If still no match, reject.
+    const envSecret = Deno.env.get('MP_WEBHOOK_SECRET') || '';
+    let resolvedAcc: ResolvedGatewayCredentials | null = null;
+    let signatureValid = false;
+
+    const matched = await findAccountBySignature(supabase, 'mercadopago', async (creds) => {
+      const secret = (creds.webhook_secret as string) || '';
+      if (!secret) return false;
+      return await computeMpSignatureMatch(req, secret);
+    });
+
+    if (matched) {
+      resolvedAcc = matched;
+      signatureValid = true;
+      console.log(`[MP Webhook] Signature matched account ${matched.accountId}`);
+    } else if (envSecret) {
+      signatureValid = await computeMpSignatureMatch(req, envSecret);
+      if (signatureValid) console.log('[MP Webhook] Signature verified via MP_WEBHOOK_SECRET (legacy)');
+    } else {
+      // No secret anywhere — accept (initial setup), like the legacy behavior
+      console.warn('[MP Webhook] No webhook secrets configured — skipping signature verification');
+      signatureValid = true;
+    }
+
+    __logCtx.signature_valid = signatureValid;
+    if (!signatureValid) {
+      console.error('[MP Webhook] Invalid signature — rejecting');
+      __logCtx.signature_error = 'HMAC-SHA256 mismatch (manifest id+request-id+ts) on all active accounts';
+      return new Response(JSON.stringify({ received: true, error: 'invalid_signature' }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Mercado Pago sends notifications in two formats:
     // 1. IPN (Instant Payment Notification): { topic, id }
@@ -308,30 +315,12 @@ serve(async (req) => {
       });
     }
 
-    // Get Mercado Pago environment and access token from settings
-    const { data: mpEnvRow } = await supabase
-      .from('site_settings')
-      .select('value')
-      .eq('key', 'mercadopago_environment')
-      .maybeSingle();
-    const mpEnv = mpEnvRow?.value || 'sandbox';
-
-    // Try env-specific token first, fallback to generic
-    const { data: tokenEnvRow } = await supabase
-      .from('site_settings')
-      .select('value')
-      .eq('key', `mercadopago_access_token_${mpEnv}`)
-      .maybeSingle();
-
-    let accessToken = tokenEnvRow?.value;
-    if (!accessToken) {
-      const { data: tokenRow } = await supabase
-        .from('site_settings')
-        .select('value')
-        .eq('key', 'mercadopago_access_token')
-        .maybeSingle();
-      accessToken = tokenRow?.value;
+    // Use the access_token from the resolved account; if unknown (no signature
+    // match path), fall back to legacy site_settings via resolveAccountForOrder.
+    if (!resolvedAcc) {
+      resolvedAcc = await resolveAccountForOrder(supabase, 'mercadopago', null);
     }
+    const accessToken = (resolvedAcc.credentials.access_token as string) || '';
 
     if (!accessToken) {
       console.error('[MP Webhook] Access token not configured');
@@ -409,12 +398,14 @@ serve(async (req) => {
         const newPriority = statusPriority[newStatus] ?? 1;
 
         if (newPriority > currentPriority || previousStatus === newStatus) {
+          const updatePayload: any = {
+            status: newStatus,
+            asaas_payment_id: paymentId,
+          };
+          if (resolvedAcc?.accountId) updatePayload.gateway_account_id = resolvedAcc.accountId;
           const { error } = await supabase
             .from('orders')
-            .update({
-              status: newStatus,
-              asaas_payment_id: paymentId,
-            })
+            .update(updatePayload)
             .eq('id', externalRef);
 
           if (error) {
