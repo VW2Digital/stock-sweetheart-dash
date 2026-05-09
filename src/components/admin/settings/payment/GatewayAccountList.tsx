@@ -2,8 +2,12 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Pencil, Trash2, Star, Plus, Power, Loader2, PlugZap, CheckCircle2, XCircle } from 'lucide-react';
+import { Pencil, Trash2, Star, Plus, Power, Loader2, PlugZap, CheckCircle2, XCircle, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   GatewayAccount,
   GatewayKey,
@@ -71,18 +75,19 @@ const GatewayAccountList = ({ gateway }: Props) => {
     }
   };
 
-  const handleTest = async (acc: GatewayAccount) => {
+  const handleTest = async (acc: GatewayAccount, environmentOverride?: 'sandbox' | 'production') => {
     setTestingId(acc.id);
     try {
       const { data, error } = await supabase.functions.invoke('gateway-test-account', {
-        body: { account_id: acc.id },
+        body: { account_id: acc.id, environment_override: environmentOverride },
       });
       if (error) throw error;
       const ok = Boolean(data?.ok);
-      setTestResults((p) => ({ ...p, [acc.id]: { ok, message: data?.message || (ok ? 'OK' : 'Falhou') } }));
+      const envLabel = (environmentOverride || acc.environment) === 'production' ? 'Produção' : 'Sandbox';
+      setTestResults((p) => ({ ...p, [acc.id]: { ok, message: `[${envLabel}] ${data?.message || (ok ? 'OK' : 'Falhou')}` } }));
       toast({
         title: ok ? 'Credenciais válidas' : 'Falha no teste',
-        description: data?.message,
+        description: `${envLabel}: ${data?.message ?? ''}`,
         variant: ok ? 'default' : 'destructive',
       });
     } catch (err: any) {
@@ -139,17 +144,35 @@ const GatewayAccountList = ({ gateway }: Props) => {
                 )}
               </div>
               <div className="flex items-center gap-1 shrink-0">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  title="Testar credenciais"
-                  onClick={() => handleTest(acc)}
-                  disabled={testingId === acc.id}
-                >
-                  {testingId === acc.id
-                    ? <Loader2 className="w-4 h-4 animate-spin" />
-                    : <PlugZap className="w-4 h-4" />}
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-9 px-2 gap-1"
+                      title="Testar credenciais"
+                      disabled={testingId === acc.id}
+                    >
+                      {testingId === acc.id
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : <PlugZap className="w-4 h-4" />}
+                      <ChevronDown className="w-3 h-3 opacity-60" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>Testar credenciais</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleTest(acc)}>
+                      Ambiente da conta ({acc.environment === 'production' ? 'Produção' : 'Sandbox'})
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleTest(acc, 'sandbox')}>
+                      Forçar Sandbox
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleTest(acc, 'production')}>
+                      Forçar Produção
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 {!acc.is_primary && (
                   <Button variant="ghost" size="icon" title="Tornar principal" onClick={() => handlePrimary(acc)}>
                     <Star className="w-4 h-4" />

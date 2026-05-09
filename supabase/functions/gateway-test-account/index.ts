@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
     const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(url, key);
 
-    const { account_id } = await req.json();
+    const { account_id, environment_override } = await req.json();
     if (!account_id) {
       return new Response(JSON.stringify({ ok: false, message: 'account_id obrigatório' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -113,7 +113,9 @@ Deno.serve(async (req) => {
 
     const gateway = account.gateway as GatewayKey;
     const creds = (account.credentials || {}) as Record<string, string>;
-    const env = account.environment || 'sandbox';
+    const env = (environment_override === 'production' || environment_override === 'sandbox')
+      ? environment_override
+      : (account.environment || 'sandbox');
 
     let result: TestResult;
     try {
