@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Pencil, Trash2, Star, Plus, Power, Loader2 } from 'lucide-react';
+import { Pencil, Trash2, Star, Plus, Power, Loader2, PlugZap, CheckCircle2, XCircle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import {
   GatewayAccount,
   GatewayKey,
@@ -25,6 +26,8 @@ const GatewayAccountList = ({ gateway }: Props) => {
   const [loading, setLoading] = useState(true);
   const [addOpen, setAddOpen] = useState(false);
   const [editing, setEditing] = useState<GatewayAccount | null>(null);
+  const [testingId, setTestingId] = useState<string | null>(null);
+  const [testResults, setTestResults] = useState<Record<string, { ok: boolean; message: string }>>({});
 
   const load = async () => {
     setLoading(true);
@@ -68,6 +71,28 @@ const GatewayAccountList = ({ gateway }: Props) => {
     }
   };
 
+  const handleTest = async (acc: GatewayAccount) => {
+    setTestingId(acc.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('gateway-test-account', {
+        body: { account_id: acc.id },
+      });
+      if (error) throw error;
+      const ok = Boolean(data?.ok);
+      setTestResults((p) => ({ ...p, [acc.id]: { ok, message: data?.message || (ok ? 'OK' : 'Falhou') } }));
+      toast({
+        title: ok ? 'Credenciais válidas' : 'Falha no teste',
+        description: data?.message,
+        variant: ok ? 'default' : 'destructive',
+      });
+    } catch (err: any) {
+      setTestResults((p) => ({ ...p, [acc.id]: { ok: false, message: err.message } }));
+      toast({ title: 'Erro ao testar', description: err.message, variant: 'destructive' });
+    } finally {
+      setTestingId(null);
+    }
+  };
+
   return (
     <div className="rounded-xl border bg-card p-4 space-y-3">
       <div className="flex items-center justify-between">
@@ -106,8 +131,25 @@ const GatewayAccountList = ({ gateway }: Props) => {
                     Último uso: {new Date(acc.last_used_at).toLocaleString('pt-BR')}
                   </p>
                 )}
+                {testResults[acc.id] && (
+                  <p className={`text-[11px] mt-0.5 flex items-center gap-1 ${testResults[acc.id].ok ? 'text-emerald-600' : 'text-destructive'}`}>
+                    {testResults[acc.id].ok ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                    {testResults[acc.id].message}
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title="Testar credenciais"
+                  onClick={() => handleTest(acc)}
+                  disabled={testingId === acc.id}
+                >
+                  {testingId === acc.id
+                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                    : <PlugZap className="w-4 h-4" />}
+                </Button>
                 {!acc.is_primary && (
                   <Button variant="ghost" size="icon" title="Tornar principal" onClick={() => handlePrimary(acc)}>
                     <Star className="w-4 h-4" />
