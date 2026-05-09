@@ -26,11 +26,35 @@ const ResetPassword = () => {
       }
     });
 
-    // Also check hash for type=recovery
+    // Hash-based token (links antigos do Supabase: #access_token=...&type=recovery)
     const hash = window.location.hash;
     if (hash.includes('type=recovery')) {
       setIsRecovery(true);
     }
+
+    // Query-based token (links novos: ?code=... PKCE flow)
+    const url = new URL(window.location.href);
+    const code = url.searchParams.get('code');
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (!error) {
+          setIsRecovery(true);
+          // Limpa o code da URL para evitar reutilização
+          window.history.replaceState({}, '', window.location.pathname);
+        } else {
+          toast({
+            title: 'Link inválido ou expirado',
+            description: 'Solicite um novo link de redefinição.',
+            variant: 'destructive',
+          });
+        }
+      });
+    }
+
+    // Verifica se já existe sessão ativa de recovery (caso o usuário recarregue)
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) setIsRecovery(true);
+    });
 
     return () => subscription.unsubscribe();
   }, []);
