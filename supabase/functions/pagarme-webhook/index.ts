@@ -324,9 +324,11 @@ serve(async (req) => {
     const newPriority = STATUS_PRIORITY[newStatus] ?? 1;
 
     if (newPriority > currentPriority || previousStatus === newStatus) {
+      const updPayload: any = { status: newStatus, asaas_payment_id: data.id };
+      if (resolvedAcc?.accountId) updPayload.gateway_account_id = resolvedAcc.accountId;
       const { error: updErr } = await supabase
         .from('orders')
-        .update({ status: newStatus, asaas_payment_id: data.id })
+        .update(updPayload)
         .eq('id', orderCode);
       if (updErr) {
         console.error('[Pagar.me Webhook] DB update error:', updErr.message);
