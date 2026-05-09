@@ -15,6 +15,8 @@ const ResetPassword = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [isRecovery, setIsRecovery] = useState(false);
+  const [resetToken, setResetToken] = useState<string | null>(null);
+  const [tokenEmail, setTokenEmail] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -32,10 +34,31 @@ const ResetPassword = () => {
       setIsRecovery(true);
     }
 
-    // Query-based token (links novos: ?code=... PKCE flow)
     const url = new URL(window.location.href);
+
+    // Token customizado (nova edge function via SMTP Hostinger)
+    const customToken = url.searchParams.get('reset_token');
+    if (customToken) {
+      supabase.functions
+        .invoke('verify-password-reset', { body: { token: customToken, action: 'verify' } })
+        .then(({ data, error }) => {
+          if (error || (data as any)?.error) {
+            toast({
+              title: 'Link inválido ou expirado',
+              description: (data as any)?.error || 'Solicite um novo link de redefinição.',
+              variant: 'destructive',
+            });
+            return;
+          }
+          setResetToken(customToken);
+          setTokenEmail((data as any)?.email ?? null);
+          setIsRecovery(true);
+        });
+    }
+
+    // Query-based token (links antigos do Supabase: ?code=... PKCE flow)
     const code = url.searchParams.get('code');
-    if (code) {
+    if (code && !customToken) {
       supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
         if (!error) {
           setIsRecovery(true);
@@ -52,9 +75,11 @@ const ResetPassword = () => {
     }
 
     // Verifica se já existe sessão ativa de recovery (caso o usuário recarregue)
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setIsRecovery(true);
-    });
+    if (!customToken) {
+      supabase.auth.getSession().then(({ data }) => {
+        if (data.session) setIsRecovery(true);
+      });
+    }
 
     return () => subscription.unsubscribe();
   }, []);
@@ -71,8 +96,18 @@ const ResetPassword = () => {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
+      if (resetToken) {
+        // Fluxo customizado via edge function
+        const { data, error } = await supabase.functions.invoke('verify-password-reset', {
+          body: { token: resetToken, action: 'reset', password },
+        });
+        if (error) throw error;
+        if ((data as any)?.error) throw new Error((data as any).error);
+      } else {
+        // Fluxo Supabase Auth padrão (sessão recovery)
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) throw error;
+      }
       setSuccess(true);
       toast({ title: 'Senha redefinida com sucesso!' });
       setTimeout(() => navigate('/cliente/login'), 3000);
