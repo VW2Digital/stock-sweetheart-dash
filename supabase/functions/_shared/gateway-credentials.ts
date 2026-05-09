@@ -77,3 +77,98 @@ export async function resolveGatewayCredentials(
   }
   return await legacyCredentials(supabase, gateway);
 }
+
+/** Loads a single gateway account row by id. Returns null if not found. */
+export async function getAccountById(
+  supabase: any,
+  accountId: string,
+): Promise<ResolvedGatewayCredentials | null> {
+  const { data, error } = await supabase
+    .from('gateway_accounts')
+    .select('id, environment, credentials, label')
+    .eq('id', accountId)
+    .maybeSingle();
+  if (error || !data) return null;
+  return {
+    accountId: data.id as string,
+    environment: (data.environment as string) || 'sandbox',
+    credentials: (data.credentials || {}) as Record<string, string>,
+  };
+}
+
+/** Lists all active accounts for the given gateway. */
+export async function listActiveAccounts(
+  supabase: any,
+  gateway: GatewayKey,
+): Promise<ResolvedGatewayCredentials[]> {
+  const { data } = await supabase
+    .from('gateway_accounts')
+    .select('id, environment, credentials, label, is_primary, sort_order, created_at')
+    .eq('gateway', gateway)
+    .eq('active', true)
+    .order('is_primary', { ascending: false })
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: true });
+  return (data || []).map((r: any) => ({
+    accountId: r.id as string,
+    environment: (r.environment as string) || 'sandbox',
+    credentials: (r.credentials || {}) as Record<string, string>,
+  }));
+}
+
+/**
+ * Resolves credentials for an order's known gateway_account_id (saved at
+ * checkout time). Falls back to legacy site_settings when the order has no
+ * account binding yet (older records).
+ */
+export async function resolveAccountForOrder(
+  supabase: any,
+  gateway: GatewayKey,
+  orderId: string | null | undefined,
+): Promise<ResolvedGatewayCredentials> {
+  if (orderId) {
+    const { data: order } = await supabase
+      .from('orders')
+      .select('gateway_account_id')
+      .eq('id', orderId)
+      .maybeSingle();
+    const accId = (order as any)?.gateway_account_id;
+    if (accId) {
+      const acc = await getAccountById(supabase, accId);
+      if (acc) {
+        console.log(`[gateway-credentials] order ${orderId} -> account ${acc.accountId}`);
+        return acc;
+      }
+    }
+  }
+  // No bound account — fall back to first active account, then legacy settings
+  const accounts = await listActiveAccounts(supabase, gateway);
+  if (accounts.length > 0) return accounts[0];
+  return await legacyCredentials(supabase, gateway);
+}
+
+/**
+ * Iterates active accounts and returns the first one for which `validator`
+ * returns true (used by webhooks to identify the issuing account by trying
+ * each signature/token in turn). Falls back to legacy site_settings when no
+ * account matches.
+ */
+export async function findAccountBySignature(
+  supabase: any,
+  gateway: GatewayKey,
+  validator: (creds: Record<string, string>) => Promise<boolean>,
+): Promise<ResolvedGatewayCredentials | null> {
+  const accounts = await listActiveAccounts(supabase, gateway);
+  for (const acc of accounts) {
+    try {
+      if (await validator(acc.credentials)) return acc;
+    } catch (e) {
+      console.warn(`[gateway-credentials] validator threw for account ${acc.accountId}:`, (e as Error).message);
+    }
+  }
+  const legacy = await legacyCredentials(supabase, gateway);
+  try {
+    if (await validator(legacy.credentials)) return legacy;
+  } catch {}
+  return null;
+}
