@@ -154,7 +154,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { action, ...payload } = await req.json();
-    const { apiKey, baseUrl } = await getAsaasConfig(supabaseUrl, supabaseKey);
+    const { apiKey, baseUrl, accountId } = await getAsaasConfig(supabaseUrl, supabaseKey);
 
     let result;
 
@@ -206,7 +206,12 @@ serve(async (req) => {
           if (orderId) {
             await supabase
               .from('orders')
-              .update({ asaas_payment_id: result.id, status: result.status || 'PENDING' })
+              .update({
+                asaas_payment_id: result.id,
+                status: result.status || 'PENDING',
+                payment_gateway: 'asaas',
+                gateway_account_id: accountId,
+              })
               .eq('id', orderId);
           }
         }
@@ -250,6 +255,8 @@ serve(async (req) => {
               asaas_payment_id: result.id,
               status: result.status || 'PENDING',
               total_value: valorFinal,
+              payment_gateway: 'asaas',
+              gateway_account_id: accountId,
             })
             .eq('id', orderId);
         }
