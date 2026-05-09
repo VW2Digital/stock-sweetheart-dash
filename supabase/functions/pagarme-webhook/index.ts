@@ -234,12 +234,45 @@ serve(async (req) => {
 
     const bodyText = await req.text();
 
-    // Read webhook secret
-    const { data: secretRow } = await supabase
-      .from('site_settings').select('value').eq('key', 'pagarme_webhook_secret').maybeSingle();
-    const secret = secretRow?.value || '';
+    // ─── IDENTIFY ACCOUNT + VERIFY SIGNATURE ───
+    // Try to extract our internal orderId from the body (data.code) without
+    // failing the JSON parse. Then resolve the bound account first; if its
+    // secret doesn't match, iterate every active account.
+    let parsedForLookup: any = null;
+    try { parsedForLookup = JSON.parse(bodyText); } catch {}
+    const orderCodeForAccount: string | null = parsedForLookup?.data?.code || null;
 
-    const valid = await verifySignature(req, bodyText, secret);
+    let resolvedAcc: ResolvedGatewayCredentials | null = null;
+    let valid = false;
+
+    if (orderCodeForAccount) {
+      const bound = await resolveAccountForOrder(supabase, 'pagarme', orderCodeForAccount);
+      const sec = (bound.credentials.webhook_secret as string) || '';
+      if (sec && await computePagarmeSignatureMatch(req, bodyText, sec)) {
+        resolvedAcc = bound;
+        valid = true;
+      }
+    }
+
+    if (!valid) {
+      const matched = await findAccountBySignature(supabase, 'pagarme', async (creds) => {
+        const sec = (creds.webhook_secret as string) || '';
+        return await computePagarmeSignatureMatch(req, bodyText, sec);
+      });
+      if (matched) {
+        resolvedAcc = matched;
+        valid = true;
+        console.log(`[Pagar.me Webhook] Signature matched account ${matched.accountId ?? 'legacy'}`);
+      }
+    }
+
+    // If no signature header at all, accept (back-compat with initial setup)
+    const hasSigHeader = !!(req.headers.get('x-hub-signature') || req.headers.get('X-Hub-Signature'));
+    if (!hasSigHeader && !valid) {
+      console.warn('[Pagar.me Webhook] Missing X-Hub-Signature header — accepting (no validation)');
+      valid = true;
+    }
+
     __logCtx.signature_valid = valid;
     if (!valid) {
       __logCtx.signature_error = 'HMAC-SHA1 mismatch or missing X-Hub-Signature header';
