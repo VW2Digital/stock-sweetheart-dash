@@ -10,6 +10,45 @@ export interface ResolvedGatewayCredentials {
   credentials: Record<string, string>;
 }
 
+/**
+ * Required credential field for each gateway. Used to detect "empty"
+ * accounts (created via UI but never filled in) so we can fall back to the
+ * primary/legacy account instead of failing the checkout.
+ */
+const REQUIRED_FIELD: Record<GatewayKey, string> = {
+  asaas: 'api_key',
+  mercadopago: 'access_token',
+  pagbank: 'token',
+  pagarme: 'secret_key',
+};
+
+function hasRequiredCreds(gateway: GatewayKey, creds: Record<string, string>): boolean {
+  const field = REQUIRED_FIELD[gateway];
+  return Boolean(creds && creds[field] && String(creds[field]).trim().length > 0);
+}
+
+/** Returns the primary active account for the gateway, if any. */
+export async function getPrimaryAccount(
+  supabase: any,
+  gateway: GatewayKey,
+): Promise<ResolvedGatewayCredentials | null> {
+  const { data } = await supabase
+    .from('gateway_accounts')
+    .select('id, environment, credentials, label')
+    .eq('gateway', gateway)
+    .eq('active', true)
+    .eq('is_primary', true)
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!data) return null;
+  return {
+    accountId: data.id as string,
+    environment: (data.environment as string) || 'sandbox',
+    credentials: (data.credentials || {}) as Record<string, string>,
+  };
+}
+
 async function readSetting(supabase: any, key: string): Promise<string> {
   const { data } = await supabase.from('site_settings').select('value').eq('key', key).maybeSingle();
   return (data as { value?: string } | null)?.value || '';
@@ -60,22 +99,54 @@ export async function resolveGatewayCredentials(
   try {
     const { data, error } = await supabase.rpc('pick_next_gateway_account', { _gateway: gateway });
     if (error) {
-      console.warn(`[gateway-credentials] RPC error for ${gateway}: ${error.message}. Falling back to site_settings.`);
-      return await legacyCredentials(supabase, gateway);
+      console.warn(`[gateway-credentials] RPC error for ${gateway}: ${error.message}. Trying primary account.`);
+      return await fallbackChain(supabase, gateway, 'rpc-error');
     }
     if (data && data.id) {
       const creds = (data.credentials || {}) as Record<string, string>;
-      console.log(`[gateway-credentials] ${gateway} -> account ${data.label || data.id} (env: ${data.environment})`);
-      return {
-        accountId: data.id as string,
-        environment: (data.environment as string) || 'sandbox',
-        credentials: creds,
-      };
+      if (hasRequiredCreds(gateway, creds)) {
+        console.log(`[gateway-credentials] ${gateway} -> account ${data.label || data.id} (env: ${data.environment})`);
+        return {
+          accountId: data.id as string,
+          environment: (data.environment as string) || 'sandbox',
+          credentials: creds,
+        };
+      }
+      console.warn(`[gateway-credentials] round-robin returned ${data.id} with empty creds. Falling back.`);
+      return await fallbackChain(supabase, gateway, 'rr-empty', data.id as string);
     }
   } catch (e) {
     console.warn(`[gateway-credentials] Exception for ${gateway}:`, (e as Error).message);
   }
-  return await legacyCredentials(supabase, gateway);
+  return await fallbackChain(supabase, gateway, 'no-account');
+}
+
+/**
+ * Fallback order when the round-robin pick is unusable:
+ *   primary account -> first active account -> legacy site_settings.
+ */
+async function fallbackChain(
+  supabase: any,
+  gateway: GatewayKey,
+  reason: string,
+  skipAccountId?: string,
+): Promise<ResolvedGatewayCredentials> {
+  const primary = await getPrimaryAccount(supabase, gateway);
+  if (primary && primary.accountId !== skipAccountId && hasRequiredCreds(gateway, primary.credentials)) {
+    console.log(`[gateway-credentials] fallback (${reason}) ${gateway} -> primary account ${primary.accountId}`);
+    return primary;
+  }
+  const accounts = await listActiveAccounts(supabase, gateway);
+  for (const acc of accounts) {
+    if (acc.accountId === skipAccountId) continue;
+    if (hasRequiredCreds(gateway, acc.credentials)) {
+      console.log(`[gateway-credentials] fallback (${reason}) ${gateway} -> active account ${acc.accountId}`);
+      return acc;
+    }
+  }
+  const legacy = await legacyCredentials(supabase, gateway);
+  console.log(`[gateway-credentials] fallback (${reason}) ${gateway} -> legacy site_settings`);
+  return legacy;
 }
 
 /** Loads a single gateway account row by id. Returns null if not found. */
