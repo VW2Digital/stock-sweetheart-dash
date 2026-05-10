@@ -228,7 +228,7 @@ const UserDetailPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-sm">Enviar link de redefinição por email</Label>
+              <Label className="text-sm">Enviar código de redefinição por email</Label>
               <Button
                 variant="outline"
                 className="w-full justify-start"
@@ -243,7 +243,7 @@ const UserDetailPage = () => {
                 Enviar email para {user.email || '—'}
               </Button>
               <p className="text-xs text-muted-foreground">
-                O cliente recebe um link e cria uma nova senha sozinho. Válido por tempo limitado.
+                O cliente recebe um código e cria uma nova senha sozinho. Válido por tempo limitado.
               </p>
             </div>
           </div>
