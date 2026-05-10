@@ -32,14 +32,14 @@ serve(async (req) => {
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return new Response(
-        JSON.stringify({ error: "Email inválido" }),
+        JSON.stringify({ error: "Email inválido", code: "invalid_email" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     if (!code || code.length !== 8) {
       return new Response(
-        JSON.stringify({ error: "Código inválido" }),
+        JSON.stringify({ error: "Código inválido", code: "invalid_format" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
@@ -60,19 +60,19 @@ serve(async (req) => {
     if (selErr) throw selErr;
     if (!row) {
       return new Response(
-        JSON.stringify({ error: "Código inválido ou expirado" }),
+        JSON.stringify({ error: "Código inválido. Verifique se digitou corretamente ou solicite um novo código.", code: "invalid_code" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
     if (row.used_at) {
       return new Response(
-        JSON.stringify({ error: "Este código já foi utilizado" }),
+        JSON.stringify({ error: "Este código já foi utilizado. Solicite um novo código para continuar.", code: "used" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
     if (new Date(row.expires_at).getTime() < Date.now()) {
       return new Response(
-        JSON.stringify({ error: "Código expirado. Solicite um novo." }),
+        JSON.stringify({ error: "Código expirado. Os códigos têm validade de 10 minutos. Solicite um novo código para continuar.", code: "expired" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }

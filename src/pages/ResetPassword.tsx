@@ -40,6 +40,7 @@ const ResetPassword = () => {
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [needsNewCode, setNeedsNewCode] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -52,6 +53,7 @@ const ResetPassword = () => {
   const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+    setNeedsNewCode(false);
 
     if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       setFormError('Informe o email usado para solicitar a recuperação.');
@@ -68,8 +70,20 @@ const ResetPassword = () => {
       const { data, error } = await supabase.functions.invoke('verify-password-reset', {
         body: { email: normalizedEmail, code, action: 'verify' },
       });
-      if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
+      const payload = (data as any) ?? {};
+      if (error) {
+        const ctx: any = (error as any).context;
+        const ctxMsg = ctx?.error || ctx?.message;
+        const ctxCode = ctx?.code;
+        const e2: any = new Error(ctxMsg || error.message);
+        e2.code = ctxCode;
+        throw e2;
+      }
+      if (payload.error) {
+        const e2: any = new Error(payload.error);
+        e2.code = payload.code;
+        throw e2;
+      }
 
       setEmail(normalizedEmail);
       setCodeVerified(true);
@@ -78,9 +92,17 @@ const ResetPassword = () => {
         description: 'Agora você já pode criar uma nova senha.',
       });
     } catch (err: any) {
-      const msg = err?.message || 'Código inválido ou expirado. Solicite um novo código.';
+      const code = err?.code;
+      const msg =
+        err?.message ||
+        'Não foi possível validar o código. Solicite um novo código e tente novamente.';
       setFormError(msg);
-      toast({ title: 'Código inválido', description: msg, variant: 'destructive' });
+      setNeedsNewCode(code === 'expired' || code === 'invalid_code' || code === 'used');
+      toast({
+        title: code === 'expired' ? 'Código expirado' : 'Código inválido',
+        description: msg,
+        variant: 'destructive',
+      });
     } finally {
       setVerifyingCode(false);
     }
@@ -213,13 +235,26 @@ const ResetPassword = () => {
                 {formError && (
                   <div className="flex items-start gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
                     <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
-                    <span>{formError}</span>
+                    <div className="space-y-2">
+                      <p>{formError}</p>
+                      {needsNewCode && (
+                        <Link
+                          to="/recuperar-senha"
+                          className="inline-block font-semibold underline underline-offset-2 hover:opacity-80"
+                        >
+                          Solicitar um novo código agora
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 )}
                 <Button type="submit" className="w-full" disabled={verifyingCode}>
                   {verifyingCode ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                   Validar código
                 </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  O código é válido por 10 minutos após o envio.
+                </p>
                 <Link to="/recuperar-senha" className="block">
                   <Button type="button" variant="ghost" className="w-full">
                     Solicitar novo código
