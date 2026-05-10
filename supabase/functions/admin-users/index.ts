@@ -127,7 +127,7 @@ serve(async (req) => {
         if (!email) throw new Error("Usuário sem email cadastrado");
         const origin = req.headers.get("origin") || "";
         const redirectBase = origin || (redirectTo ? new URL(redirectTo).origin : "");
-        // Delegate to custom Hostinger SMTP flow (link points to /redefinir-senha?reset_token=...)
+        // Delegate to custom Hostinger SMTP flow (email sends a recovery code)
         const { error } = await adminClient.functions.invoke("send-password-reset", {
           body: { email, redirectBase },
         });
