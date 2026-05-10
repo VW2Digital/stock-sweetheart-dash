@@ -49,7 +49,7 @@ const Login = () => {
       if ((data as any)?.error) throw new Error((data as any).error);
       toast({
         title: 'Email enviado',
-        description: 'Verifique sua caixa de entrada para redefinir sua senha.',
+        description: 'Verifique sua caixa de entrada e copie o código de recuperação.',
       });
       setForgotMode(false);
     } catch (err: any) {
@@ -84,7 +84,7 @@ const Login = () => {
               </h1>
               <p className="text-muted-foreground text-sm mt-1">
                 {forgotMode
-                  ? 'Informe seu email para receber o link de recuperação'
+                  ? 'Informe seu email para receber o código de recuperação'
                   : 'Faça login para gerenciar seus produtos'}
               </p>
             </div>
@@ -104,7 +104,7 @@ const Login = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={forgotLoading}>
-                  {forgotLoading ? 'Enviando...' : 'Enviar link de recuperação'}
+                  {forgotLoading ? 'Enviando...' : 'Enviar código de recuperação'}
                 </Button>
                 <Button
                   type="button"
