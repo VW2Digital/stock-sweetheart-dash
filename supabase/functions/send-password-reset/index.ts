@@ -1,5 +1,5 @@
 // Envia email de redefinição de senha via SMTP (Hostinger),
-// gerando token único armazenado em password_reset_tokens.
+// gerando código único armazenado em password_reset_tokens.
 // Endpoint público — sem JWT.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -21,11 +21,12 @@ async function sha256Hex(input: string): Promise<string> {
     .join("");
 }
 
-function generateToken(): string {
-  const bytes = new Uint8Array(32);
+function generateRecoveryCode(): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes = new Uint8Array(8);
   crypto.getRandomValues(bytes);
   return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
+    .map((byte) => alphabet[byte % alphabet.length])
     .join("");
 }
 
@@ -52,7 +53,7 @@ serve(async (req) => {
       JSON.stringify({
         ok: true,
         message:
-          "Se este email estiver cadastrado, você receberá um link de redefinição em instantes.",
+          "Se este email estiver cadastrado, você receberá um código de redefinição em instantes.",
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
@@ -70,15 +71,22 @@ serve(async (req) => {
       return neutralResponse;
     }
 
-    // Gera token + hash
-    const token = generateToken();
-    const tokenHash = await sha256Hex(token);
+    // Gera código + hash vinculado ao email
+    const normalizedEmail = email.toLowerCase().trim();
+    const code = generateRecoveryCode();
+    const tokenHash = await sha256Hex(`${normalizedEmail}:${code}`);
     const expiresAt = new Date(Date.now() + TOKEN_TTL_MINUTES * 60_000).toISOString();
+
+    await adminClient
+      .from("password_reset_tokens")
+      .update({ used_at: new Date().toISOString() })
+      .eq("email", normalizedEmail)
+      .is("used_at", null);
 
     const { error: insertErr } = await adminClient
       .from("password_reset_tokens")
       .insert({
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         user_id: user.id,
         token_hash: tokenHash,
         expires_at: expiresAt,
@@ -90,19 +98,22 @@ serve(async (req) => {
       throw insertErr;
     }
 
-    // Monta link
+    // Monta link para o formulário com campo de código
     const base = (redirectBase ?? "").replace(/\/$/, "");
-    const link = `${base}/redefinir-senha?reset_token=${token}`;
+    const link = `${base}/redefinir-senha?email=${encodeURIComponent(normalizedEmail)}`;
 
     // Conteúdo do email
     const html = `
       <p>Olá,</p>
       <p>Recebemos uma solicitação para redefinir a senha da sua conta.</p>
-      <p>Clique no botão abaixo para criar uma nova senha. Este link é válido por <strong>${TOKEN_TTL_MINUTES} minutos</strong> e só pode ser usado uma vez.</p>
-      <p style="text-align:center;margin:32px 0;">
-        <a href="${link}" style="display:inline-block;background:#b8860b;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;">Redefinir minha senha</a>
+      <p>Copie o código abaixo e cole no formulário de redefinição. Ele é válido por <strong>${TOKEN_TTL_MINUTES} minutos</strong> e só pode ser usado uma vez.</p>
+      <p style="text-align:center;margin:28px 0;">
+        <span style="display:inline-block;background:#f7f2e7;color:#7a5600;padding:16px 24px;border-radius:8px;font-size:28px;letter-spacing:6px;font-weight:700;font-family:Arial,sans-serif;">${code}</span>
       </p>
-      <p style="color:#666;font-size:13px;">Ou copie e cole este link no navegador:<br/>
+      <p style="text-align:center;margin:32px 0;">
+        <a href="${link}" style="display:inline-block;background:#b8860b;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;">Abrir formulário de redefinição</a>
+      </p>
+      <p style="color:#666;font-size:13px;">Se o botão não abrir, copie e cole este endereço no navegador:<br/>
         <a href="${link}" style="color:#b8860b;word-break:break-all;">${link}</a>
       </p>
       <p style="color:#888;font-size:12px;margin-top:32px;">Se você não solicitou esta redefinição, ignore este email — sua senha permanecerá inalterada.</p>
