@@ -547,6 +547,8 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
 
   const createOrder = async (paymentMethodType: string, asaasCustomerIdValue = customerId, finalTotal?: number): Promise<string> => {
     const { data: { session } } = await supabase.auth.getSession();
+    const { getResellerCode } = await import("@/lib/reseller");
+    const _resellerCode = getResellerCode();
     const orderData: any = {
       customer_name: name.trim(),
       customer_email: email.trim(),
@@ -576,6 +578,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
       coupon_code: appliedCouponCode || null,
       coupon_discount: couponDiscount || 0,
     };
+    if (_resellerCode) orderData.reseller_code = _resellerCode;
     if (session?.user?.id) {
       orderData.customer_user_id = session.user.id;
     }
