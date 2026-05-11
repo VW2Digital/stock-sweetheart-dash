@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Copy, Pencil, Plus, Trash2, Link2, BarChart3 } from "lucide-react";
-import AdminPageHeader from "@/components/admin/AdminPageHeader";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { Badge } from "@/components/ui/badge";
 
 type Reseller = {
