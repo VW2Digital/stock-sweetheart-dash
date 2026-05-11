@@ -819,6 +819,9 @@ export type Database = {
           payment_method: string
           product_name: string
           quantity: number
+          reseller_code: string | null
+          reseller_commission: number | null
+          reseller_id: string | null
           selected_service_id: number | null
           shipment_id: string | null
           shipping_cost: number | null
@@ -860,6 +863,9 @@ export type Database = {
           payment_method?: string
           product_name: string
           quantity?: number
+          reseller_code?: string | null
+          reseller_commission?: number | null
+          reseller_id?: string | null
           selected_service_id?: number | null
           shipment_id?: string | null
           shipping_cost?: number | null
@@ -901,6 +907,9 @@ export type Database = {
           payment_method?: string
           product_name?: string
           quantity?: number
+          reseller_code?: string | null
+          reseller_commission?: number | null
+          reseller_id?: string | null
           selected_service_id?: number | null
           shipment_id?: string | null
           shipping_cost?: number | null
@@ -1407,6 +1416,45 @@ export type Database = {
           skeleton_time_ms?: number
           source_product_id?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      resellers: {
+        Row: {
+          active: boolean
+          code: string
+          commission_percent: number
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          commission_percent?: number
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          commission_percent?: number
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
