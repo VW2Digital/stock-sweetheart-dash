@@ -76,6 +76,7 @@ const UpsellManagerPage = lazy(() => import("./pages/UpsellManagerPage"));
 const RecommendationMetricsPage = lazy(() => import("./pages/RecommendationMetricsPage"));
 const FlashCampaignsPage = lazy(() => import("./pages/FlashCampaignsPage"));
 const FlashCampaignFormPage = lazy(() => import("./pages/FlashCampaignFormPage"));
+const ResellersPage = lazy(() => import("./pages/ResellersPage"));
 
 import PromoPopup from "./components/PromoPopup";
 import { SessionGuard } from "./components/SessionGuard";
@@ -85,6 +86,7 @@ import HeadScriptInjector from "./components/HeadScriptInjector";
 import MobileBottomNav from "./components/MobileBottomNav";
 import LanguageDetectionBanner from "./components/LanguageDetectionBanner";
 import ErrorBoundary from "./components/ErrorBoundary";
+import ResellerCapture from "./components/ResellerCapture";
 
 const queryClient = new QueryClient();
 
@@ -103,6 +105,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <ErrorBoundary silent name="SessionGuard"><SessionGuard /></ErrorBoundary>
+        <ErrorBoundary silent name="ResellerCapture"><ResellerCapture /></ErrorBoundary>
         <ErrorBoundary silent name="LanguageDetectionBanner"><LanguageDetectionBanner /></ErrorBoundary>
         <ErrorBoundary silent name="HeadScriptInjector"><HeadScriptInjector /></ErrorBoundary>
         <ErrorBoundary silent name="PromoPopup"><PromoPopup /></ErrorBoundary>
@@ -150,6 +153,7 @@ const App = () => (
             <Route path="carrinho-abandonado" element={<CartAbandonmentLogsPage />} />
             <Route path="links-pagamento" element={<PaymentLinksPage />} />
             <Route path="cupons" element={<CouponsPage />} />
+            <Route path="revendedores" element={<ResellersPage />} />
             <Route path="relatorios" element={<ReportsPage />} />
             <Route path="ab-test" element={<AbTestPage />} />
             <Route path="campanhas-relampago" element={<FlashCampaignsPage />} />
