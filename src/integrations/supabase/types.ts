@@ -550,6 +550,60 @@ export type Database = {
           },
         ]
       }
+      flash_campaign_leads: {
+        Row: {
+          campaign_id: string
+          converted_order_id: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          session_id: string | null
+          source_url: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          campaign_id: string
+          converted_order_id?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone?: string | null
+          session_id?: string | null
+          source_url?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          converted_order_id?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          session_id?: string | null
+          source_url?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flash_campaign_leads_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "flash_campaign_stats"
+            referencedColumns: ["campaign_id"]
+          },
+          {
+            foreignKeyName: "flash_campaign_leads_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "flash_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flash_campaigns: {
         Row: {
           accent_color: string | null
@@ -557,6 +611,7 @@ export type Database = {
           auto_link_id: string | null
           background_image: string | null
           bg_color: string | null
+          capture_lead: boolean
           created_at: string
           cta_text: string
           discount_mode: string
@@ -564,7 +619,11 @@ export type Database = {
           expires_at: string
           headline: string
           id: string
+          lead_cta_text: string | null
+          lead_form_subtitle: string | null
+          lead_form_title: string | null
           max_installments: number
+          mode: string
           payment_link_id: string
           pix_discount: number
           product_id: string | null
@@ -574,6 +633,11 @@ export type Database = {
           source: string
           starts_at: string | null
           subheadline: string
+          thank_you_accent_color: string | null
+          thank_you_bg_color: string | null
+          thank_you_buttons: Json
+          thank_you_headline: string | null
+          thank_you_message: string | null
           title: string
           updated_at: string
           user_id: string
@@ -585,6 +649,7 @@ export type Database = {
           auto_link_id?: string | null
           background_image?: string | null
           bg_color?: string | null
+          capture_lead?: boolean
           created_at?: string
           cta_text?: string
           discount_mode?: string
@@ -592,7 +657,11 @@ export type Database = {
           expires_at: string
           headline?: string
           id?: string
+          lead_cta_text?: string | null
+          lead_form_subtitle?: string | null
+          lead_form_title?: string | null
           max_installments?: number
+          mode?: string
           payment_link_id: string
           pix_discount?: number
           product_id?: string | null
@@ -602,6 +671,11 @@ export type Database = {
           source?: string
           starts_at?: string | null
           subheadline?: string
+          thank_you_accent_color?: string | null
+          thank_you_bg_color?: string | null
+          thank_you_buttons?: Json
+          thank_you_headline?: string | null
+          thank_you_message?: string | null
           title?: string
           updated_at?: string
           user_id: string
@@ -613,6 +687,7 @@ export type Database = {
           auto_link_id?: string | null
           background_image?: string | null
           bg_color?: string | null
+          capture_lead?: boolean
           created_at?: string
           cta_text?: string
           discount_mode?: string
@@ -620,7 +695,11 @@ export type Database = {
           expires_at?: string
           headline?: string
           id?: string
+          lead_cta_text?: string | null
+          lead_form_subtitle?: string | null
+          lead_form_title?: string | null
           max_installments?: number
+          mode?: string
           payment_link_id?: string
           pix_discount?: number
           product_id?: string | null
@@ -630,6 +709,11 @@ export type Database = {
           source?: string
           starts_at?: string | null
           subheadline?: string
+          thank_you_accent_color?: string | null
+          thank_you_bg_color?: string | null
+          thank_you_buttons?: Json
+          thank_you_headline?: string | null
+          thank_you_message?: string | null
           title?: string
           updated_at?: string
           user_id?: string
