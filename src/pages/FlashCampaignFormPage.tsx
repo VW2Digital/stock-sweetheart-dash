@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminSection } from '@/components/admin/AdminSection';
-import { Zap, ArrowLeft, Save } from 'lucide-react';
+import { Zap, ArrowLeft, Save, Plus, Trash2, GripVertical } from 'lucide-react';
 
 interface PaymentLinkOpt { id: string; title: string; slug: string; }
 interface ProductOpt {
@@ -21,6 +21,31 @@ interface ProductOpt {
 
 type Source = 'existing' | 'product';
 type DiscountMode = 'fixed' | 'percent';
+type CampaignMode = 'sale' | 'lead';
+
+interface ThankYouButton {
+  label: string;
+  url: string;
+  color?: string;
+  icon?: string;
+  new_tab?: boolean;
+}
+
+const ICON_OPTIONS = [
+  { value: '', label: 'Nenhum' },
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'message', label: 'Mensagem' },
+  { value: 'download', label: 'Download' },
+  { value: 'link', label: 'Link' },
+  { value: 'external', label: 'Link externo' },
+  { value: 'mail', label: 'Email' },
+  { value: 'phone', label: 'Telefone' },
+  { value: 'gift', label: 'Presente' },
+  { value: 'star', label: 'Estrela' },
+  { value: 'heart', label: 'Coração' },
+  { value: 'send', label: 'Enviar' },
+  { value: 'check', label: 'Confirmação' },
+];
 
 const slugify = (s: string) =>
   s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -61,6 +86,20 @@ export default function FlashCampaignFormPage() {
   const [bgColor, setBgColor] = useState('#0a0000');
   const [accentColor, setAccentColor] = useState('#ef4444');
   const [active, setActive] = useState(true);
+
+  // Mode + lead capture
+  const [mode, setMode] = useState<CampaignMode>('sale');
+  const [captureLead, setCaptureLead] = useState(false);
+  const [leadFormTitle, setLeadFormTitle] = useState('Garanta sua vaga');
+  const [leadFormSubtitle, setLeadFormSubtitle] = useState('Preencha seus dados para continuar');
+  const [leadCtaText, setLeadCtaText] = useState('QUERO ME INSCREVER');
+
+  // Thank you page
+  const [thankYouHeadline, setThankYouHeadline] = useState('Obrigado!');
+  const [thankYouMessage, setThankYouMessage] = useState('Em instantes você receberá mais informações pelo email e WhatsApp.');
+  const [thankYouBgColor, setThankYouBgColor] = useState('#0a0000');
+  const [thankYouAccentColor, setThankYouAccentColor] = useState('#22c55e');
+  const [thankYouButtons, setThankYouButtons] = useState<ThankYouButton[]>([]);
 
   useEffect(() => {
     (async () => {
