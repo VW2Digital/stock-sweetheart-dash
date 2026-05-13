@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
-import { Plus, Pencil, Trash2, ExternalLink, Copy, Zap, Eye, MousePointerClick, TrendingUp } from 'lucide-react';
+import { Plus, Pencil, Trash2, ExternalLink, Copy, Zap, Eye, MousePointerClick, TrendingUp, Users } from 'lucide-react';
 
 interface Campaign {
   id: string;
@@ -119,6 +119,7 @@ export default function FlashCampaignsPage() {
                     <Button asChild size="sm" variant="outline"><Link to={`/relampago/${c.slug}`} target="_blank"><ExternalLink className="w-3 h-3 mr-1" />Abrir</Link></Button>
                     <Button size="sm" variant="outline" onClick={() => copyUrl(c.slug)}><Copy className="w-3 h-3 mr-1" />Copiar URL</Button>
                     <Button size="sm" variant="outline" onClick={() => navigate(`/admin/campanhas-relampago/${c.id}`)}><Pencil className="w-3 h-3 mr-1" />Editar</Button>
+                    <Button size="sm" variant="outline" onClick={() => navigate(`/admin/campanhas-relampago/${c.id}/leads`)}><Users className="w-3 h-3 mr-1" />Leads</Button>
                     <Button size="sm" variant="destructive" onClick={() => setDeleteTarget(c)}><Trash2 className="w-3 h-3" /></Button>
                   </div>
                 </CardContent>
