@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Code, Plus, Trash2, Globe } from 'lucide-react';
+import { Code, Plus, Trash2, Globe, ChevronDown, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Badge } from '@/components/ui/badge';
 import SettingsBackButton from './SettingsBackButton';
 import SettingsSkeleton from '@/components/admin/settings/SettingsSkeleton';
 import DeployUpdateCard from '@/components/admin/DeployUpdateCard';
@@ -131,35 +133,70 @@ const ScriptList = ({
                 <Label className="text-xs">
                   {script.scope === 'include' ? 'Selecione as páginas onde aplicar' : 'Selecione as páginas a EXCLUIR'}
                 </Label>
-                <div className="border border-input rounded-md p-3 max-h-48 overflow-y-auto bg-background">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                    {PAGE_OPTIONS.map((opt) => {
-                      const checked = (script.paths || []).includes(opt.path);
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full justify-between h-9 font-normal"
+                    >
+                      <span className="text-xs text-muted-foreground">
+                        {(script.paths || []).length === 0
+                          ? 'Selecione as páginas...'
+                          : `${(script.paths || []).length} página(s) selecionada(s)`}
+                      </span>
+                      <ChevronDown className="w-4 h-4 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <div className="max-h-64 overflow-y-auto p-1">
+                      {PAGE_OPTIONS.map((opt) => {
+                        const checked = (script.paths || []).includes(opt.path);
+                        return (
+                          <label
+                            key={opt.path}
+                            className="flex items-start gap-2 text-xs cursor-pointer hover:bg-muted rounded px-2 py-1.5"
+                          >
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={(v) => {
+                                const current = script.paths || [];
+                                const next = v
+                                  ? [...current, opt.path]
+                                  : current.filter((p) => p !== opt.path);
+                                updateScript(script.id, 'paths', next);
+                              }}
+                              className="mt-0.5"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium truncate">{opt.label}</div>
+                              <div className="text-muted-foreground font-mono text-[10px] truncate">{opt.path}</div>
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                {(script.paths || []).length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {(script.paths || []).map((p) => {
+                      const opt = PAGE_OPTIONS.find((o) => o.path === p);
                       return (
-                        <label
-                          key={opt.path}
-                          className="flex items-start gap-2 text-xs cursor-pointer hover:bg-muted/50 rounded px-2 py-1"
-                        >
-                          <Checkbox
-                            checked={checked}
-                            onCheckedChange={(v) => {
-                              const current = script.paths || [];
-                              const next = v
-                                ? [...current, opt.path]
-                                : current.filter((p) => p !== opt.path);
-                              updateScript(script.id, 'paths', next);
-                            }}
-                            className="mt-0.5"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium truncate">{opt.label}</div>
-                            <div className="text-muted-foreground font-mono text-[10px] truncate">{opt.path}</div>
-                          </div>
-                        </label>
+                        <Badge key={p} variant="secondary" className="gap-1 text-[10px] font-normal">
+                          {opt?.label || p}
+                          <button
+                            type="button"
+                            onClick={() => updateScript(script.id, 'paths', (script.paths || []).filter((x) => x !== p))}
+                            className="hover:text-destructive"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </Badge>
                       );
                     })}
                   </div>
-                </div>
+                )}
                 <details className="text-xs">
                   <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
                     Caminhos personalizados (avançado)
