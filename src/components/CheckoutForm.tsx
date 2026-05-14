@@ -741,6 +741,16 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
       }
 
       setStep('address');
+
+      // Reseller funnel tracking — primeira ação concreta do comprador
+      try {
+        const { trackResellerEvent } = await import("@/lib/reseller");
+        void trackResellerEvent("checkout_started", {
+          productName,
+          amount: totalValue,
+          metadata: { email: email.trim() },
+        });
+      } catch { /* non-blocking */ }
     } catch (err: any) {
       toast({ title: 'Erro', description: err.message, variant: 'destructive' });
     } finally {
