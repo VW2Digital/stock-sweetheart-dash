@@ -1503,6 +1503,54 @@ export type Database = {
         }
         Relationships: []
       }
+      reseller_events: {
+        Row: {
+          amount: number | null
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json
+          order_id: string | null
+          product_name: string | null
+          reseller_code: string
+          reseller_id: string | null
+          session_id: string | null
+          url: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          order_id?: string | null
+          product_name?: string | null
+          reseller_code: string
+          reseller_id?: string | null
+          session_id?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          order_id?: string | null
+          product_name?: string | null
+          reseller_code?: string
+          reseller_id?: string | null
+          session_id?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       resellers: {
         Row: {
           active: boolean

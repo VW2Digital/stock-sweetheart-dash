@@ -264,7 +264,7 @@ export default function PaymentLinkCheckout() {
         : (await fetchSetting('asaas_environment') || 'sandbox');
 
       // 1. Create order
-      const { getResellerCode } = await import("@/lib/reseller");
+      const { getResellerCode, trackResellerEvent } = await import("@/lib/reseller");
       const _resellerCode = getResellerCode();
       const { data: orderData, error: orderError } = await supabase.from('orders').insert({
         customer_name: name.trim(),
@@ -294,6 +294,15 @@ export default function PaymentLinkCheckout() {
 
       if (orderError) throw orderError;
       const orderId = orderData.id;
+
+      if (_resellerCode) {
+        void trackResellerEvent("order_created", {
+          orderId,
+          productName: link.title,
+          amount: finalValue,
+          metadata: { payment_method: paymentMethod, payment_link_slug: slug },
+        });
+      }
 
       // Vincular pedido a campanha relâmpago (se houver)
       try {
@@ -428,6 +437,14 @@ export default function PaymentLinkCheckout() {
           error_message: rawMsg,
           error_source: 'payment_link',
           request_payload: { slug, title: link?.title, amount: link?.amount, installments },
+        });
+      } catch { /* non-blocking */ }
+      try {
+        const { trackResellerEvent } = await import("@/lib/reseller");
+        void trackResellerEvent("payment_failed", {
+          productName: link?.title,
+          amount: link?.amount,
+          metadata: { payment_method: paymentMethod, payment_link_slug: slug, error: rawMsg },
         });
       } catch { /* non-blocking */ }
     } finally {

@@ -547,7 +547,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
 
   const createOrder = async (paymentMethodType: string, asaasCustomerIdValue = customerId, finalTotal?: number): Promise<string> => {
     const { data: { session } } = await supabase.auth.getSession();
-    const { getResellerCode } = await import("@/lib/reseller");
+    const { getResellerCode, trackResellerEvent } = await import("@/lib/reseller");
     const _resellerCode = getResellerCode();
     const orderData: any = {
       customer_name: name.trim(),
@@ -598,7 +598,16 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
       }
       throw new Error('Erro ao criar pedido');
     }
-    return (data as any).id;
+    const _orderId = (data as any).id as string;
+    if (_resellerCode) {
+      void trackResellerEvent("order_created", {
+        orderId: _orderId,
+        productName,
+        amount: finalTotal ?? totalValue,
+        metadata: { payment_method: paymentMethodType },
+      });
+    }
+    return _orderId;
   };
 
   const formatCpf = (v: string) => {
@@ -732,6 +741,16 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
       }
 
       setStep('address');
+
+      // Reseller funnel tracking — primeira ação concreta do comprador
+      try {
+        const { trackResellerEvent } = await import("@/lib/reseller");
+        void trackResellerEvent("checkout_started", {
+          productName,
+          amount: totalValue,
+          metadata: { email: email.trim() },
+        });
+      } catch { /* non-blocking */ }
     } catch (err: any) {
       toast({ title: 'Erro', description: err.message, variant: 'destructive' });
     } finally {
@@ -875,6 +894,14 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
           request_payload: { productName, dosage, quantity, totalValue },
         });
       } catch { /* non-blocking */ }
+      try {
+        const { trackResellerEvent } = await import("@/lib/reseller");
+        void trackResellerEvent("payment_failed", {
+          productName,
+          amount: totalValue,
+          metadata: { payment_method: 'mp_redirect', error: rawMessage },
+        });
+      } catch { /* non-blocking */ }
     } finally {
       setProcessing(false);
     }
@@ -941,6 +968,14 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
           error_message: rawMessage,
           error_source: 'checkout',
           request_payload: { productName, dosage, quantity, totalValue },
+        });
+      } catch { /* non-blocking */ }
+      try {
+        const { trackResellerEvent } = await import("@/lib/reseller");
+        void trackResellerEvent("payment_failed", {
+          productName,
+          amount: totalValue,
+          metadata: { payment_method: 'pagbank_redirect', error: rawMessage },
         });
       } catch { /* non-blocking */ }
     } finally {
@@ -1173,6 +1208,14 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
           error_message: rawMessage,
           error_source: 'checkout',
           request_payload: { productName, dosage, quantity, totalValue, installments },
+        });
+      } catch { /* non-blocking */ }
+      try {
+        const { trackResellerEvent } = await import("@/lib/reseller");
+        void trackResellerEvent("payment_failed", {
+          productName,
+          amount: totalValue,
+          metadata: { payment_method: paymentMethod, installments, error: rawMessage },
         });
       } catch { /* non-blocking */ }
 
