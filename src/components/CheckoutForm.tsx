@@ -748,7 +748,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
         void trackResellerEvent("checkout_started", {
           productName,
           amount: totalValue,
-          metadata: { email: email.trim() },
+          metadata: { customer_name: name.trim(), email: email.trim() },
         });
       } catch { /* non-blocking */ }
     } catch (err: any) {
