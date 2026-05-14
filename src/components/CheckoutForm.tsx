@@ -899,7 +899,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
         void trackResellerEvent("payment_failed", {
           productName,
           amount: totalValue,
-          metadata: { payment_method: 'mp_redirect', error: rawMessage },
+          metadata: { customer_name: name.trim(), email: email.trim(), payment_method: 'mp_redirect', error: rawMessage },
         });
       } catch { /* non-blocking */ }
     } finally {
@@ -975,7 +975,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
         void trackResellerEvent("payment_failed", {
           productName,
           amount: totalValue,
-          metadata: { payment_method: 'pagbank_redirect', error: rawMessage },
+          metadata: { customer_name: name.trim(), email: email.trim(), payment_method: 'pagbank_redirect', error: rawMessage },
         });
       } catch { /* non-blocking */ }
     } finally {
@@ -1215,7 +1215,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
         void trackResellerEvent("payment_failed", {
           productName,
           amount: totalValue,
-          metadata: { payment_method: paymentMethod, installments, error: rawMessage },
+          metadata: { customer_name: name.trim(), email: email.trim(), payment_method: paymentMethod, installments, error: rawMessage },
         });
       } catch { /* non-blocking */ }
 
