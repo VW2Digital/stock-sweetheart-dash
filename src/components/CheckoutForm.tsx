@@ -970,6 +970,14 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
           request_payload: { productName, dosage, quantity, totalValue },
         });
       } catch { /* non-blocking */ }
+      try {
+        const { trackResellerEvent } = await import("@/lib/reseller");
+        void trackResellerEvent("payment_failed", {
+          productName,
+          amount: totalValue,
+          metadata: { payment_method: 'pagbank_redirect', error: rawMessage },
+        });
+      } catch { /* non-blocking */ }
     } finally {
       setProcessing(false);
     }
