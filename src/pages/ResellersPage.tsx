@@ -273,7 +273,19 @@ export default function ResellersPage() {
         }
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Visitas</CardTitle></CardHeader>
+          <CardContent className="text-2xl font-semibold">{totals.visits}</CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Checkouts iniciados</CardTitle></CardHeader>
+          <CardContent className="text-2xl font-semibold">{totals.started}</CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Pagamentos falhos</CardTitle></CardHeader>
+          <CardContent className="text-2xl font-semibold">{totals.failed}</CardContent>
+        </Card>
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Vendas pagas</CardTitle></CardHeader>
           <CardContent className="text-2xl font-semibold">{totals.paid}</CardContent>
