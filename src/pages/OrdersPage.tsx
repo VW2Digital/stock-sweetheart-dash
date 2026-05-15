@@ -604,6 +604,27 @@ const OrdersPage = () => {
     if (filterCoupon === 'WITH_COUPON' && !order.coupon_code) return false;
     if (filterCoupon === 'WITHOUT_COUPON' && order.coupon_code) return false;
     if (filterCoupon !== 'ALL' && filterCoupon !== 'WITH_COUPON' && filterCoupon !== 'WITHOUT_COUPON' && order.coupon_code !== filterCoupon) return false;
+    if (filterCategory !== 'ALL') {
+      const key = String(order.product_name || '').toLowerCase().trim();
+      const cat = productCategoryMap[key] || '';
+      if (filterCategory === '__NONE__') {
+        if (cat) return false;
+      } else if (cat !== filterCategory) {
+        return false;
+      }
+    }
+    if (dateFrom || dateTo) {
+      const created = order.created_at ? new Date(order.created_at) : null;
+      if (!created) return false;
+      if (dateFrom) {
+        const from = new Date(dateFrom + 'T00:00:00');
+        if (created < from) return false;
+      }
+      if (dateTo) {
+        const to = new Date(dateTo + 'T23:59:59');
+        if (created > to) return false;
+      }
+    }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const nameMatch = (order.customer_name || '').toLowerCase().includes(q);
@@ -619,7 +640,7 @@ const OrdersPage = () => {
   const paginatedOrders = filteredOrders.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
 
   // Reset page when filters or search change
-  useEffect(() => { setCurrentPage(1); }, [filterPayment, filterDelivery, filterCoupon, searchQuery]);
+  useEffect(() => { setCurrentPage(1); }, [filterPayment, filterDelivery, filterCoupon, filterCategory, dateFrom, dateTo, searchQuery]);
 
   const InfoRow = ({ label, value }: { label: string; value: string | number | null | undefined }) => (
     <div className="flex justify-between py-1.5">
