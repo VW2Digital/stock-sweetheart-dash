@@ -275,16 +275,16 @@ const ReportsPage = () => {
       {/* Filters */}
       <Card className="border-border/40 shadow-sm">
         <CardContent className="p-4 sm:p-6">
-          <div className="flex flex-col lg:flex-row lg:items-end gap-4">
-            <div className="flex flex-col sm:flex-row gap-3 flex-1">
-              <div className="space-y-1.5">
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Data início</label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       className={cn(
-                        'h-9 text-sm w-full sm:w-44 justify-start font-normal',
+                        'h-9 text-sm w-full justify-start font-normal',
                         !startDate && 'text-muted-foreground'
                       )}
                     >
@@ -304,14 +304,14 @@ const ReportsPage = () => {
                   </PopoverContent>
                 </Popover>
               </div>
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Data fim</label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       className={cn(
-                        'h-9 text-sm w-full sm:w-44 justify-start font-normal',
+                        'h-9 text-sm w-full justify-start font-normal',
                         !endDate && 'text-muted-foreground'
                       )}
                     >
@@ -331,10 +331,10 @@ const ReportsPage = () => {
                   </PopoverContent>
                 </Popover>
               </div>
-              <div className="space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Agrupar por</label>
                 <Select value={grouping} onValueChange={(v) => setGrouping(v as Grouping)}>
-                  <SelectTrigger className="h-9 text-sm w-full sm:w-32">
+                  <SelectTrigger className="h-9 text-sm w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -346,7 +346,7 @@ const ReportsPage = () => {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border/40">
               {[
                 { label: '7 dias', days: 7 },
                 { label: '30 dias', days: 30 },
