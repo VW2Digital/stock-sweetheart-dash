@@ -157,6 +157,11 @@ const OrdersPage = () => {
   const [filterDelivery, setFilterDelivery] = useState('ALL');
   const [filterCoupon, setFilterCoupon] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState('ALL');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [productCategoryMap, setProductCategoryMap] = useState<Record<string, string>>({});
+  const [allCategories, setAllCategories] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 15;
   // Dialog states
@@ -233,6 +238,22 @@ const OrdersPage = () => {
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  // Load product → category map for filtering
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from('products').select('name, category');
+      if (!data) return;
+      const map: Record<string, string> = {};
+      const cats = new Set<string>();
+      data.forEach((p: any) => {
+        if (p?.name) map[String(p.name).toLowerCase().trim()] = p.category || '';
+        if (p?.category) cats.add(p.category);
+      });
+      setProductCategoryMap(map);
+      setAllCategories(Array.from(cats).sort());
+    })();
   }, []);
 
   const openViewOrder = (order: any) => {
