@@ -725,87 +725,102 @@ const OrdersPage = () => {
             className="pl-9 w-full sm:w-[250px]"
           />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-          <Select value={filterPayment} onValueChange={setFilterPayment}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Pagamento" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Todos os pagamentos</SelectItem>
-              <SelectItem value="PENDING">Pendente</SelectItem>
-              <SelectItem value="PAID">Pago</SelectItem>
-              <SelectItem value="CONFIRMED">Confirmado</SelectItem>
-              <SelectItem value="RECEIVED">Recebido</SelectItem>
-              <SelectItem value="OVERDUE">Vencido</SelectItem>
-              <SelectItem value="REFUNDED">Estornado</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={filterDelivery} onValueChange={setFilterDelivery}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Entrega" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Todas as entregas</SelectItem>
-              {deliveryStatuses.map(s => (
-                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={filterCoupon} onValueChange={setFilterCoupon}>
-            <SelectTrigger className="w-full">
-              <Ticket className="h-4 w-4 mr-1.5 text-muted-foreground" />
-              <SelectValue placeholder="Cupom" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Todos os cupons</SelectItem>
-              <SelectItem value="WITH_COUPON">Com cupom</SelectItem>
-              <SelectItem value="WITHOUT_COUPON">Sem cupom</SelectItem>
-              {uniqueCoupons.map(code => (
-                <SelectItem key={code} value={code}>{code}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Categoria" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Todas as categorias</SelectItem>
-              <SelectItem value="__NONE__">Sem categoria</SelectItem>
-              {allCategories.map(cat => (
-                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div className="flex items-center gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Pagamento</label>
+            <Select value={filterPayment} onValueChange={setFilterPayment}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Pagamento" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Todos os pagamentos</SelectItem>
+                <SelectItem value="PENDING">Pendente</SelectItem>
+                <SelectItem value="PAID">Pago</SelectItem>
+                <SelectItem value="CONFIRMED">Confirmado</SelectItem>
+                <SelectItem value="RECEIVED">Recebido</SelectItem>
+                <SelectItem value="OVERDUE">Vencido</SelectItem>
+                <SelectItem value="REFUNDED">Estornado</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Entrega</label>
+            <Select value={filterDelivery} onValueChange={setFilterDelivery}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Entrega" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Todas as entregas</SelectItem>
+                {deliveryStatuses.map(s => (
+                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Cupom</label>
+            <Select value={filterCoupon} onValueChange={setFilterCoupon}>
+              <SelectTrigger className="w-full">
+                <Ticket className="h-4 w-4 mr-1.5 text-muted-foreground" />
+                <SelectValue placeholder="Cupom" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Todos os cupons</SelectItem>
+                <SelectItem value="WITH_COUPON">Com cupom</SelectItem>
+                <SelectItem value="WITHOUT_COUPON">Sem cupom</SelectItem>
+                {uniqueCoupons.map(code => (
+                  <SelectItem key={code} value={code}>{code}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Categoria</label>
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Todas as categorias</SelectItem>
+                <SelectItem value="__NONE__">Sem categoria</SelectItem>
+                {allCategories.map(cat => (
+                  <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Data início</label>
             <Input
               type="date"
               value={dateFrom}
               onChange={e => setDateFrom(e.target.value)}
               className="w-full"
-              placeholder="De"
               aria-label="Data inicial"
             />
-            <span className="text-xs text-muted-foreground">até</span>
-            <Input
-              type="date"
-              value={dateTo}
-              onChange={e => setDateTo(e.target.value)}
-              className="w-full"
-              placeholder="Até"
-              aria-label="Data final"
-            />
-            {(dateFrom || dateTo) && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0 h-9 w-9"
-                onClick={() => { setDateFrom(''); setDateTo(''); }}
-                aria-label="Limpar datas"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Data fim</label>
+            <div className="flex items-center gap-1">
+              <Input
+                type="date"
+                value={dateTo}
+                onChange={e => setDateTo(e.target.value)}
+                className="w-full"
+                aria-label="Data final"
+              />
+              {(dateFrom || dateTo) && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 h-9 w-9"
+                  onClick={() => { setDateFrom(''); setDateTo(''); }}
+                  aria-label="Limpar datas"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
