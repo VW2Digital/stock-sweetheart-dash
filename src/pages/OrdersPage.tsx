@@ -157,6 +157,11 @@ const OrdersPage = () => {
   const [filterDelivery, setFilterDelivery] = useState('ALL');
   const [filterCoupon, setFilterCoupon] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState('ALL');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [productCategoryMap, setProductCategoryMap] = useState<Record<string, string>>({});
+  const [allCategories, setAllCategories] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 15;
   // Dialog states
@@ -233,6 +238,22 @@ const OrdersPage = () => {
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  // Load product → category map for filtering
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from('products').select('name, category');
+      if (!data) return;
+      const map: Record<string, string> = {};
+      const cats = new Set<string>();
+      data.forEach((p: any) => {
+        if (p?.name) map[String(p.name).toLowerCase().trim()] = p.category || '';
+        if (p?.category) cats.add(p.category);
+      });
+      setProductCategoryMap(map);
+      setAllCategories(Array.from(cats).sort());
+    })();
   }, []);
 
   const openViewOrder = (order: any) => {
@@ -583,6 +604,27 @@ const OrdersPage = () => {
     if (filterCoupon === 'WITH_COUPON' && !order.coupon_code) return false;
     if (filterCoupon === 'WITHOUT_COUPON' && order.coupon_code) return false;
     if (filterCoupon !== 'ALL' && filterCoupon !== 'WITH_COUPON' && filterCoupon !== 'WITHOUT_COUPON' && order.coupon_code !== filterCoupon) return false;
+    if (filterCategory !== 'ALL') {
+      const key = String(order.product_name || '').toLowerCase().trim();
+      const cat = productCategoryMap[key] || '';
+      if (filterCategory === '__NONE__') {
+        if (cat) return false;
+      } else if (cat !== filterCategory) {
+        return false;
+      }
+    }
+    if (dateFrom || dateTo) {
+      const created = order.created_at ? new Date(order.created_at) : null;
+      if (!created) return false;
+      if (dateFrom) {
+        const from = new Date(dateFrom + 'T00:00:00');
+        if (created < from) return false;
+      }
+      if (dateTo) {
+        const to = new Date(dateTo + 'T23:59:59');
+        if (created > to) return false;
+      }
+    }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const nameMatch = (order.customer_name || '').toLowerCase().includes(q);
@@ -598,7 +640,7 @@ const OrdersPage = () => {
   const paginatedOrders = filteredOrders.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE);
 
   // Reset page when filters or search change
-  useEffect(() => { setCurrentPage(1); }, [filterPayment, filterDelivery, filterCoupon, searchQuery]);
+  useEffect(() => { setCurrentPage(1); }, [filterPayment, filterDelivery, filterCoupon, filterCategory, dateFrom, dateTo, searchQuery]);
 
   const InfoRow = ({ label, value }: { label: string; value: string | number | null | undefined }) => (
     <div className="flex justify-between py-1.5">
@@ -683,7 +725,7 @@ const OrdersPage = () => {
             className="pl-9 w-full sm:w-[250px]"
           />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           <Select value={filterPayment} onValueChange={setFilterPayment}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Pagamento" />
@@ -723,6 +765,48 @@ const OrdersPage = () => {
               ))}
             </SelectContent>
           </Select>
+          <Select value={filterCategory} onValueChange={setFilterCategory}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Categoria" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Todas as categorias</SelectItem>
+              <SelectItem value="__NONE__">Sem categoria</SelectItem>
+              {allCategories.map(cat => (
+                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="flex items-center gap-2">
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={e => setDateFrom(e.target.value)}
+              className="w-full"
+              placeholder="De"
+              aria-label="Data inicial"
+            />
+            <span className="text-xs text-muted-foreground">até</span>
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={e => setDateTo(e.target.value)}
+              className="w-full"
+              placeholder="Até"
+              aria-label="Data final"
+            />
+            {(dateFrom || dateTo) && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="shrink-0 h-9 w-9"
+                onClick={() => { setDateFrom(''); setDateTo(''); }}
+                aria-label="Limpar datas"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
