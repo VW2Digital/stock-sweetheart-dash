@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, memo, useCallback } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -116,6 +117,105 @@ function usePersistedState<T>(key: string, initial: T): [T, (v: T) => void] {
 
 type ProductFilterStatus = 'all' | 'active' | 'inactive';
 
+interface ProductRowData {
+  product: Product;
+  inStockCount: number;
+  allOut: boolean;
+  priceLabel: string;
+}
+
+const ProductRow = memo(function ProductRow({
+  data,
+  selected,
+  onSelect,
+  style,
+}: {
+  data: ProductRowData;
+  selected: boolean;
+  onSelect: (id: string) => void;
+  style?: React.CSSProperties;
+}) {
+  const { product: p, inStockCount, allOut, priceLabel } = data;
+  return (
+    <CommandItem
+      value={`${p.name} ${p.id}`}
+      onSelect={() => onSelect(p.id)}
+      style={style}
+    >
+      <Check className={`mr-2 h-4 w-4 ${selected ? 'opacity-100' : 'opacity-0'}`} />
+      <span
+        aria-hidden
+        className={`mr-2 h-2 w-2 shrink-0 rounded-full ${
+          allOut ? 'bg-destructive' : inStockCount > 0 ? 'bg-emerald-500' : 'bg-muted-foreground/40'
+        }`}
+        title={allOut ? 'Sem estoque' : `${inStockCount} em estoque`}
+      />
+      <div className="flex flex-col flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <span className="truncate text-sm">{p.name}</span>
+          <span className="text-xs font-medium text-foreground shrink-0">{priceLabel}</span>
+        </div>
+        <span className="text-xs text-muted-foreground">
+          {p.variations.length} {p.variations.length === 1 ? 'variação' : 'variações'}
+          {' · '}
+          {allOut ? (
+            <span className="text-destructive">sem estoque</span>
+          ) : (
+            <span className="text-emerald-600">{inStockCount} em estoque</span>
+          )}
+        </span>
+      </div>
+      {!p.active && <Badge variant="secondary" className="ml-2 text-[10px]">inativo</Badge>}
+    </CommandItem>
+  );
+});
+
+const VariationRow = memo(function VariationRow({
+  variation: v,
+  selected,
+  onSelect,
+  style,
+}: {
+  variation: Variation;
+  selected: boolean;
+  onSelect: (id: string) => void;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <CommandItem
+      value={v.dosage}
+      onSelect={() => onSelect(v.id)}
+      style={style}
+    >
+      <Check className={`mr-2 h-4 w-4 ${selected ? 'opacity-100' : 'opacity-0'}`} />
+      <span
+        aria-hidden
+        className={`mr-2 h-2 w-2 shrink-0 rounded-full ${
+          v.in_stock ? 'bg-emerald-500' : 'bg-destructive'
+        }`}
+        title={v.in_stock ? 'Em estoque' : 'Sem estoque'}
+      />
+      <span className="text-sm flex-1 truncate">{v.dosage}</span>
+      <div className="ml-2 flex items-center gap-2 shrink-0">
+        {v.is_offer && v.offer_price > 0 ? (
+          <>
+            <span className="text-[11px] text-muted-foreground line-through">{fmtBRL(v.price)}</span>
+            <span className="text-xs font-medium text-primary">{fmtBRL(v.offer_price)}</span>
+          </>
+        ) : (
+          <span className="text-xs font-medium text-foreground">{fmtBRL(v.price)}</span>
+        )}
+        {!v.in_stock && <Badge variant="secondary" className="text-[10px]">sem estoque</Badge>}
+      </div>
+    </CommandItem>
+  );
+});
+
+const norm = (s: string) =>
+  s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+const VIRTUAL_THRESHOLD = 30;
+
 function ProductPicker({
   products,
   value,
@@ -137,12 +237,51 @@ function ProductPicker({
   const [search, setSearch] = usePersistedState<string>('combos:picker:product:search', '');
   const selected = products.find((p) => p.id === value);
 
-  const filtered = products.filter((p) => {
-    if (status === 'active' && !p.active) return false;
-    if (status === 'inactive' && p.active) return false;
-    if (onlyWithStock && !p.variations.some((v) => v.in_stock)) return false;
-    return true;
+  const enriched: ProductRowData[] = useMemo(() => {
+    return products.map((p) => {
+      const inStockCount = p.variations.filter((v) => v.in_stock).length;
+      const prices = p.variations
+        .map((v) => (v.is_offer && v.offer_price > 0 ? v.offer_price : v.price))
+        .filter((n) => n > 0);
+      const minPrice = prices.length ? Math.min(...prices) : 0;
+      const maxPrice = prices.length ? Math.max(...prices) : 0;
+      const priceLabel = prices.length
+        ? minPrice === maxPrice
+          ? fmtBRL(minPrice)
+          : `${fmtBRL(minPrice)} – ${fmtBRL(maxPrice)}`
+        : '—';
+      const allOut = p.variations.length > 0 && inStockCount === 0;
+      return { product: p, inStockCount, allOut, priceLabel };
+    });
+  }, [products]);
+
+  const filtered = useMemo(() => {
+    const q = norm(search.trim());
+    return enriched.filter(({ product: p }) => {
+      if (status === 'active' && !p.active) return false;
+      if (status === 'inactive' && p.active) return false;
+      if (onlyWithStock && !p.variations.some((v) => v.in_stock)) return false;
+      if (q && !norm(p.name).includes(q)) return false;
+      return true;
+    });
+  }, [enriched, status, onlyWithStock, search]);
+
+  const handleSelect = useCallback(
+    (id: string) => {
+      onChange(id);
+      setOpen(false);
+    },
+    [onChange],
+  );
+
+  const listRef = useRef<HTMLDivElement>(null);
+  const rowVirtualizer = useVirtualizer({
+    count: filtered.length,
+    getScrollElement: () => listRef.current,
+    estimateSize: () => 58,
+    overscan: 8,
   });
+  const shouldVirtualize = open && filtered.length > VIRTUAL_THRESHOLD;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -163,7 +302,7 @@ function ProductPicker({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder="Buscar produto por nome..."
             value={search}
@@ -187,58 +326,46 @@ function ProductPicker({
               Em estoque
             </div>
           </div>
-          <CommandList>
-            <CommandEmpty>Nenhum produto encontrado.</CommandEmpty>
+          <CommandList ref={listRef}>
+            {filtered.length === 0 && <CommandEmpty>Nenhum produto encontrado.</CommandEmpty>}
             <CommandGroup>
-              {filtered.map((p) => {
-                const inStockCount = p.variations.filter((v) => v.in_stock).length;
-                const prices = p.variations.map((v) =>
-                  v.is_offer && v.offer_price > 0 ? v.offer_price : v.price,
-                ).filter((n) => n > 0);
-                const minPrice = prices.length ? Math.min(...prices) : 0;
-                const maxPrice = prices.length ? Math.max(...prices) : 0;
-                const priceLabel = prices.length
-                  ? minPrice === maxPrice
-                    ? fmtBRL(minPrice)
-                    : `${fmtBRL(minPrice)} – ${fmtBRL(maxPrice)}`
-                  : '—';
-                const allOut = p.variations.length > 0 && inStockCount === 0;
-                return (
-                  <CommandItem
-                    key={p.id}
-                    value={`${p.name} ${p.id}`}
-                    onSelect={() => {
-                      onChange(p.id);
-                      setOpen(false);
-                    }}
-                  >
-                    <Check className={`mr-2 h-4 w-4 ${value === p.id ? 'opacity-100' : 'opacity-0'}`} />
-                    <span
-                      aria-hidden
-                      className={`mr-2 h-2 w-2 shrink-0 rounded-full ${
-                        allOut ? 'bg-destructive' : inStockCount > 0 ? 'bg-emerald-500' : 'bg-muted-foreground/40'
-                      }`}
-                      title={allOut ? 'Sem estoque' : `${inStockCount} em estoque`}
-                    />
-                    <div className="flex flex-col flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="truncate text-sm">{p.name}</span>
-                        <span className="text-xs font-medium text-foreground shrink-0">{priceLabel}</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {p.variations.length} {p.variations.length === 1 ? 'variação' : 'variações'}
-                        {' · '}
-                        {allOut ? (
-                          <span className="text-destructive">sem estoque</span>
-                        ) : (
-                          <span className="text-emerald-600">{inStockCount} em estoque</span>
-                        )}
-                      </span>
-                    </div>
-                    {!p.active && <Badge variant="secondary" className="ml-2 text-[10px]">inativo</Badge>}
-                  </CommandItem>
-                );
-              })}
+              {shouldVirtualize ? (
+                <div
+                  style={{
+                    height: rowVirtualizer.getTotalSize(),
+                    width: '100%',
+                    position: 'relative',
+                  }}
+                >
+                  {rowVirtualizer.getVirtualItems().map((vi) => {
+                    const data = filtered[vi.index];
+                    return (
+                      <ProductRow
+                        key={data.product.id}
+                        data={data}
+                        selected={value === data.product.id}
+                        onSelect={handleSelect}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          transform: `translateY(${vi.start}px)`,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                filtered.map((data) => (
+                  <ProductRow
+                    key={data.product.id}
+                    data={data}
+                    selected={value === data.product.id}
+                    onSelect={handleSelect}
+                  />
+                ))
+              )}
             </CommandGroup>
           </CommandList>
         </Command>
@@ -265,7 +392,36 @@ function VariationPicker({
   );
   const [search, setSearch] = usePersistedState<string>('combos:picker:variation:search', '');
   const selected = value ? variations.find((v) => v.id === value) : null;
-  const filtered = onlyInStock ? variations.filter((v) => v.in_stock) : variations;
+  const filtered = useMemo(() => {
+    const q = norm(search.trim());
+    return variations.filter((v) => {
+      if (onlyInStock && !v.in_stock) return false;
+      if (q && !norm(v.dosage).includes(q)) return false;
+      return true;
+    });
+  }, [variations, onlyInStock, search]);
+
+  const handleSelect = useCallback(
+    (id: string) => {
+      onChange(id);
+      setOpen(false);
+    },
+    [onChange],
+  );
+
+  const handleAny = useCallback(() => {
+    onChange(null);
+    setOpen(false);
+  }, [onChange]);
+
+  const listRef = useRef<HTMLDivElement>(null);
+  const rowVirtualizer = useVirtualizer({
+    count: filtered.length,
+    getScrollElement: () => listRef.current,
+    estimateSize: () => 38,
+    overscan: 10,
+  });
+  const shouldVirtualize = open && filtered.length > VIRTUAL_THRESHOLD;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -286,7 +442,7 @@ function VariationPicker({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-        <Command>
+        <Command shouldFilter={false}>
           <CommandInput
             placeholder="Buscar variação..."
             value={search}
@@ -296,44 +452,53 @@ function VariationPicker({
             <Switch checked={onlyInStock} onCheckedChange={setOnlyInStock} className="scale-75" />
             Apenas em estoque
           </div>
-          <CommandList>
-            <CommandEmpty>Nenhuma variação.</CommandEmpty>
+          <CommandList ref={listRef}>
+            {filtered.length === 0 && <CommandEmpty>Nenhuma variação.</CommandEmpty>}
             <CommandGroup>
               <CommandItem
                 value="qualquer"
-                onSelect={() => { onChange(null); setOpen(false); }}
+                onSelect={handleAny}
               >
                 <Check className={`mr-2 h-4 w-4 ${!value ? 'opacity-100' : 'opacity-0'}`} />
                 <span className="text-sm">Qualquer variação</span>
               </CommandItem>
-              {filtered.map((v) => (
-                <CommandItem
-                  key={v.id}
-                  value={v.dosage}
-                  onSelect={() => { onChange(v.id); setOpen(false); }}
+              {shouldVirtualize ? (
+                <div
+                  style={{
+                    height: rowVirtualizer.getTotalSize(),
+                    width: '100%',
+                    position: 'relative',
+                  }}
                 >
-                  <Check className={`mr-2 h-4 w-4 ${value === v.id ? 'opacity-100' : 'opacity-0'}`} />
-                  <span
-                    aria-hidden
-                    className={`mr-2 h-2 w-2 shrink-0 rounded-full ${
-                      v.in_stock ? 'bg-emerald-500' : 'bg-destructive'
-                    }`}
-                    title={v.in_stock ? 'Em estoque' : 'Sem estoque'}
+                  {rowVirtualizer.getVirtualItems().map((vi) => {
+                    const v = filtered[vi.index];
+                    return (
+                      <VariationRow
+                        key={v.id}
+                        variation={v}
+                        selected={value === v.id}
+                        onSelect={handleSelect}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          transform: `translateY(${vi.start}px)`,
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                filtered.map((v) => (
+                  <VariationRow
+                    key={v.id}
+                    variation={v}
+                    selected={value === v.id}
+                    onSelect={handleSelect}
                   />
-                  <span className="text-sm flex-1 truncate">{v.dosage}</span>
-                  <div className="ml-2 flex items-center gap-2 shrink-0">
-                    {v.is_offer && v.offer_price > 0 ? (
-                      <>
-                        <span className="text-[11px] text-muted-foreground line-through">{fmtBRL(v.price)}</span>
-                        <span className="text-xs font-medium text-primary">{fmtBRL(v.offer_price)}</span>
-                      </>
-                    ) : (
-                      <span className="text-xs font-medium text-foreground">{fmtBRL(v.price)}</span>
-                    )}
-                    {!v.in_stock && <Badge variant="secondary" className="text-[10px]">sem estoque</Badge>}
-                  </div>
-                </CommandItem>
-              ))}
+                ))
+              )}
             </CommandGroup>
           </CommandList>
         </Command>
