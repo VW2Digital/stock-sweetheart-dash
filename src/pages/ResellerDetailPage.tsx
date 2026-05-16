@@ -134,7 +134,11 @@ export default function ResellerDetailPage() {
                   </TableHeader>
                   <TableBody>
                     {pagedOrders.map((o: any) => (
-                      <TableRow key={o.id}>
+                      <TableRow
+                        key={o.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => navigate(`/admin/pedidos/${o.id}`)}
+                      >
                         <TableCell className="text-xs">{new Date(o.created_at).toLocaleString("pt-BR")}</TableCell>
                         <TableCell>{o.customer_name}</TableCell>
                         <TableCell>{o.product_name}</TableCell>
