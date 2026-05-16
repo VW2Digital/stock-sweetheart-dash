@@ -80,6 +80,8 @@ const slugify = (s: string) =>
 const fmtBRL = (n: number) =>
   Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
+const round2 = (n: number) => Math.round((Number(n) || 0) * 100) / 100;
+
 export default function CombosManagerPage() {
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
@@ -384,15 +386,21 @@ function ComboForm({ comboId }: { comboId: string }) {
       ? prod.variations.find((v) => v.id === it.variation_id)
       : prod.variations[0];
     if (!variation) return 0;
-    return variation.is_offer && variation.offer_price > 0 ? variation.offer_price : variation.price;
+    const effective = variation.is_offer && variation.offer_price > 0
+      ? variation.offer_price
+      : variation.price;
+    return round2(effective);
   };
 
   const validItemsForSummary = items.filter((it) => it.product_id && it.quantity > 0);
-  const originalTotal = validItemsForSummary.reduce(
-    (sum, it) => sum + getItemUnitPrice(it) * it.quantity,
-    0,
+  const originalTotal = round2(
+    validItemsForSummary.reduce(
+      (sum, it) => sum + round2(getItemUnitPrice(it) * it.quantity),
+      0,
+    ),
   );
-  const savingsValue = Math.max(0, originalTotal - (combo.price || 0));
+  const comboPrice = round2(combo.price || 0);
+  const savingsValue = round2(Math.max(0, originalTotal - comboPrice));
   const savingsPercent = originalTotal > 0 ? Math.round((savingsValue / originalTotal) * 100) : 0;
 
   const handleSave = async () => {
