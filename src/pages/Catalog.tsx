@@ -205,6 +205,9 @@ const Catalog = () => {
       {/* Banner Carousel */}
       <BannerCarousel />
 
+      {/* Combos em destaque */}
+      <CombosSection />
+
       {/* Trust Bar - Marquee */}
       <div className="border-b border-border/30 overflow-hidden" style={{ background: trustBarBg }}>
         <div className="py-3">
