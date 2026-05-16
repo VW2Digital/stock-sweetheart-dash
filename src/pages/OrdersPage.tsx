@@ -758,20 +758,43 @@ const OrdersPage = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <div className="flex flex-col gap-1.5">
             <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Pagamento</label>
-            <Select value={filterPayment} onValueChange={setFilterPayment}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Pagamento" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">Todos os pagamentos</SelectItem>
-                <SelectItem value="PENDING">Pendente</SelectItem>
-                <SelectItem value="PAID">Pago</SelectItem>
-                <SelectItem value="CONFIRMED">Confirmado</SelectItem>
-                <SelectItem value="RECEIVED">Recebido</SelectItem>
-                <SelectItem value="OVERDUE">Vencido</SelectItem>
-                <SelectItem value="REFUNDED">Estornado</SelectItem>
-              </SelectContent>
-            </Select>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-between font-normal">
+                  <span className="truncate">
+                    {filterPayment.length === 0
+                      ? 'Todos os pagamentos'
+                      : filterPayment.length === 1
+                        ? ({ PENDING: 'Pendente', PAID: 'Pago', CONFIRMED: 'Confirmado', RECEIVED: 'Recebido', OVERDUE: 'Vencido', REFUNDED: 'Estornado' } as Record<string, string>)[filterPayment[0]] || filterPayment[0]
+                        : `${filterPayment.length} selecionados`}
+                  </span>
+                  <ChevronDown className="h-4 w-4 opacity-50 ml-2 shrink-0" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-2" align="start">
+                {[
+                  { v: 'PENDING', l: 'Pendente' },
+                  { v: 'PAID', l: 'Pago' },
+                  { v: 'CONFIRMED', l: 'Confirmado' },
+                  { v: 'RECEIVED', l: 'Recebido' },
+                  { v: 'OVERDUE', l: 'Vencido' },
+                  { v: 'REFUNDED', l: 'Estornado' },
+                ].map(opt => (
+                  <label key={opt.v} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent cursor-pointer text-sm">
+                    <Checkbox
+                      checked={filterPayment.includes(opt.v)}
+                      onCheckedChange={(c) => setFilterPayment(prev => c ? [...prev, opt.v] : prev.filter(x => x !== opt.v))}
+                    />
+                    {opt.l}
+                  </label>
+                ))}
+                {filterPayment.length > 0 && (
+                  <Button variant="ghost" size="sm" className="w-full mt-1 h-7 text-xs" onClick={() => setFilterPayment([])}>
+                    Limpar
+                  </Button>
+                )}
+              </PopoverContent>
+            </Popover>
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Entrega</label>
