@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ShieldCheck, CreditCard, QrCode, CheckCircle2, Clock, Boxes, TrendingDown } from 'lucide-react';
+import { Loader2, ShieldCheck, CreditCard, QrCode, CheckCircle2, Clock, Boxes, TrendingDown, Package } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -23,6 +23,7 @@ interface ComboItem {
   sort_order: number;
   product_name?: string;
   variation_dosage?: string;
+  image?: string;
 }
 
 interface ComboData {
@@ -95,14 +96,25 @@ export default function ComboCheckout() {
       const pids = Array.from(new Set(items.map((i) => i.product_id)));
       const vids = Array.from(new Set(items.map((i) => i.variation_id).filter(Boolean) as string[]));
       const [{ data: prods }, { data: vars }] = await Promise.all([
-        pids.length ? supabase.from('products').select('id, name').in('id', pids) : Promise.resolve({ data: [] as any[] }),
-        vids.length ? supabase.from('product_variations').select('id, dosage').in('id', vids) : Promise.resolve({ data: [] as any[] }),
+        pids.length ? supabase.from('products').select('id, name, images').in('id', pids) : Promise.resolve({ data: [] as any[] }),
+        vids.length ? supabase.from('product_variations').select('id, dosage, image_url, images').in('id', vids) : Promise.resolve({ data: [] as any[] }),
       ]);
-      const pmap = new Map<string, string>(); (prods as any[] || []).forEach((p) => pmap.set(p.id, p.name));
-      const vmap = new Map<string, string>(); (vars as any[] || []).forEach((v) => vmap.set(v.id, v.dosage));
+      const pmap = new Map<string, { name: string; image: string }>();
+      (prods as any[] || []).forEach((p) => {
+        const img = (Array.isArray(p.images) ? p.images : []).find((u: string) => u && !/placeholder/i.test(u)) || '';
+        pmap.set(p.id, { name: p.name, image: img });
+      });
+      const vmap = new Map<string, { dosage: string; image: string }>();
+      (vars as any[] || []).forEach((v) => {
+        const arr = Array.isArray(v.images) ? v.images.filter(Boolean) : [];
+        vmap.set(v.id, { dosage: v.dosage, image: arr[0] || v.image_url || '' });
+      });
       items.forEach((i) => {
-        i.product_name = pmap.get(i.product_id) || 'Produto';
-        i.variation_dosage = i.variation_id ? vmap.get(i.variation_id) : undefined;
+        const p = pmap.get(i.product_id);
+        const v = i.variation_id ? vmap.get(i.variation_id) : undefined;
+        i.product_name = p?.name || 'Produto';
+        i.variation_dosage = v?.dosage;
+        i.image = v?.image || p?.image || '';
       });
       setCombo({
         id: c.id,
