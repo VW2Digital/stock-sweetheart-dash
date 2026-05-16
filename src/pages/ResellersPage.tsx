@@ -246,6 +246,9 @@ export default function ResellersPage() {
       .order("created_at", { ascending: false })
       .limit(50);
     setDetailEvents((ev as any[]) || []);
+    setTimeout(() => {
+      document.getElementById("reseller-detail")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   }
 
   const totals = useMemo(() => {
