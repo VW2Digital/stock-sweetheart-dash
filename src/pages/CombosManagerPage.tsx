@@ -38,9 +38,12 @@ import {
   Copy as CopyIcon,
   Pencil,
   GripVertical,
+  TrendingDown,
+  Wand2,
+  AlertCircle,
 } from 'lucide-react';
 
-interface Variation { id: string; dosage: string; in_stock: boolean; }
+interface Variation { id: string; dosage: string; in_stock: boolean; price: number; offer_price: number; is_offer: boolean; }
 interface Product { id: string; name: string; active: boolean; variations: Variation[]; }
 interface ComboItemRow {
   id: string;
@@ -296,14 +299,19 @@ function ComboForm({ comboId }: { comboId: string }) {
     (async () => {
       setLoading(true);
       const [{ data: prods }, comboRes] = await Promise.all([
-        supabase.from('products').select('id, name, active, product_variations(id, dosage, in_stock)').order('name'),
+        supabase.from('products').select('id, name, active, product_variations(id, dosage, in_stock, price, offer_price, is_offer)').order('name'),
         isNew ? Promise.resolve({ data: null }) : supabase.from('combos' as any).select('*, combo_items(*)').eq('id', comboId).maybeSingle(),
       ]);
       const productList: Product[] = (prods as any[] || []).map((p) => ({
         id: p.id,
         name: p.name,
         active: p.active,
-        variations: (p.product_variations || []).map((v: any) => ({ id: v.id, dosage: v.dosage, in_stock: v.in_stock })),
+        variations: (p.product_variations || []).map((v: any) => ({
+          id: v.id, dosage: v.dosage, in_stock: v.in_stock,
+          price: Number(v.price) || 0,
+          offer_price: Number(v.offer_price) || 0,
+          is_offer: !!v.is_offer,
+        })),
       }));
       setProducts(productList);
       if (!isNew && (comboRes as any).data) {
@@ -368,6 +376,24 @@ function ComboForm({ comboId }: { comboId: string }) {
   const removeItem = (idx: number) => {
     setItems((prev) => prev.filter((_, i) => i !== idx).map((it, i) => ({ ...it, sort_order: i })));
   };
+
+  const getItemUnitPrice = (it: ComboItemRow): number => {
+    const prod = products.find((p) => p.id === it.product_id);
+    if (!prod) return 0;
+    const variation = it.variation_id
+      ? prod.variations.find((v) => v.id === it.variation_id)
+      : prod.variations[0];
+    if (!variation) return 0;
+    return variation.is_offer && variation.offer_price > 0 ? variation.offer_price : variation.price;
+  };
+
+  const validItemsForSummary = items.filter((it) => it.product_id && it.quantity > 0);
+  const originalTotal = validItemsForSummary.reduce(
+    (sum, it) => sum + getItemUnitPrice(it) * it.quantity,
+    0,
+  );
+  const savingsValue = Math.max(0, originalTotal - (combo.price || 0));
+  const savingsPercent = originalTotal > 0 ? Math.round((savingsValue / originalTotal) * 100) : 0;
 
   const handleSave = async () => {
     if (!combo.name.trim()) { toast({ title: 'Informe o nome do combo', variant: 'destructive' }); return; }
@@ -522,6 +548,18 @@ function ComboForm({ comboId }: { comboId: string }) {
             <div className="space-y-1.5">
               <Label>Preço comparativo (riscado)</Label>
               <Input type="number" min={0} step="0.01" value={combo.compare_price} onChange={(e) => setCombo({ ...combo, compare_price: Number(e.target.value) })} />
+              {originalTotal > 0 && Math.abs(originalTotal - combo.compare_price) > 0.01 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs text-primary"
+                  onClick={() => setCombo({ ...combo, compare_price: Number(originalTotal.toFixed(2)) })}
+                >
+                  <Wand2 className="w-3 h-3 mr-1" />
+                  Usar soma dos itens ({fmtBRL(originalTotal)})
+                </Button>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label>Parcelas máximas</Label>
@@ -548,7 +586,10 @@ function ComboForm({ comboId }: { comboId: string }) {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Itens do combo</CardTitle>
+          <div>
+            <CardTitle>Itens do combo</CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">Adicione pelo menos 2 produtos para formar o combo</p>
+          </div>
           <Button size="sm" onClick={addItem}><Plus className="w-4 h-4 mr-1" /> Adicionar item</Button>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -557,6 +598,7 @@ function ComboForm({ comboId }: { comboId: string }) {
           ) : (
             items.map((it, idx) => {
               const prod = products.find((p) => p.id === it.product_id);
+              const unit = getItemUnitPrice(it);
               return (
                 <div key={it.id} className="grid grid-cols-12 gap-2 items-end border rounded-lg p-3">
                   <div className="hidden md:flex col-span-1 items-center text-muted-foreground"><GripVertical className="w-4 h-4" /></div>
@@ -592,12 +634,56 @@ function ComboForm({ comboId }: { comboId: string }) {
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
+                  {prod && unit > 0 && (
+                    <div className="col-span-12 text-xs text-muted-foreground pl-1">
+                      {it.quantity}× {fmtBRL(unit)} = <span className="font-medium text-foreground">{fmtBRL(unit * it.quantity)}</span>
+                    </div>
+                  )}
                 </div>
               );
             })
           )}
+
+          {validItemsForSummary.length === 1 && (
+            <div className="flex items-start gap-2 text-xs text-amber-600 bg-amber-500/10 border border-amber-500/30 rounded-md p-2.5">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span>Adicione mais um produto para que o combo fique ativo no catálogo.</span>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {validItemsForSummary.length >= 2 && (
+        <Card className="border-primary/30 bg-primary/[0.03]">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <TrendingDown className="w-5 h-5 text-primary" />
+              Resumo da oferta
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Soma dos produtos avulsos</span>
+              <span className="font-medium text-foreground line-through">{fmtBRL(originalTotal)}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Preço do combo</span>
+              <span className="font-bold text-primary text-lg">{fmtBRL(combo.price)}</span>
+            </div>
+            <div className="border-t pt-3 flex items-center justify-between">
+              <span className="text-sm font-medium">Cliente economiza</span>
+              {savingsValue > 0 ? (
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-green-600 hover:bg-green-600 text-white">−{savingsPercent}%</Badge>
+                  <span className="font-bold text-green-600">{fmtBRL(savingsValue)}</span>
+                </div>
+              ) : (
+                <span className="text-xs text-muted-foreground">Defina um preço de combo menor que a soma para gerar economia</span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
