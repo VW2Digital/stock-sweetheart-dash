@@ -112,6 +112,43 @@ export default function PaymentLinkCheckout() {
       });
   }, [slug]);
 
+  // Auto-fill from logged-in user's profile + default address
+  useEffect(() => {
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, phone, cpf')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (session.user.email) setEmail((prev) => prev || session.user.email!);
+      if (profile?.full_name) setName((prev) => prev || profile.full_name);
+      if ((profile as any)?.cpf) setCpf((prev) => prev || formatCPF((profile as any).cpf));
+      if (profile?.phone) setPhone((prev) => prev || formatPhone(profile.phone));
+
+      const { data: addrs } = await supabase
+        .from('addresses')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('is_default', { ascending: false });
+      const addr: any = (addrs && addrs.length > 0)
+        ? (addrs.find((a: any) => a.is_default) || addrs[0])
+        : null;
+      if (addr) {
+        setPostalCode((prev) => prev || (addr.postal_code?.replace(/(\d{5})(\d{3})/, '$1-$2') || ''));
+        setAddress((prev) => prev || (addr.street || ''));
+        setAddressNumber((prev) => prev || (addr.number || ''));
+        setComplement((prev) => prev || (addr.complement || ''));
+        setDistrict((prev) => prev || (addr.district || ''));
+        setCity((prev) => prev || (addr.city || ''));
+        setState((prev) => prev || (addr.state || ''));
+      }
+    })();
+  }, []);
+
   // Fetch installment simulation from Asaas (same logic as CheckoutForm)
   useEffect(() => {
     if (!link || link.amount <= 0) return;
