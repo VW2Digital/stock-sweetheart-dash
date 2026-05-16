@@ -27,7 +27,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Copy, Pencil, Plus, Trash2, Link2, BarChart3 } from "lucide-react";
+import { Copy, Pencil, Plus, Trash2, Link2, BarChart3, X } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { Badge } from "@/components/ui/badge";
 
@@ -246,6 +246,9 @@ export default function ResellersPage() {
       .order("created_at", { ascending: false })
       .limit(50);
     setDetailEvents((ev as any[]) || []);
+    setTimeout(() => {
+      document.getElementById("reseller-detail")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   }
 
   const totals = useMemo(() => {
@@ -445,12 +448,15 @@ export default function ResellersPage() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>{detail?.name} — últimos pedidos</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-6 overflow-x-auto">
+      {detail && (
+        <Card id="reseller-detail">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-lg">{detail.name} — últimos pedidos</CardTitle>
+            <Button size="icon" variant="ghost" onClick={() => setDetail(null)} title="Fechar">
+              <X className="h-4 w-4" />
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-6 overflow-x-auto">
             <div>
               <h3 className="text-sm font-semibold mb-2">Eventos do funil (últimos 50)</h3>
               {detailEvents.length === 0 ? (
@@ -516,9 +522,9 @@ export default function ResellersPage() {
                 </TableBody>
               </Table>
             )}
-          </div>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
