@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +28,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Copy, Pencil, Plus, Trash2, Link2, BarChart3, X } from "lucide-react";
+import { Copy, Pencil, Plus, Trash2, Link2, BarChart3 } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { Badge } from "@/components/ui/badge";
 
@@ -69,6 +70,7 @@ const emptyForm = {
 };
 
 export default function ResellersPage() {
+  const navigate = useNavigate();
   const [items, setItems] = useState<Reseller[]>([]);
   const [stats, setStats] = useState<Record<string, Stat>>({});
   const [loading, setLoading] = useState(true);
@@ -76,9 +78,6 @@ export default function ResellersPage() {
   const [editing, setEditing] = useState<Reseller | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
   const [saving, setSaving] = useState(false);
-  const [detail, setDetail] = useState<Reseller | null>(null);
-  const [detailOrders, setDetailOrders] = useState<any[]>([]);
-  const [detailEvents, setDetailEvents] = useState<any[]>([]);
   const [baseUrl, setBaseUrl] = useState("");
 
   useEffect(() => {
@@ -230,25 +229,8 @@ export default function ResellersPage() {
     toast.success("Link copiado");
   }
 
-  async function openDetail(r: Reseller) {
-    setDetail(r);
-    const { data } = await supabase
-      .from("orders")
-      .select("id,created_at,product_name,status,total_value,reseller_commission,customer_name")
-      .eq("reseller_id", r.id)
-      .order("created_at", { ascending: false })
-      .limit(50);
-    setDetailOrders(data || []);
-    const { data: ev } = await supabase
-      .from("reseller_events" as any)
-      .select("created_at,event_type,product_name,amount,session_id,metadata")
-      .eq("reseller_id", r.id)
-      .order("created_at", { ascending: false })
-      .limit(50);
-    setDetailEvents((ev as any[]) || []);
-    setTimeout(() => {
-      document.getElementById("reseller-detail")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 50);
+  function openDetail(r: Reseller) {
+    navigate(`/admin/revendedores/${r.id}`);
   }
 
   const totals = useMemo(() => {
