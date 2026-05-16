@@ -9,6 +9,7 @@ import { ArrowLeft } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 
 const PAID = ["PAID", "CONFIRMED", "RECEIVED", "RECEIVED_IN_CASH"];
+const PAGE_SIZE = 10;
 
 export default function ResellerDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -17,6 +18,8 @@ export default function ResellerDetailPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [eventsPage, setEventsPage] = useState(1);
+  const [ordersPage, setOrdersPage] = useState(1);
 
   useEffect(() => {
     if (!id) return;
@@ -41,6 +44,11 @@ export default function ResellerDetailPage() {
       setLoading(false);
     })();
   }, [id]);
+
+  const eventsTotalPages = Math.max(1, Math.ceil(events.length / PAGE_SIZE));
+  const ordersTotalPages = Math.max(1, Math.ceil(orders.length / PAGE_SIZE));
+  const pagedEvents = events.slice((eventsPage - 1) * PAGE_SIZE, eventsPage * PAGE_SIZE);
+  const pagedOrders = orders.slice((ordersPage - 1) * PAGE_SIZE, ordersPage * PAGE_SIZE);
 
   return (
     <div className="space-y-6">
@@ -76,7 +84,7 @@ export default function ResellerDetailPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {events.map((e: any, idx: number) => (
+                    {pagedEvents.map((e: any, idx: number) => (
                       <TableRow key={idx}>
                         <TableCell className="text-xs">{new Date(e.created_at).toLocaleString("pt-BR")}</TableCell>
                         <TableCell><Badge variant="secondary">{e.event_type}</Badge></TableCell>
@@ -88,6 +96,21 @@ export default function ResellerDetailPage() {
                     ))}
                   </TableBody>
                 </Table>
+              )}
+              {events.length > PAGE_SIZE && (
+                <div className="flex items-center justify-between pt-2">
+                  <span className="text-xs text-muted-foreground">
+                    Página {eventsPage} de {eventsTotalPages} · {events.length} eventos
+                  </span>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" disabled={eventsPage <= 1} onClick={() => setEventsPage((p) => p - 1)}>
+                      Anterior
+                    </Button>
+                    <Button variant="outline" size="sm" disabled={eventsPage >= eventsTotalPages} onClick={() => setEventsPage((p) => p + 1)}>
+                      Próxima
+                    </Button>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -110,7 +133,7 @@ export default function ResellerDetailPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {orders.map((o: any) => (
+                    {pagedOrders.map((o: any) => (
                       <TableRow key={o.id}>
                         <TableCell className="text-xs">{new Date(o.created_at).toLocaleString("pt-BR")}</TableCell>
                         <TableCell>{o.customer_name}</TableCell>
@@ -126,6 +149,21 @@ export default function ResellerDetailPage() {
                     ))}
                   </TableBody>
                 </Table>
+              )}
+              {orders.length > PAGE_SIZE && (
+                <div className="flex items-center justify-between pt-2">
+                  <span className="text-xs text-muted-foreground">
+                    Página {ordersPage} de {ordersTotalPages} · {orders.length} pedidos
+                  </span>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" disabled={ordersPage <= 1} onClick={() => setOrdersPage((p) => p - 1)}>
+                      Anterior
+                    </Button>
+                    <Button variant="outline" size="sm" disabled={ordersPage >= ordersTotalPages} onClick={() => setOrdersPage((p) => p + 1)}>
+                      Próxima
+                    </Button>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
