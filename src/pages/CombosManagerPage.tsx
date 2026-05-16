@@ -399,8 +399,8 @@ function ComboForm({ comboId }: { comboId: string }) {
     if (!combo.name.trim()) { toast({ title: 'Informe o nome do combo', variant: 'destructive' }); return; }
     if (combo.price <= 0) { toast({ title: 'Informe o preço do combo', variant: 'destructive' }); return; }
     const validItems = items.filter((it) => it.product_id && it.quantity > 0);
-    if (validItems.length < 2 && combo.active) {
-      toast({ title: 'Combos ativos precisam ter ao menos 2 itens', variant: 'destructive' });
+    if (validItems.length < 2) {
+      toast({ title: 'Adicione pelo menos 2 itens válidos ao combo', description: 'Cada item precisa ter um produto selecionado e quantidade maior que zero.', variant: 'destructive' });
       return;
     }
     setSaving(true);
