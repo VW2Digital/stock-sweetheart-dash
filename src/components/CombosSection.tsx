@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Boxes, ArrowRight } from 'lucide-react';
+import { Boxes, Package } from 'lucide-react';
 
 interface ComboCard {
   id: string;
@@ -13,24 +12,26 @@ interface ComboCard {
   image_url: string;
   price: number;
   compare_price: number;
-  combo_items: { quantity: number; product_id: string }[];
+  combo_items: { quantity: number; product_id: string; sort_order: number }[];
 }
 
-interface ProductLite { id: string; name: string; }
+interface ProductLite { id: string; name: string; images: string[] | null; }
+
+interface ProductInfo { name: string; image: string }
 
 const fmtBRL = (n: number) =>
   Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 export default function CombosSection() {
   const [combos, setCombos] = useState<ComboCard[]>([]);
-  const [products, setProducts] = useState<Record<string, string>>({});
+  const [products, setProducts] = useState<Record<string, ProductInfo>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       const { data, error } = await supabase
         .from('combos' as any)
-        .select('id, name, subtitle, slug, image_url, price, compare_price, combo_items(quantity, product_id)')
+        .select('id, name, subtitle, slug, image_url, price, compare_price, combo_items(quantity, product_id, sort_order)')
         .eq('active', true)
         .order('sort_order', { ascending: true });
       if (!error && data) {
@@ -38,9 +39,14 @@ export default function CombosSection() {
         setCombos(rows);
         const pids = Array.from(new Set(rows.flatMap((c) => (c.combo_items || []).map((i) => i.product_id))));
         if (pids.length > 0) {
-          const { data: prods } = await supabase.from('products').select('id, name').in('id', pids);
-          const map: Record<string, string> = {};
-          (prods as ProductLite[] | null)?.forEach((p) => { map[p.id] = p.name; });
+          const { data: prods } = await supabase
+            .from('products')
+            .select('id, name, images')
+            .in('id', pids);
+          const map: Record<string, ProductInfo> = {};
+          (prods as ProductLite[] | null)?.forEach((p) => {
+            map[p.id] = { name: p.name, image: (p.images && p.images[0]) || '' };
+          });
           setProducts(map);
         }
       }
@@ -68,42 +74,83 @@ export default function CombosSection() {
             const discount = c.compare_price > c.price
               ? Math.round(((c.compare_price - c.price) / c.compare_price) * 100)
               : 0;
-            const itemsLabel = (c.combo_items || [])
-              .map((i) => `${i.quantity}x ${products[i.product_id] || 'item'}`)
-              .join(' + ');
+            const items = [...(c.combo_items || [])].sort(
+              (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0),
+            );
+            const previewItems = items.slice(0, 4);
+            const extraCount = Math.max(0, items.length - previewItems.length);
+            const tileGridClass =
+              previewItems.length === 1
+                ? 'grid-cols-1 grid-rows-1'
+                : previewItems.length === 2
+                ? 'grid-cols-2 grid-rows-1'
+                : previewItems.length === 3
+                ? 'grid-cols-2 grid-rows-2'
+                : 'grid-cols-2 grid-rows-2';
             return (
-              <Link key={c.id} to={`/combo/${c.slug}`} className="group">
-                <div className="rounded-xl border-2 border-primary/20 bg-card overflow-hidden hover:shadow-xl hover:border-primary/40 transition-all duration-300 relative h-full flex flex-col">
+              <Link key={c.id} to={`/combo/${c.slug}`} className="group block">
+                <div className="relative h-full flex flex-col rounded-xl border bg-card p-4 hover:shadow-lg hover:border-primary/40 transition-all duration-200">
                   {discount > 0 && (
-                    <div className="absolute top-0 right-0 z-10 bg-primary text-primary-foreground px-3 py-1 rounded-bl-xl text-xs font-bold">
+                    <div className="absolute top-3 right-3 z-10 bg-primary text-primary-foreground px-2 py-0.5 rounded-md text-[11px] font-bold">
                       -{discount}%
                     </div>
                   )}
-                  <Badge className="absolute top-2 left-2 z-10 bg-primary text-primary-foreground">COMBO</Badge>
-                  <div className="aspect-[16/10] bg-muted overflow-hidden">
-                    {c.image_url ? (
-                      <img src={c.image_url} alt={c.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                        <Boxes className="w-12 h-12" />
-                      </div>
-                    )}
+                  <h3 className="font-bold text-foreground text-base sm:text-lg leading-tight line-clamp-2 pr-12 mb-3 group-hover:text-primary transition-colors">
+                    {c.name}
+                  </h3>
+
+                  <div className={`grid ${tileGridClass} gap-2 mb-3`}>
+                    {previewItems.map((it, idx) => {
+                      const info = products[it.product_id];
+                      const isLastWithMore = extraCount > 0 && idx === previewItems.length - 1;
+                      return (
+                        <div
+                          key={`${it.product_id}-${idx}`}
+                          className="relative aspect-square rounded-lg bg-muted overflow-hidden border border-border/60"
+                          title={info?.name}
+                        >
+                          {info?.image ? (
+                            <img
+                              src={info.image}
+                              alt={info.name}
+                              loading="lazy"
+                              className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                              <Package className="w-8 h-8" />
+                            </div>
+                          )}
+                          {it.quantity > 1 && (
+                            <span className="absolute top-1 left-1 bg-background/90 text-foreground text-[10px] font-semibold px-1.5 py-0.5 rounded">
+                              {it.quantity}x
+                            </span>
+                          )}
+                          {isLastWithMore && (
+                            <div className="absolute inset-0 bg-background/70 backdrop-blur-sm flex items-center justify-center">
+                              <span className="text-foreground font-bold text-lg">+{extraCount}</span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div className="p-4 space-y-2 flex-1 flex flex-col">
-                    <h3 className="font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">{c.name}</h3>
-                    {c.subtitle && <p className="text-xs text-muted-foreground line-clamp-1">{c.subtitle}</p>}
-                    {itemsLabel && (
-                      <p className="text-xs text-muted-foreground line-clamp-2 flex-1">{itemsLabel}</p>
+
+                  <div className="mt-auto space-y-1">
+                    {c.subtitle && (
+                      <p className="text-xs text-muted-foreground line-clamp-1">{c.subtitle}</p>
                     )}
-                    <div className="space-y-0.5 pt-1">
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <span className="text-primary font-bold text-xl">{fmtBRL(c.price)}</span>
                       {c.compare_price > 0 && c.compare_price > c.price && (
-                        <p className="text-xs text-muted-foreground line-through">{fmtBRL(c.compare_price)}</p>
+                        <span className="text-xs text-muted-foreground line-through">
+                          {fmtBRL(c.compare_price)}
+                        </span>
                       )}
-                      <p className="text-primary font-bold text-xl">{fmtBRL(c.price)}</p>
                     </div>
-                    <Button size="sm" className="w-full mt-2">
-                      Comprar combo <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      {items.length} {items.length === 1 ? 'item' : 'itens'} no combo
+                    </p>
                   </div>
                 </div>
               </Link>
