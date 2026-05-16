@@ -80,6 +80,7 @@ const FlashCampaignFormPage = lazy(() => import("./pages/FlashCampaignFormPage")
 const FlashCampaignThankYouPage = lazy(() => import("./pages/FlashCampaignThankYouPage"));
 const FlashCampaignLeadsPage = lazy(() => import("./pages/FlashCampaignLeadsPage"));
 const ResellersPage = lazy(() => import("./pages/ResellersPage"));
+const ResellerDetailPage = lazy(() => import("./pages/ResellerDetailPage"));
 
 import PromoPopup from "./components/PromoPopup";
 import { SessionGuard } from "./components/SessionGuard";
@@ -159,6 +160,7 @@ const App = () => (
             <Route path="links-pagamento" element={<PaymentLinksPage />} />
             <Route path="cupons" element={<CouponsPage />} />
             <Route path="revendedores" element={<ResellersPage />} />
+            <Route path="revendedores/:id" element={<ResellerDetailPage />} />
             <Route path="relatorios" element={<ReportsPage />} />
             <Route path="ab-test" element={<AbTestPage />} />
             <Route path="campanhas-relampago" element={<FlashCampaignsPage />} />
