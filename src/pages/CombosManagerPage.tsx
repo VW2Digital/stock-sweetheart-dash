@@ -15,6 +15,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,6 +50,9 @@ import {
   TrendingDown,
   Wand2,
   AlertCircle,
+  ChevronsUpDown,
+  Check,
+  Search,
 } from 'lucide-react';
 
 interface Variation { id: string; dosage: string; in_stock: boolean; price: number; offer_price: number; is_offer: boolean; }
