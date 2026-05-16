@@ -738,7 +738,7 @@ const OrdersPage = () => {
             <AdminKpiCard label="Total (filtrado)" value={filteredOrders.length} icon={Receipt} tone="primary" hint={fmt(totalValue)} />
             <AdminKpiCard label="Pagos" value={paidOrders.length} icon={CreditCard} tone="success" hint={fmt(paidValue)} />
             <AdminKpiCard label="Pendentes" value={pendingOrders.length} icon={AlertCircle} tone="warning" hint={fmt(pendingValue)} />
-            <AdminKpiCard label="Estornados/Vencidos" value={refundedOrders.length} icon={X} tone="destructive" />
+            <AdminKpiCard label="Estornados" value={refundedOrders.length} icon={X} tone="destructive" hint="inclui vencidos" />
             <AdminKpiCard label="Em trânsito" value={inTransitCount} icon={Truck} tone="default" hint={`${deliveredCount} entregue(s)`} />
             <AdminKpiCard label="Ticket médio" value={fmt(avgTicket)} icon={Star} tone="default" hint="entre pagos" />
           </div>

@@ -44,7 +44,7 @@ export function AdminKpiCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[11px] sm:text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          <p className="text-[11px] sm:text-xs font-medium uppercase tracking-wider text-muted-foreground leading-tight break-words">
             {label}
           </p>
           <div className="mt-1.5 text-xl sm:text-2xl font-bold text-foreground truncate">
