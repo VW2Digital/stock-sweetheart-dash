@@ -790,26 +790,20 @@ function ComboForm({ comboId }: { comboId: string }) {
                   <div className="hidden md:flex col-span-1 items-center text-muted-foreground"><GripVertical className="w-4 h-4" /></div>
                   <div className="col-span-12 md:col-span-5 space-y-1">
                     <Label className="text-xs">Produto</Label>
-                    <Select value={it.product_id} onValueChange={(v) => updateItem(idx, { product_id: v, variation_id: null })}>
-                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                      <SelectContent>
-                        {products.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>{p.name}{!p.active ? ' (inativo)' : ''}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <ProductPicker
+                      products={products}
+                      value={it.product_id}
+                      onChange={(pid) => updateItem(idx, { product_id: pid, variation_id: null })}
+                    />
                   </div>
                   <div className="col-span-7 md:col-span-3 space-y-1">
                     <Label className="text-xs">Variação</Label>
-                    <Select value={it.variation_id || 'none'} onValueChange={(v) => updateItem(idx, { variation_id: v === 'none' ? null : v })} disabled={!prod}>
-                      <SelectTrigger><SelectValue placeholder="Qualquer" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Qualquer</SelectItem>
-                        {prod?.variations.map((v) => (
-                          <SelectItem key={v.id} value={v.id}>{v.dosage}{!v.in_stock ? ' (sem estoque)' : ''}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <VariationPicker
+                      variations={prod?.variations || []}
+                      value={it.variation_id}
+                      onChange={(vid) => updateItem(idx, { variation_id: vid })}
+                      disabled={!prod}
+                    />
                   </div>
                   <div className="col-span-3 md:col-span-2 space-y-1">
                     <Label className="text-xs">Qtd</Label>
