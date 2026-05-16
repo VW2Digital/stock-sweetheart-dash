@@ -235,10 +235,6 @@ const Catalog = () => {
           </div>
         </div>
       </div>
-
-      {/* Combos em destaque */}
-      <CombosSection />
-
       {/* Hero */}
       <AnimatedSection variant="fadeUp" className="bg-gradient-to-b from-primary/5 to-transparent py-12 text-center">
         <div className="max-w-3xl mx-auto px-4">
@@ -248,6 +244,9 @@ const Catalog = () => {
       </AnimatedSection>
 
       <div className="max-w-7xl mx-auto px-[5px] py-8">
+        {/* Combos em destaque */}
+        <CombosSection />
+
         {/* Filters Bar */}
         <AnimatedSection variant="fadeIn" className="mb-8">
           <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
