@@ -548,6 +548,18 @@ function ComboForm({ comboId }: { comboId: string }) {
             <div className="space-y-1.5">
               <Label>Preço comparativo (riscado)</Label>
               <Input type="number" min={0} step="0.01" value={combo.compare_price} onChange={(e) => setCombo({ ...combo, compare_price: Number(e.target.value) })} />
+              {originalTotal > 0 && Math.abs(originalTotal - combo.compare_price) > 0.01 && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs text-primary"
+                  onClick={() => setCombo({ ...combo, compare_price: Number(originalTotal.toFixed(2)) })}
+                >
+                  <Wand2 className="w-3 h-3 mr-1" />
+                  Usar soma dos itens ({fmtBRL(originalTotal)})
+                </Button>
+              )}
             </div>
             <div className="space-y-1.5">
               <Label>Parcelas máximas</Label>
