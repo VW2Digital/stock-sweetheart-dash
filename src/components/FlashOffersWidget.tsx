@@ -22,8 +22,6 @@ interface WidgetConfig {
   title: string;
 }
 
-const STORAGE_KEY = "flash_offers_widget_closed_until";
-
 const formatBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -51,11 +49,6 @@ const FlashOffersWidget = () => {
   const [closed, setClosed] = useState(false);
 
   const onCatalog = location.pathname === "/" || location.pathname === "/catalogo";
-
-  useEffect(() => {
-    const until = Number(sessionStorage.getItem(STORAGE_KEY) || 0);
-    if (until && until > Date.now()) setClosed(true);
-  }, []);
 
   useEffect(() => {
     if (!onCatalog) return;
@@ -104,7 +97,6 @@ const FlashOffersWidget = () => {
   if (countdown?.ended) return null;
 
   const close = () => {
-    sessionStorage.setItem(STORAGE_KEY, String(Date.now() + 60 * 60 * 1000));
     setClosed(true);
   };
 
