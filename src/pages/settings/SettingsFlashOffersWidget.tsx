@@ -63,7 +63,7 @@ const SettingsFlashOffersWidget = () => {
   };
 
   return (
-    <div className="space-y-6 w-full max-w-2xl">
+    <div className="space-y-6 w-full">
       <SettingsBackButton
         title="Widget Ofertas Relâmpago"
         description="Card flutuante exibido no catálogo com produtos em oferta"
