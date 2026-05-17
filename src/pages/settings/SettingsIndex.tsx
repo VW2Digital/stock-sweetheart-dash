@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Image, Palette, Type, Code, LayoutDashboard, CreditCard, Truck, MessageSquare, FileText, Settings, Plug, Tags, ShieldCheck, Database, Search, ChevronRight, X, BookOpen, GraduationCap, ListChecks } from 'lucide-react';
+import { Image, Palette, Type, Code, LayoutDashboard, CreditCard, Truck, MessageSquare, FileText, Settings, Plug, Tags, ShieldCheck, Database, Search, ChevronRight, X, BookOpen, GraduationCap, ListChecks, Zap } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import SiteUrlCard from '@/components/admin/SiteUrlCard';
@@ -43,6 +43,7 @@ const categories: { label: string; icon: React.ComponentType<{ className?: strin
     items: [
       { title: 'Banners & Popups', description: 'Gestão de banners e popups promocionais', icon: LayoutDashboard, path: 'pagina-inicial' },
       { title: 'Trust Bar (Catálogo)', description: 'Edite os itens da barra de destaques (frete, pagamento, segurança)', icon: ShieldCheck, path: 'trust-bar', statusKeys: ['trust_bar_items'] },
+      { title: 'Widget Ofertas Relâmpago', description: 'Card flutuante no catálogo com produtos em oferta e contador regressivo', icon: Zap, path: 'widget-ofertas', statusKeys: ['flash_offers_widget'] },
     ],
   },
   {
