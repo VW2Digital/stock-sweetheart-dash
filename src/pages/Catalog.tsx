@@ -31,6 +31,7 @@ import { getAbContext, trackAbEvent } from '@/lib/abTest';
 import { loadAbConfig, getCachedAbConfig, formatDiscountBadge, DEFAULT_AB_CONFIG, type AbTestConfig } from '@/lib/abTestConfig';
 import ProductCardImageCarousel from '@/components/ProductCardImageCarousel';
 import { translateValue } from '@/lib/translateValue';
+import { useAITranslateBatch } from '@/hooks/useAITranslate';
 
 const Catalog = () => {
   const { totalItems, addToCart } = useCart();
