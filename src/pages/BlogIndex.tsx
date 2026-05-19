@@ -54,7 +54,27 @@ export default function BlogIndex() {
   const formatDate = (d: string | null, fallback: string) =>
     new Date(d || fallback).toLocaleDateString(INTL_LOCALES[lang], { day: '2-digit', month: 'short', year: 'numeric' });
 
-  const [featured, ...rest] = filtered;
+  // Traduz dinamicamente título, resumo e autor de cada post (PT → idioma atual)
+  const textsToTranslate = useMemo(() => {
+    const arr: string[] = [];
+    filtered.forEach((p) => {
+      arr.push(p.title || '', p.excerpt || '', p.author_name || '');
+    });
+    return arr;
+  }, [filtered]);
+  const translated = useAITranslateBatch(textsToTranslate, lang);
+  const translatedPosts = useMemo(
+    () =>
+      filtered.map((p, i) => ({
+        ...p,
+        title: translated[i * 3] || p.title,
+        excerpt: translated[i * 3 + 1] || p.excerpt,
+        author_name: translated[i * 3 + 2] || p.author_name,
+      })),
+    [filtered, translated],
+  );
+
+  const [featured, ...rest] = translatedPosts;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
