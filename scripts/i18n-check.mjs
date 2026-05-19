@@ -90,7 +90,7 @@ const usedSet = new Set(usedKeys.keys());
 
 const missingInLocale = {}; // locale -> [keys]
 for (const lng of LOCALES) {
-  missingInLocale[lng] = [...allKeys].filter((k) => !hasKey(dicts[lng], k)).sort();
+  missingInLocale[lng] = [...allKeys].filter((k) => !hasKey(flatDicts[lng], k)).sort();
 }
 
 const missingInCode = [...usedSet].filter((k) => !allKeys.has(k)).sort();
