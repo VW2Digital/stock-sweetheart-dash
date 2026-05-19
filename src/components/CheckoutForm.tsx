@@ -1864,7 +1864,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
                         <p className="text-sm font-medium text-foreground">{opt.company} — {opt.name}</p>
                         {opt.delivery_time && (
                           <p className="text-xs text-muted-foreground">
-                            Prazo: {opt.delivery_time} dias úteis
+                            {t('shippingDeadline', { days: opt.delivery_time })}
                           </p>
                         )}
                       </div>
@@ -1873,7 +1873,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
                           <span className="text-xs text-muted-foreground line-through">
                             R$ {opt.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                           </span>
-                          <span className="block text-sm font-bold text-primary">Grátis</span>
+                          <span className="block text-sm font-bold text-primary">{t('free')}</span>
                         </div>
                       ) : (
                         <span className="text-sm font-bold text-foreground">
@@ -1890,34 +1890,34 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
                 ) : (
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Produtos</span>
+                      <span>{t('products')}</span>
                       <span>R$ {baseProductTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                     </div>
                     {selectedShipping && (
                       <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Frete ({selectedShipping.company})</span>
+                        <span>{t('shippingWithCompany', { company: selectedShipping.company })}</span>
                         {qualifiesForFreeShipping ? (
-                          <span className="text-primary font-medium">Grátis</span>
+                          <span className="text-primary font-medium">{t('free')}</span>
                         ) : (
                           <span>R$ {selectedShipping.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                         )}
                       </div>
                     )}
                     <div className="flex justify-between text-sm font-bold text-foreground pt-1">
-                      <span>Total</span>
+                      <span>{t('total')}</span>
                       <span>R$ {totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                     </div>
                   </div>
                 )}
               </div>
               <Button onClick={handleShippingNext} disabled={!selectedShipping} className="w-full">
-                Continuar para Pagamento
+                {t('continueToPayment')}
               </Button>
             </>
           )}
 
           <button type="button" onClick={() => setStep('address')} className="text-xs text-muted-foreground hover:text-foreground w-full text-center">
-            ← Voltar ao endereço
+            ← {t('backToAddress')}
           </button>
         </CardContent>
       </Card>
