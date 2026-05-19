@@ -211,35 +211,8 @@ const Catalog = () => {
       <BannerCarousel />
 
       {/* Trust Bar - Marquee */}
-      <div className="border-b border-border/30 overflow-hidden" style={{ background: trustBarBg }}>
-        <div className="py-3">
-          <div className="flex animate-marquee whitespace-nowrap" style={{ animationDuration: `${trustBarSpeed}s` }}>
-            {[...Array(2)].map((_, repeat) => (
-              <div key={repeat} className="flex items-center shrink-0">
-                <span className="text-border mx-4 md:mx-8 text-lg">|</span>
-                {trustBarItems.map((item, i) => {
-                  const Icon = TRUST_BAR_ICONS[item.icon] ?? ShieldCheck;
-                  const iconColor = item.color || undefined;
-                  return (
-                    <div key={`${repeat}-${i}-${item.title}`} className="flex items-center shrink-0">
-                      {i > 0 && <span className="text-border mx-4 md:mx-8 text-lg">|</span>}
-                      <div className="flex items-center gap-2 shrink-0">
-                        <div className="bg-card rounded-lg p-2 shrink-0 shadow-sm">
-                          <Icon className={iconColor ? 'w-5 h-5' : 'w-5 h-5 text-primary'} style={iconColor ? { color: iconColor } : undefined} />
-                        </div>
-                        <div className="whitespace-nowrap">
-                          <p className="text-xs font-bold text-foreground uppercase leading-tight">{item.title}</p>
-                          <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{item.desc}</p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <TrustBar items={trustBarItems} bg={trustBarBg} speed={trustBarSpeed} lang={lang} />
+
       {/* Hero */}
       <AnimatedSection variant="fadeUp" className="bg-gradient-to-b from-primary/5 to-transparent py-12 text-center">
         <div className="max-w-3xl mx-auto px-4">
