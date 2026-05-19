@@ -18,6 +18,10 @@ interface BlogPost {
   author_name: string;
   published_at: string | null;
   created_at: string;
+  share_facebook_url?: string | null;
+  share_twitter_url?: string | null;
+  share_linkedin_url?: string | null;
+  share_whatsapp_url?: string | null;
 }
 
 export default function BlogPostPage() {
