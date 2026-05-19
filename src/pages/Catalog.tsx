@@ -47,9 +47,6 @@ const Catalog = () => {
   const [searchParams] = useSearchParams();
   const { t, lang } = useLanguage();
   const variantCfg = abConfig[ab.variant] || DEFAULT_AB_CONFIG[ab.variant];
-  const ctaText = variantCfg.ctaText?.trim().toLowerCase() === 'adicionar ao carrinho'
-    ? t('addToCart')
-    : translateValue(variantCfg.ctaText);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [wholesaleMap, setWholesaleMap] = useState<Record<string, WholesaleTier[]>>({});
@@ -269,8 +266,8 @@ const Catalog = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t('allForms')}</SelectItem>
-                  {pharmaForms.map((f) => (
-                    <SelectItem key={f} value={f}>{f}</SelectItem>
+                  {pharmaForms.map((f, idx) => (
+                    <SelectItem key={f} value={f}>{translatedPharmaForms[idx] || f}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -281,8 +278,8 @@ const Catalog = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t('allRoutes')}</SelectItem>
-                  {adminRoutes.map((r) => (
-                    <SelectItem key={r} value={r}>{r}</SelectItem>
+                  {adminRoutes.map((r, idx) => (
+                    <SelectItem key={r} value={r}>{translatedAdminRoutes[idx] || r}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
