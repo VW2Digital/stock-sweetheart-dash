@@ -7,6 +7,7 @@ import { ChevronRight, Clock, Facebook, Home, Linkedin, Loader2, MessageCircle, 
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { INTL_LOCALES } from '@/i18n';
+import { useAITranslateBatch } from '@/hooks/useAITranslate';
 
 interface BlogPost {
   id: string;
@@ -49,8 +50,15 @@ export default function BlogPostPage() {
     return Math.max(1, Math.round(words / 200));
   }, [post?.content]);
 
+  // Tradução dinâmica de título, resumo, autor e conteúdo (HTML) via IA
+  const sourceTexts = useMemo(
+    () => [post?.title || '', post?.excerpt || '', post?.author_name || '', post?.content || ''],
+    [post?.title, post?.excerpt, post?.author_name, post?.content],
+  );
+  const [tTitle, tExcerpt, tAuthor, tContent] = useAITranslateBatch(sourceTexts, lang);
+
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
-  const shareText = post?.title || '';
+  const shareText = tTitle || '';
 
   const share = (network: 'facebook' | 'twitter' | 'linkedin' | 'whatsapp') => {
     const u = encodeURIComponent(shareUrl);
@@ -97,12 +105,12 @@ export default function BlogPostPage() {
               <ChevronRight className="h-4 w-4" />
               <Link to="/blog" className="hover:text-foreground transition-colors">{t('blog.blogLabel')}</Link>
               <ChevronRight className="h-4 w-4" />
-              <span className="text-foreground truncate">{post.title}</span>
+              <span className="text-foreground truncate">{tTitle || post.title}</span>
             </nav>
 
             {/* Título */}
             <h1 className="text-3xl sm:text-5xl font-bold text-foreground tracking-tight leading-tight mb-8">
-              {post.title}
+              {tTitle || post.title}
             </h1>
 
             {/* Autor */}
@@ -111,7 +119,7 @@ export default function BlogPostPage() {
                 <User className="h-5 w-5" />
               </span>
               <div className="leading-tight">
-                <p className="text-sm font-semibold text-foreground">{post.author_name || 'Liberty Pharma'}</p>
+                <p className="text-sm font-semibold text-foreground">{tAuthor || post.author_name || 'Liberty Pharma'}</p>
                 <p className="text-xs text-muted-foreground">
                   {t('blog.publishedOn')}{' '}
                   {new Date(post.published_at || post.created_at).toLocaleDateString(INTL_LOCALES[lang], {
@@ -155,7 +163,7 @@ export default function BlogPostPage() {
             {post.cover_image && (
               <img
                 src={post.cover_image}
-                alt={post.title}
+                alt={tTitle || post.title}
                 className="w-full aspect-[16/9] object-cover rounded-lg border border-border mb-10"
               />
             )}
@@ -163,8 +171,11 @@ export default function BlogPostPage() {
             {/* Conteúdo */}
             <div
               className="prose prose-neutral dark:prose-invert max-w-none prose-headings:text-foreground prose-p:text-foreground prose-a:text-primary prose-strong:text-foreground prose-li:text-foreground"
-              dangerouslySetInnerHTML={{ __html: post.content }}
+              dangerouslySetInnerHTML={{ __html: tContent || post.content }}
             />
+            {lang !== 'pt' && !tContent && post.content && (
+              <p className="text-xs text-muted-foreground mt-3 italic">{t('blog.loading')}</p>
+            )}
           </article>
         )}
       </main>
