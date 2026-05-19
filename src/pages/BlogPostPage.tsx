@@ -67,13 +67,20 @@ export default function BlogPostPage() {
   const share = (network: 'facebook' | 'twitter' | 'linkedin' | 'whatsapp') => {
     const u = encodeURIComponent(shareUrl);
     const t = encodeURIComponent(shareText);
-    const map = {
+    const overrides: Record<typeof network, string | null | undefined> = {
+      facebook: post?.share_facebook_url,
+      twitter: post?.share_twitter_url,
+      linkedin: post?.share_linkedin_url,
+      whatsapp: post?.share_whatsapp_url,
+    };
+    const defaults = {
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${u}`,
       twitter: `https://twitter.com/intent/tweet?url=${u}&text=${t}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${u}`,
       whatsapp: `https://api.whatsapp.com/send?text=${t}%20${u}`,
     };
-    window.open(map[network], '_blank', 'noopener,noreferrer,width=600,height=520');
+    const target = (overrides[network] && overrides[network]!.trim()) || defaults[network];
+    window.open(target, '_blank', 'noopener,noreferrer,width=600,height=520');
   };
 
   const copyLink = async () => {
