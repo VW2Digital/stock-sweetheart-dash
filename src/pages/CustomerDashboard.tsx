@@ -767,7 +767,7 @@ const CustomerDashboard = () => {
                               <div className="pt-3 border-t border-border/50 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
                                 {/* Delivery Timeline */}
                                 <div className="bg-muted/30 border border-border/30 rounded-lg p-4">
-                                  <p className="text-xs font-semibold text-foreground uppercase tracking-wider mb-4">Timeline do Pedido</p>
+                                  <p className="text-xs font-semibold text-foreground uppercase tracking-wider mb-4">{t('orderTimeline')}</p>
                                   <div className="flex items-center justify-between relative">
                                     {/* Progress line */}
                                     <div className="absolute top-4 left-0 right-0 h-0.5 bg-border" />
@@ -781,10 +781,10 @@ const CustomerDashboard = () => {
                                       }}
                                     />
                                     {[
-                                      { key: 'PROCESSING', label: 'Processando', icon: Clock },
-                                      { key: 'SHIPPED', label: 'Enviado', icon: Package },
-                                      { key: 'IN_TRANSIT', label: 'Em Trânsito', icon: Truck },
-                                      { key: 'DELIVERED', label: 'Entregue', icon: CheckCircle2 },
+                                      { key: 'PROCESSING', labelKey: 'deliveryProcessingShort', icon: Clock },
+                                      { key: 'SHIPPED', labelKey: 'deliveryShipped', icon: Package },
+                                      { key: 'IN_TRANSIT', labelKey: 'deliveryInTransit', icon: Truck },
+                                      { key: 'DELIVERED', labelKey: 'deliveryDelivered', icon: CheckCircle2 },
                                     ].map((step, i) => {
                                       const statusOrder = ['PROCESSING', 'SHIPPED', 'IN_TRANSIT', 'DELIVERED'];
                                       const currentIdx = statusOrder.indexOf(order.delivery_status || 'PROCESSING');
@@ -802,7 +802,7 @@ const CustomerDashboard = () => {
                                             <StepIcon className="w-4 h-4" />
                                           </div>
                                           <span className={`text-[10px] mt-1.5 font-medium text-center ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
-                                            {step.label}
+                                            {t(step.labelKey)}
                                           </span>
                                         </div>
                                       );
@@ -813,30 +813,30 @@ const CustomerDashboard = () => {
                                 {/* Order Details Grid */}
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                                   <div>
-                                    <p className="text-muted-foreground text-xs">Quantidade</p>
-                                    <p className="font-medium text-foreground">{order.quantity} un.</p>
+                                    <p className="text-muted-foreground text-xs">{t('quantity')}</p>
+                                    <p className="font-medium text-foreground">{t('unitsCount', { count: order.quantity })}</p>
                                   </div>
                                   <div>
-                                    <p className="text-muted-foreground text-xs">Preço Unitário</p>
+                                    <p className="text-muted-foreground text-xs">{t('unitPrice')}</p>
                                     <p className="font-medium text-foreground">
                                       R$ {Number(order.unit_price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                     </p>
                                   </div>
                                   <div>
-                                    <p className="text-muted-foreground text-xs">Pagamento</p>
+                                    <p className="text-muted-foreground text-xs">{t('payment')}</p>
                                     <p className="font-medium text-foreground capitalize flex items-center gap-1">
                                       <CreditCard className="w-3.5 h-3.5 text-muted-foreground" />
-                                      {order.payment_method === 'credit_card' ? 'Cartão' : order.payment_method?.toUpperCase()}
-                                      {order.installments > 1 && ` (${order.installments}x de R$ ${(Number(order.total_value) / order.installments).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})`}
+                                      {order.payment_method === 'credit_card' ? t('card') : order.payment_method?.toUpperCase()}
+                                      {order.installments > 1 && ` (${t('installmentsOf', { count: order.installments, value: (Number(order.total_value) / order.installments).toLocaleString(dateLocaleMap[lang], { minimumFractionDigits: 2 }) })})`}
                                     </p>
                                     {order.installments > 1 && order.payment_method === 'credit_card' && (
                                       <p className="text-[10px] text-muted-foreground mt-0.5">
-                                        Total c/ juros: R$ {Number(order.total_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                        {t('totalWithInterest')}: R$ {Number(order.total_value).toLocaleString(dateLocaleMap[lang], { minimumFractionDigits: 2 })}
                                       </p>
                                     )}
                                   </div>
                                   <div>
-                                    <p className="text-muted-foreground text-xs">Pedido</p>
+                                    <p className="text-muted-foreground text-xs">{t('order')}</p>
                                     <p className="font-mono text-xs text-foreground">{order.id.slice(0, 8).toUpperCase()}</p>
                                   </div>
                                 </div>
