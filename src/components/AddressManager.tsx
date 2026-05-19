@@ -231,11 +231,11 @@ const AddressManager = () => {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs">Nome do endereço</Label>
-                <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Ex: Casa, Trabalho" />
+                <Label className="text-xs">{t('addressName')}</Label>
+                <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder={t('addressNamePlaceholder')} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">CEP *</Label>
+                <Label className="text-xs">{t('cep')} *</Label>
                 <div className="relative">
                   <Input
                     value={postalCode}
@@ -252,26 +252,26 @@ const AddressManager = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="sm:col-span-2 space-y-1.5">
-                <Label className="text-xs">Rua / Logradouro *</Label>
+                <Label className="text-xs">{t('streetAddress')} *</Label>
                 <Input value={street} onChange={(e) => setStreet(e.target.value)} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Número *</Label>
+                <Label className="text-xs">{t('addressNumber')} *</Label>
                 <Input value={number} onChange={(e) => setNumber(e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs">Complemento</Label>
-                <Input value={complement} onChange={(e) => setComplement(e.target.value)} placeholder="Apto, Bloco..." />
+                <Label className="text-xs">{t('complement')}</Label>
+                <Input value={complement} onChange={(e) => setComplement(e.target.value)} placeholder={t('complementPlaceholder')} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Bairro *</Label>
+                <Label className="text-xs">{t('district')} *</Label>
                 <Input value={district} onChange={(e) => setDistrict(e.target.value)} />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Cidade *</Label>
+                  <Label className="text-xs">{t('city')} *</Label>
                   <Input value={city} onChange={(e) => setCity(e.target.value)} />
                 </div>
                 <div className="space-y-1.5">
@@ -289,15 +289,15 @@ const AddressManager = () => {
                 className="rounded border-border"
               />
               <Label htmlFor="is-default" className="text-sm text-muted-foreground cursor-pointer">
-                Usar como endereço padrão
+                {t('useAsDefaultAddress')}
               </Label>
             </div>
             <div className="flex gap-2">
               <Button onClick={handleSave} disabled={saving}>
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
-                {editingId ? 'Atualizar' : 'Salvar'}
+                {editingId ? t('update') : t('save')}
               </Button>
-              <Button variant="outline" onClick={resetForm}>Cancelar</Button>
+              <Button variant="outline" onClick={resetForm}>{t('cancel')}</Button>
             </div>
           </CardContent>
         </Card>
