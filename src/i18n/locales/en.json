@@ -179,5 +179,8 @@
   "bulletinContraText": "Hypersensitivity to the active ingredient or to any component of the formulation. Personal or family history of medullary thyroid carcinoma.",
   "bulletinPrecautionsText": "Do not use in patients with type 1 diabetes. Monitor for signs of pancreatitis. May cause hypoglycemia when combined with insulin or insulin secretagogues.",
   "daysShort_one": "{{count}} day",
-  "daysShort_other": "{{count}} days"
+  "daysShort_other": "{{count}} days",
+  "tierMinQty_one": "{{qty}}+ unit",
+  "tierMinQty_other": "{{qty}}+ units",
+  "discountPercent": "-{{percent}}%"
 }

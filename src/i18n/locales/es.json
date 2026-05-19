@@ -179,5 +179,8 @@
   "bulletinContraText": "Hipersensibilidad al principio activo o a cualquier componente de la formulación. Antecedentes personales o familiares de carcinoma medular de tiroides.",
   "bulletinPrecautionsText": "No utilizar en pacientes con diabetes tipo 1. Monitorear signos de pancreatitis. Puede causar hipoglucemia cuando se usa con insulina o secretagogos de insulina.",
   "daysShort_one": "{{count}} día",
-  "daysShort_other": "{{count}} días"
+  "daysShort_other": "{{count}} días",
+  "tierMinQty_one": "{{qty}}+ unidad",
+  "tierMinQty_other": "{{qty}}+ unidades",
+  "discountPercent": "-{{percent}}%"
 }
