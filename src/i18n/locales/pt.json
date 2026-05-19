@@ -152,6 +152,7 @@
   "youSave": "Você economiza: R$ {{amount}}",
   "discountOverRegular": "{{percent}}% de desconto sobre o preço regular",
   "totalWholesale": "Total Atacado",
+  "total": "Total",
   "perUnitParen": "(por unidade)",
   "regularPriceLabel": "Preço regular:",
   "pixDiscountFull": "{{percent}}% de desconto no Pix: R$ {{amount}}",
