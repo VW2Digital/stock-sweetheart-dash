@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
     }
     const targetName = LANG_NAMES[target] || target;
 
-    const prompt = `Translate each of the following items into ${targetName}. Keep product/brand names, codes, dosages and numbers untouched. Preserve punctuation and casing style. Return ONLY a JSON array of strings in the same order, no comments.\n\nITEMS:\n${JSON.stringify(texts)}`;
+    const prompt = `Translate every item below into ${targetName}. ALWAYS translate normal words and phrases, even when written in ALL CAPS — uppercase is just styling, not a code. Preserve the original casing style (ALL CAPS stays ALL CAPS, Title Case stays Title Case). Only keep untouched: proper product/brand names, SKU codes, dosages (e.g. "5mg", "10ml") and pure numbers. Return ONLY a JSON array of strings in the same order, no comments, no markdown fences.\n\nITEMS:\n${JSON.stringify(texts)}`;
 
     const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
