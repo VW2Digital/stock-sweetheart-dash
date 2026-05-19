@@ -62,7 +62,6 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   // <html lang> + <link rel="alternate" hreflang> para SEO
   useEffect(() => {
     const htmlLangMap: Record<Language, string> = {
-      pt: 'pt-BR',
       'pt-PT': 'pt-PT',
       es: 'es',
       en: 'en',
@@ -74,7 +73,6 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
     const baseUrl = `${window.location.origin}${window.location.pathname}`;
     const alternates: Array<{ hreflang: string; lang: Language }> = [
-      { hreflang: 'pt-BR', lang: 'pt' },
       { hreflang: 'pt-PT', lang: 'pt-PT' },
       { hreflang: 'es', lang: 'es' },
       { hreflang: 'en', lang: 'en' },
