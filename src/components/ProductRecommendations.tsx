@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import productHeroImg from '@/assets/product-hero.png';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { usePublicCurrency } from '@/lib/publicCurrency';
+import { useAITranslateBatch } from '@/hooks/useAITranslate';
 
 interface RecVariation {
   id: string;
@@ -49,9 +50,11 @@ const getSessionId = (): string => {
 
 const ProductRecommendations = ({ productId }: Props) => {
   const { format: fmtPrice } = usePublicCurrency();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [items, setItems] = useState<RecProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const textsToTranslate = useMemo(() => items.flatMap((item) => [item.name || '', item.subtitle || '']), [items]);
+  const translated = useAITranslateBatch(textsToTranslate, lang);
 
   useEffect(() => {
     if (!productId) return;
@@ -201,6 +204,8 @@ const ProductRecommendations = ({ productId }: Props) => {
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {items.map((product, idx) => {
+          const translatedName = translated[idx * 2] || product.name;
+          const translatedSubtitle = translated[idx * 2 + 1] || product.subtitle;
           const variation = product.variations[0];
           const effectivePrice =
             variation.is_offer && variation.offer_price > 0 ? variation.offer_price : variation.price;
@@ -222,7 +227,7 @@ const ProductRecommendations = ({ productId }: Props) => {
                 <div className="relative aspect-square bg-muted/40 flex items-center justify-center p-3">
                   <img
                     src={image}
-                    alt={product.name}
+                    alt={translatedName}
                     className="max-w-[85%] max-h-[85%] object-contain group-hover:scale-105 transition-transform"
                   />
                   {hasDiscount && (
@@ -233,10 +238,10 @@ const ProductRecommendations = ({ productId }: Props) => {
                 </div>
                 <div className="p-3 flex-1 flex flex-col gap-1">
                   <p className="font-bold text-sm text-foreground line-clamp-2 leading-tight">
-                    {product.name}
+                    {translatedName}
                   </p>
                   {product.subtitle && (
-                    <p className="text-[11px] text-muted-foreground line-clamp-1">{product.subtitle}</p>
+                    <p className="text-[11px] text-muted-foreground line-clamp-1">{translatedSubtitle}</p>
                   )}
                   <div className="mt-auto pt-2 flex items-baseline gap-1.5 flex-wrap">
                     {hasDiscount && (
