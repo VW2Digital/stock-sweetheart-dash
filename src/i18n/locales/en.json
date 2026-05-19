@@ -362,5 +362,12 @@
   "preferencesSaveError": "Error saving preferences",
   "codeCopied": "Code copied!",
   "reviewSentSuccess": "Review sent successfully!",
-  "reviewSendError": "Error sending review"
+  "reviewSendError": "Error sending review",
+  "myDownloads": "My Downloads",
+  "noDigitalDownloads": "You do not have any digital products available for download yet.",
+  "download": "Download",
+  "downloadsLoadError": "Error loading downloads",
+  "downloadLinkUnavailable": "Download link unavailable",
+  "downloadError": "Error downloading",
+  "coverOfFile": "Cover of {{name}}"
 }

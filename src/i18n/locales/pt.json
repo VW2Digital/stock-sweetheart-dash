@@ -362,5 +362,12 @@
   "preferencesSaveError": "Erro ao salvar preferências",
   "codeCopied": "Código copiado!",
   "reviewSentSuccess": "Avaliação enviada com sucesso!",
-  "reviewSendError": "Erro ao enviar avaliação"
+  "reviewSendError": "Erro ao enviar avaliação",
+  "myDownloads": "Meus Downloads",
+  "noDigitalDownloads": "Você ainda não possui produtos digitais disponíveis para download.",
+  "download": "Baixar",
+  "downloadsLoadError": "Erro ao carregar downloads",
+  "downloadLinkUnavailable": "Link de download indisponível",
+  "downloadError": "Erro ao baixar",
+  "coverOfFile": "Capa de {{name}}"
 }
