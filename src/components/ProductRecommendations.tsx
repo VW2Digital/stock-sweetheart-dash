@@ -149,7 +149,7 @@ const ProductRecommendations = ({ productId }: Props) => {
 
   if (loading) {
     return (
-      <section className="max-w-6xl mx-auto px-4 py-10" aria-busy="true" aria-label="Carregando recomendações">
+      <section className="max-w-6xl mx-auto px-4 py-10" aria-busy="true" aria-label={t('loadingRecommendations')}>
         <div className="flex items-center gap-2 mb-5">
           <Sparkles className="w-5 h-5 text-primary/40" />
           <Skeleton className="h-6 w-56" />

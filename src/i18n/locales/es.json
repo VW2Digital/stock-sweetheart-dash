@@ -182,5 +182,6 @@
   "daysShort_other": "{{count}} días",
   "tierMinQty_one": "{{qty}}+ unidad",
   "tierMinQty_other": "{{qty}}+ unidades",
-  "discountPercent": "-{{percent}}%"
+  "discountPercent": "-{{percent}}%",
+  "loadingRecommendations": "Cargando recomendaciones"
 }
