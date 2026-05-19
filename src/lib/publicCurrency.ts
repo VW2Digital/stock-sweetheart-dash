@@ -25,7 +25,6 @@ interface CurrencyMeta {
 }
 
 const LANG_TO_CURRENCY: Record<Language, CurrencyMeta> = {
-  pt: { code: 'BRL', locale: 'pt-BR', symbol: 'R$' },
   'pt-PT': { code: 'EUR', locale: 'pt-PT', symbol: '€' },
   en: { code: 'USD', locale: 'en-US', symbol: 'US$' },
   es: { code: 'EUR', locale: 'es-ES', symbol: '€' },
@@ -94,7 +93,7 @@ async function fetchRates(): Promise<Record<PublicCurrency, number>> {
 }
 
 export function getCurrencyForLanguage(lang: Language): CurrencyMeta {
-  return LANG_TO_CURRENCY[lang] || LANG_TO_CURRENCY.pt;
+  return LANG_TO_CURRENCY[lang] || LANG_TO_CURRENCY['pt-PT'];
 }
 
 /**
