@@ -147,7 +147,7 @@ const CustomerDownloads = ({ userId }: { userId: string }) => {
     <Card className="border-border/50">
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
-          <Download className="w-5 h-5" /> Meus Downloads
+          <Download className="w-5 h-5" /> {t('myDownloads')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -159,7 +159,7 @@ const CustomerDownloads = ({ userId }: { userId: string }) => {
           <div className="text-center py-8 space-y-2">
             <Download className="w-10 h-10 text-muted-foreground/40 mx-auto" />
             <p className="text-sm text-muted-foreground">
-              Você ainda não possui produtos digitais disponíveis para download.
+              {t('noDigitalDownloads')}
             </p>
           </div>
         ) : (
@@ -173,7 +173,7 @@ const CustomerDownloads = ({ userId }: { userId: string }) => {
                   {f.cover_image_url ? (
                     <img
                       src={f.cover_image_url}
-                      alt={`Capa de ${f.display_name || f.file_name}`}
+                      alt={t('coverOfFile', { name: f.display_name || f.file_name })}
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -185,8 +185,8 @@ const CustomerDownloads = ({ userId }: { userId: string }) => {
                     {f.display_name || f.file_name}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {f.product_name}
-                    {f.variation_dosage ? ` · ${f.variation_dosage}` : ''} · {formatBytes(f.file_size)}
+                    {translateValue(f.product_name)}
+                    {f.variation_dosage ? ` · ${translateValue(f.variation_dosage)}` : ''} · {formatBytes(f.file_size)}
                   </p>
                 </div>
                 <Button
@@ -200,7 +200,7 @@ const CustomerDownloads = ({ userId }: { userId: string }) => {
                   ) : (
                     <Download className="w-3.5 h-3.5" />
                   )}
-                  Baixar
+                  {t('download')}
                 </Button>
               </div>
             ))}
