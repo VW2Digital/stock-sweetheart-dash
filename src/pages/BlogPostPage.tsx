@@ -21,6 +21,7 @@ interface BlogPost {
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { t, lang } = useLanguage();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
