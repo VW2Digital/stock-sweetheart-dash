@@ -15,6 +15,7 @@ import { Plus, Sparkles, Check } from 'lucide-react';
 import productHeroImg from '@/assets/product-hero.png';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translateValue } from '@/lib/translateValue';
+import { usePublicCurrency } from '@/lib/publicCurrency';
 
 interface UpsellVariation {
   id: string;
@@ -36,6 +37,7 @@ interface UpsellProduct {
 }
 
 const UpsellSection = () => {
+  const { format: fmtPrice } = usePublicCurrency();
   const { t } = useLanguage();
   const { items, addToCart } = useCart();
   const [upsells, setUpsells] = useState<UpsellProduct[]>([]);
@@ -180,11 +182,11 @@ const UpsellSection = () => {
                   <div className="flex items-baseline gap-1.5">
                     {hasDiscount && (
                       <span className="text-[10px] text-muted-foreground line-through">
-                        R$ {variation.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        {fmtPrice(variation.price)}
                       </span>
                     )}
                     <span className={`font-bold text-sm ${hasDiscount ? 'text-destructive' : 'text-primary'}`}>
-                      R$ {effectivePrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {fmtPrice(effectivePrice)}
                     </span>
                     {hasDiscount && (
                       <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[9px] h-4 px-1">

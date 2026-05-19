@@ -8,6 +8,7 @@ import { AnimatedSection } from '@/components/AnimatedSection';
 import { Skeleton } from '@/components/ui/skeleton';
 import productHeroImg from '@/assets/product-hero.png';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { usePublicCurrency } from '@/lib/publicCurrency';
 
 interface RecVariation {
   id: string;
@@ -47,6 +48,7 @@ const getSessionId = (): string => {
 };
 
 const ProductRecommendations = ({ productId }: Props) => {
+  const { format: fmtPrice } = usePublicCurrency();
   const { t } = useLanguage();
   const [items, setItems] = useState<RecProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -239,13 +241,13 @@ const ProductRecommendations = ({ productId }: Props) => {
                   <div className="mt-auto pt-2 flex items-baseline gap-1.5 flex-wrap">
                     {hasDiscount && (
                       <span className="text-[10px] text-muted-foreground line-through">
-                        R$ {variation.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        {fmtPrice(variation.price)}
                       </span>
                     )}
                     <span
                       className={`font-bold text-base ${hasDiscount ? 'text-destructive' : 'text-primary'}`}
                     >
-                      R$ {effectivePrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {fmtPrice(effectivePrice)}
                     </span>
                   </div>
                 </div>
