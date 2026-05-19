@@ -38,11 +38,14 @@ const Catalog = () => {
   const ab = useMemo(() => getAbContext(), []);
   const [abConfig, setAbConfig] = useState<AbTestConfig>(getCachedAbConfig());
   useEffect(() => { loadAbConfig().then(setAbConfig).catch(() => {}); }, []);
-  const variantCfg = abConfig[ab.variant] || DEFAULT_AB_CONFIG[ab.variant];
   const impressionsLogged = useRef<Set<string>>(new Set());
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { t } = useLanguage();
+  const variantCfg = abConfig[ab.variant] || DEFAULT_AB_CONFIG[ab.variant];
+  const ctaText = variantCfg.ctaText?.trim().toLowerCase() === 'adicionar ao carrinho'
+    ? t('addToCart')
+    : translateValue(variantCfg.ctaText);
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [wholesaleMap, setWholesaleMap] = useState<Record<string, WholesaleTier[]>>({});
@@ -641,12 +644,12 @@ const Catalog = () => {
                           {ab.variant === 'B' ? (
                             <>
                               <ShoppingCart className="w-4 h-4 mr-1.5" />
-                              {variantCfg.ctaText}
+                              {ctaText}
                             </>
                           ) : (
                             <>
                               <ShoppingCart className="w-3.5 h-3.5 mr-1" />
-                              <span className="text-[11px]">{variantCfg.ctaText}</span>
+                              <span className="text-[11px]">{ctaText}</span>
                             </>
                           )}
                         </Button>
