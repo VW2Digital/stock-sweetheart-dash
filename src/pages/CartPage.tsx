@@ -13,12 +13,14 @@ import productHeroImg from '@/assets/product-hero.png';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translateValue } from '@/lib/translateValue';
+import { usePublicCurrency } from '@/lib/publicCurrency';
 
 const APPLIED_COUPON_KEY = 'applied_coupon_code';
 
 const CartPage = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { format: fmtPrice } = usePublicCurrency();
   const { items, loading, updateQuantity, updateQuantitiesBulk, removeFromCart, totalItems, totalPrice } = useCart();
 
   // Bulk-edit mode: per-item draft quantities, kept in sync when items change
