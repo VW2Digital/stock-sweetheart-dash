@@ -148,6 +148,8 @@ const App = () => (
           <Route path="/relampago/:slug" element={<FlashCampaignPage />} />
           <Route path="/relampago/:slug/obrigado" element={<FlashCampaignThankYouPage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/blog" element={<BlogIndex />} />
+          <Route path="/blog/:slug" element={<BlogPostPage />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="produtos" element={<ProductList />} />
