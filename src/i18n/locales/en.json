@@ -511,5 +511,9 @@
   "tellProductExperience": "Tell us about your experience with the product...",
   "sendReview": "Send Review",
   "payViaPix": "Pay via PIX",
-  "paymentStatusWillUpdateAutomatically": "After payment, the status will update automatically."
+  "paymentStatusWillUpdateAutomatically": "After payment, the status will update automatically.",
+  "errorTitle": "Oops! Something went wrong",
+  "errorDescription": "We encountered an unexpected problem on this screen. You can try again or reload the page.",
+  "tryAgain": "Try again",
+  "reloadPage": "Reload"
 }

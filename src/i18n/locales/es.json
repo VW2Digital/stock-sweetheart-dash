@@ -511,5 +511,9 @@
   "tellProductExperience": "Cuenta tu experiencia con el producto...",
   "sendReview": "Enviar Opinión",
   "payViaPix": "Pagar vía PIX",
-  "paymentStatusWillUpdateAutomatically": "Después del pago, el estado se actualizará automáticamente."
+  "paymentStatusWillUpdateAutomatically": "Después del pago, el estado se actualizará automáticamente.",
+  "errorTitle": "¡Ups! Algo salió mal",
+  "errorDescription": "Encontramos un problema inesperado en esta pantalla. Puedes intentar nuevamente o recargar la página.",
+  "tryAgain": "Intentar nuevamente",
+  "reloadPage": "Recargar"
 }
