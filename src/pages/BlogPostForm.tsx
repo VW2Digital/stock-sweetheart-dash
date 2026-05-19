@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Loader2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
+import RichTextEditor from '@/components/RichTextEditor';
 
 const slugify = (s: string) =>
   s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -152,8 +153,8 @@ export default function BlogPostForm() {
         </div>
 
         <div className="space-y-2">
-          <Label>Conteúdo (Markdown ou HTML simples)</Label>
-          <Textarea value={form.content} onChange={(e) => update({ content: e.target.value })} rows={16} placeholder="Conteúdo do post..." className="font-mono text-sm" />
+          <Label>Conteúdo</Label>
+          <RichTextEditor value={form.content} onChange={(v) => update({ content: v })} placeholder="Escreva o conteúdo do post..." />
         </div>
 
         <div className="flex items-center gap-3 pt-2 border-t border-border">
