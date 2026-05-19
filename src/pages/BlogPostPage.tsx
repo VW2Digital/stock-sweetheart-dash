@@ -125,28 +125,28 @@ export default function BlogPostPage() {
             <div className="flex items-center justify-between gap-4 py-3 border-y border-border mb-10">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4" />
-                {readingMinutes} {readingMinutes === 1 ? 'minuto' : 'minutos'} de leitura
+                {readingMinutes} {readingMinutes === 1 ? t('blog.minuteRead') : t('blog.minutesRead')}
               </div>
               <div className="flex items-center gap-1">
-                <button onClick={() => share('facebook')} title="Compartilhar no Facebook"
+                <button onClick={() => share('facebook')} title={t('blog.shareFacebook')}
                   className="h-8 w-8 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                   <Facebook className="h-4 w-4" />
                 </button>
-                <button onClick={() => share('twitter')} title="Compartilhar no Twitter"
+                <button onClick={() => share('twitter')} title={t('blog.shareTwitter')}
                   className="h-8 w-8 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                   <Twitter className="h-4 w-4" />
                 </button>
-                <button onClick={() => share('linkedin')} title="Compartilhar no LinkedIn"
+                <button onClick={() => share('linkedin')} title={t('blog.shareLinkedin')}
                   className="h-8 w-8 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                   <Linkedin className="h-4 w-4" />
                 </button>
-                <button onClick={() => share('whatsapp')} title="Compartilhar no WhatsApp"
+                <button onClick={() => share('whatsapp')} title={t('blog.shareWhatsapp')}
                   className="h-8 w-8 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                   <MessageCircle className="h-4 w-4" />
                 </button>
-                <button onClick={copyLink} title="Copiar link"
+                <button onClick={copyLink} title={t('blog.copyLink')}
                   className="h-8 px-3 ml-1 inline-flex items-center justify-center rounded-full text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                  Copiar link
+                  {t('blog.copyLink')}
                 </button>
               </div>
             </div>
