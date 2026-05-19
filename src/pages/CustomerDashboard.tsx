@@ -35,31 +35,33 @@ async function sha256Hex(input: string): Promise<string> {
     .join('');
 }
 
-const paymentStatusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: any; color: string; badgeClass?: string }> = {
-  PENDING: { label: 'Aguardando Pagamento', variant: 'outline', icon: Clock, color: 'text-amber-500' },
-  PAID: { label: 'Pago', variant: 'default', icon: CheckCircle2, color: 'text-emerald-500', badgeClass: 'bg-emerald-500 hover:bg-emerald-600 text-white border-transparent' },
-  RECEIVED: { label: 'Pago', variant: 'default', icon: CheckCircle2, color: 'text-emerald-500', badgeClass: 'bg-emerald-500 hover:bg-emerald-600 text-white border-transparent' },
-  CONFIRMED: { label: 'Pago', variant: 'default', icon: CheckCircle2, color: 'text-emerald-500', badgeClass: 'bg-emerald-500 hover:bg-emerald-600 text-white border-transparent' },
-  OVERDUE: { label: 'Vencido', variant: 'destructive', icon: XCircle, color: 'text-red-500' },
-  REFUNDED: { label: 'Estornado', variant: 'secondary', icon: XCircle, color: 'text-muted-foreground' },
-  IN_REVIEW: { label: 'Em Análise', variant: 'outline', icon: Clock, color: 'text-amber-500' },
-  DECLINED: { label: 'Recusado', variant: 'destructive', icon: XCircle, color: 'text-red-500' },
+const paymentStatusMap: Record<string, { labelKey: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: any; color: string; badgeClass?: string }> = {
+  PENDING: { labelKey: 'statusAwaitingPayment', variant: 'outline', icon: Clock, color: 'text-amber-500' },
+  PAID: { labelKey: 'statusPaid', variant: 'default', icon: CheckCircle2, color: 'text-emerald-500', badgeClass: 'bg-emerald-500 hover:bg-emerald-600 text-white border-transparent' },
+  RECEIVED: { labelKey: 'statusPaid', variant: 'default', icon: CheckCircle2, color: 'text-emerald-500', badgeClass: 'bg-emerald-500 hover:bg-emerald-600 text-white border-transparent' },
+  CONFIRMED: { labelKey: 'statusPaid', variant: 'default', icon: CheckCircle2, color: 'text-emerald-500', badgeClass: 'bg-emerald-500 hover:bg-emerald-600 text-white border-transparent' },
+  OVERDUE: { labelKey: 'statusOverdue', variant: 'destructive', icon: XCircle, color: 'text-red-500' },
+  REFUNDED: { labelKey: 'statusRefunded', variant: 'secondary', icon: XCircle, color: 'text-muted-foreground' },
+  IN_REVIEW: { labelKey: 'statusInReview', variant: 'outline', icon: Clock, color: 'text-amber-500' },
+  DECLINED: { labelKey: 'statusDeclined', variant: 'destructive', icon: XCircle, color: 'text-red-500' },
 };
 
-const deliveryStatusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; color: string }> = {
-  PROCESSING: { label: 'Em Processamento', variant: 'outline', color: 'text-amber-500' },
-  SHIPPED: { label: 'Enviado', variant: 'default', color: 'text-blue-500' },
-  IN_TRANSIT: { label: 'Em Trânsito', variant: 'secondary', color: 'text-blue-500' },
-  DELIVERED: { label: 'Entregue', variant: 'default', color: 'text-emerald-500' },
-  RETURNED: { label: 'Devolvido', variant: 'destructive', color: 'text-red-500' },
+const deliveryStatusMap: Record<string, { labelKey: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; color: string }> = {
+  PROCESSING: { labelKey: 'deliveryProcessing', variant: 'outline', color: 'text-amber-500' },
+  SHIPPED: { labelKey: 'deliveryShipped', variant: 'default', color: 'text-blue-500' },
+  IN_TRANSIT: { labelKey: 'deliveryInTransit', variant: 'secondary', color: 'text-blue-500' },
+  DELIVERED: { labelKey: 'deliveryDelivered', variant: 'default', color: 'text-emerald-500' },
+  RETURNED: { labelKey: 'deliveryReturned', variant: 'destructive', color: 'text-red-500' },
 };
+
+const dateLocaleMap = { pt: 'pt-BR', es: 'es-ES', en: 'en-US' } as const;
 
 type StatusFilter = 'all' | 'PENDING' | 'RECEIVED' | 'CONFIRMED' | 'OVERDUE';
 type DeliveryFilter = 'all' | 'PROCESSING' | 'SHIPPED' | 'IN_TRANSIT' | 'DELIVERED';
 
 const CustomerDashboard = () => {
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { totalItems } = useCart();
@@ -115,11 +117,11 @@ const CustomerDashboard = () => {
         if (data.invoiceUrl) {
           window.open(data.invoiceUrl, '_blank');
         } else {
-          toast({ title: 'Link de pagamento indisponível', description: 'Não foi possível obter o link para finalizar o pagamento.', variant: 'destructive' });
+          toast({ title: t('paymentLinkUnavailable'), description: t('paymentLinkUnavailableDesc'), variant: 'destructive' });
         }
       }
     } catch (err: any) {
-      toast({ title: 'Erro', description: err.message || 'Não foi possível processar', variant: 'destructive' });
+      toast({ title: t('error'), description: err.message || t('couldNotProcess'), variant: 'destructive' });
     } finally {
       setPayNowLoading(null);
     }
@@ -127,7 +129,7 @@ const CustomerDashboard = () => {
 
   const copyPixCode = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({ title: 'Código PIX copiado!' });
+    toast({ title: t('pixCodeCopied') });
   };
   useEffect(() => {
     let userEmail = '';
@@ -181,7 +183,7 @@ const CustomerDashboard = () => {
       if (error) throw error;
       setOrders(data || []);
     } catch (err: any) {
-      toast({ title: 'Erro ao carregar pedidos', description: err.message, variant: 'destructive' });
+      toast({ title: t('ordersLoadError'), description: err.message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -228,9 +230,9 @@ const CustomerDashboard = () => {
           phone: profilePhone.trim(),
         }, { onConflict: 'user_id' });
       if (error) throw error;
-      toast({ title: 'Perfil atualizado com sucesso!' });
+      toast({ title: t('profileUpdated') });
     } catch (err: any) {
-      toast({ title: 'Erro ao salvar perfil', description: err.message, variant: 'destructive' });
+      toast({ title: t('profileSaveError'), description: err.message, variant: 'destructive' });
     } finally {
       setProfileSaving(false);
     }
@@ -239,11 +241,11 @@ const CustomerDashboard = () => {
   const handleAvatarUpload = async (file: File) => {
     if (!user) return;
     if (!file.type.startsWith('image/')) {
-      toast({ title: 'Arquivo inválido', description: 'Envie uma imagem (JPG, PNG ou WEBP).', variant: 'destructive' });
+      toast({ title: t('invalidFile'), description: t('sendImageFile'), variant: 'destructive' });
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast({ title: 'Imagem muito grande', description: 'O tamanho máximo é 5 MB.', variant: 'destructive' });
+      toast({ title: t('imageTooLarge'), description: t('maxImageSize'), variant: 'destructive' });
       return;
     }
     setAvatarUploading(true);
@@ -261,9 +263,9 @@ const CustomerDashboard = () => {
         .upsert({ user_id: user.id, avatar_url: publicUrl }, { onConflict: 'user_id' });
       if (updErr) throw updErr;
       setCustomAvatarUrl(publicUrl);
-      toast({ title: 'Foto de perfil atualizada!' });
+      toast({ title: t('profilePhotoUpdated') });
     } catch (err: any) {
-      toast({ title: 'Erro ao enviar foto', description: err.message, variant: 'destructive' });
+      toast({ title: t('photoUploadError'), description: err.message, variant: 'destructive' });
     } finally {
       setAvatarUploading(false);
     }
@@ -278,9 +280,9 @@ const CustomerDashboard = () => {
         .upsert({ user_id: user.id, avatar_url: '' }, { onConflict: 'user_id' });
       if (error) throw error;
       setCustomAvatarUrl('');
-      toast({ title: 'Foto removida' });
+      toast({ title: t('photoRemoved') });
     } catch (err: any) {
-      toast({ title: 'Erro ao remover', description: err.message, variant: 'destructive' });
+      toast({ title: t('removeError'), description: err.message, variant: 'destructive' });
     } finally {
       setAvatarUploading(false);
     }
@@ -304,12 +306,12 @@ const CustomerDashboard = () => {
           allow_whatsapp_marketing: newWa,
         }, { onConflict: 'user_id' });
       if (error) throw error;
-      toast({ title: 'Preferências atualizadas' });
+      toast({ title: t('preferencesUpdated') });
     } catch (err: any) {
       // Revert on failure
       setAllowEmailMkt(prevEmail);
       setAllowWhatsAppMkt(prevWa);
-      toast({ title: 'Erro ao salvar preferências', description: err.message, variant: 'destructive' });
+      toast({ title: t('preferencesSaveError'), description: err.message, variant: 'destructive' });
     } finally {
       setPrefsSaving(false);
     }
@@ -322,7 +324,7 @@ const CustomerDashboard = () => {
 
   const copyTracking = (code: string) => {
     navigator.clipboard.writeText(code);
-    toast({ title: 'Código copiado!' });
+    toast({ title: t('codeCopied') });
   };
 
   const refreshOrders = () => {
@@ -355,13 +357,13 @@ const CustomerDashboard = () => {
         comment: reviewComment.trim(),
       }, { onConflict: 'user_id,order_id' });
       if (error) throw error;
-      toast({ title: 'Avaliação enviada com sucesso!' });
+      toast({ title: t('reviewSentSuccess') });
       setReviewingOrderId(null);
       setReviewRating(5);
       setReviewComment('');
       fetchReviews(user.id);
     } catch (err: any) {
-      toast({ title: 'Erro ao enviar avaliação', description: err.message, variant: 'destructive' });
+      toast({ title: t('reviewSendError'), description: err.message, variant: 'destructive' });
     } finally {
       setReviewSaving(false);
     }
@@ -409,19 +411,19 @@ const CustomerDashboard = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-foreground">
-              Olá, {userName}! 👋
+              {t('helloUser', { name: userName })}
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Acompanhe seus pedidos e entregas
+              {t('trackOrdersAndDeliveries')}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={refreshOrders}>
-              <RotateCw className="w-4 h-4 mr-1" /> Atualizar
+              <RotateCw className="w-4 h-4 mr-1" /> {t('refresh')}
             </Button>
             <Link to="/catalogo">
               <Button size="sm">
-                <ShoppingCart className="w-4 h-4 mr-1" /> Comprar
+                <ShoppingCart className="w-4 h-4 mr-1" /> {t('shop')}
               </Button>
             </Link>
           </div>
@@ -476,7 +478,7 @@ const CustomerDashboard = () => {
                       disabled={avatarUploading}
                       className="text-[11px] text-muted-foreground hover:text-destructive flex items-center gap-1"
                     >
-                      <Trash2 className="w-3 h-3" /> Remover foto
+                      <Trash2 className="w-3 h-3" /> {t('removePhoto')}
                     </button>
                   )}
                   <Button variant="default" size="sm" onClick={handleLogout} className="w-full gap-1">
@@ -530,15 +532,15 @@ const CustomerDashboard = () => {
                 <Card className="border-border/50">
                   <CardContent className="p-6 space-y-3">
                     <h2 className="text-lg font-semibold text-foreground">
-                      Olá, {userName}!
+                      {t('helloUser', { name: userName })}
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      A partir do painel da sua conta você pode visualizar seus{' '}
-                      <button onClick={() => setActiveTab('orders')} className="text-primary hover:underline font-medium">pedidos recentes</button>,
-                      gerenciar seus{' '}
-                      <button onClick={() => setActiveTab('addresses')} className="text-primary hover:underline font-medium">endereços de entrega e cobrança</button>,
-                      e{' '}
-                      <button onClick={() => setActiveTab('profile')} className="text-primary hover:underline font-medium">editar sua senha e detalhes da conta</button>.
+                      {t('accountPanelIntroStart')}{' '}
+                      <button onClick={() => setActiveTab('orders')} className="text-primary hover:underline font-medium">{t('recentOrders')}</button>,{' '}
+                      {t('accountPanelIntroManage')}{' '}
+                      <button onClick={() => setActiveTab('addresses')} className="text-primary hover:underline font-medium">{t('deliveryAndBillingAddresses')}</button>,{' '}
+                      {t('and')}{' '}
+                      <button onClick={() => setActiveTab('profile')} className="text-primary hover:underline font-medium">{t('editPasswordAndAccountDetails')}</button>.
                     </p>
                   </CardContent>
                 </Card>
@@ -554,7 +556,7 @@ const CustomerDashboard = () => {
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-foreground">{stats.total}</p>
-                      <p className="text-xs text-muted-foreground">Total de Pedidos</p>
+                      <p className="text-xs text-muted-foreground">{t('totalOrders')}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -567,7 +569,7 @@ const CustomerDashboard = () => {
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-foreground">{stats.pending}</p>
-                      <p className="text-xs text-muted-foreground">Pendentes</p>
+                      <p className="text-xs text-muted-foreground">{t('pendingPlural')}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -580,7 +582,7 @@ const CustomerDashboard = () => {
                     </div>
                     <div>
                       <p className="text-2xl font-bold text-foreground">{stats.shipped}</p>
-                      <p className="text-xs text-muted-foreground">Enviados</p>
+                      <p className="text-xs text-muted-foreground">{t('shippedPlural')}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -595,7 +597,7 @@ const CustomerDashboard = () => {
                       <p className="text-2xl font-bold text-foreground">
                         R$ {stats.totalSpent.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </p>
-                      <p className="text-xs text-muted-foreground">Total Gasto</p>
+                      <p className="text-xs text-muted-foreground">{t('totalSpent')}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -611,7 +613,7 @@ const CustomerDashboard = () => {
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
-                      placeholder="Buscar por produto, pedido ou rastreio..."
+                      placeholder={t('searchOrderPlaceholder')}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-9"
@@ -623,29 +625,29 @@ const CustomerDashboard = () => {
                       onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
                       className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     >
-                      <option value="all">Pagamento: Todos</option>
-                      <option value="PENDING">Pendente</option>
-                      <option value="RECEIVED">Pago</option>
-                      <option value="CONFIRMED">Confirmado</option>
-                      <option value="OVERDUE">Vencido</option>
+                      <option value="all">{t('paymentAll')}</option>
+                      <option value="PENDING">{t('pending')}</option>
+                      <option value="RECEIVED">{t('statusPaid')}</option>
+                      <option value="CONFIRMED">{t('confirmed')}</option>
+                      <option value="OVERDUE">{t('statusOverdue')}</option>
                     </select>
                     <select
                       value={deliveryFilter}
                       onChange={(e) => setDeliveryFilter(e.target.value as DeliveryFilter)}
                       className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     >
-                      <option value="all">Entrega: Todos</option>
-                      <option value="PROCESSING">Processando</option>
-                      <option value="SHIPPED">Enviado</option>
-                      <option value="IN_TRANSIT">Em Trânsito</option>
-                      <option value="DELIVERED">Entregue</option>
+                      <option value="all">{t('deliveryAll')}</option>
+                      <option value="PROCESSING">{t('deliveryProcessingShort')}</option>
+                      <option value="SHIPPED">{t('deliveryShipped')}</option>
+                      <option value="IN_TRANSIT">{t('deliveryInTransit')}</option>
+                      <option value="DELIVERED">{t('deliveryDelivered')}</option>
                     </select>
                   </div>
                 </div>
 
                 {/* Order Count */}
                 <p className="text-sm text-muted-foreground">
-                  {filteredOrders.length} {filteredOrders.length === 1 ? 'pedido encontrado' : 'pedidos encontrados'}
+                  {t(filteredOrders.length === 1 ? 'orderFound' : 'ordersFound', { count: filteredOrders.length })}
                 </p>
 
                 {/* Orders List */}
@@ -653,16 +655,16 @@ const CustomerDashboard = () => {
                   <Card className="border-border/50">
                     <CardContent className="py-12 text-center space-y-3">
                       <Package className="w-12 h-12 text-muted-foreground/40 mx-auto" />
-                      <h3 className="text-base font-semibold text-foreground">Nenhum pedido encontrado</h3>
+                      <h3 className="text-base font-semibold text-foreground">{t('noOrdersFound')}</h3>
                       <p className="text-sm text-muted-foreground max-w-sm mx-auto">
                         {orders.length === 0
-                          ? 'Seus pedidos aparecerão aqui após a primeira compra.'
-                          : 'Tente ajustar os filtros de busca.'
+                          ? t('ordersAppearAfterFirstPurchase')
+                          : t('tryAdjustingSearchFilters')
                         }
                       </p>
                       {orders.length === 0 && (
                         <Link to="/catalogo">
-                          <Button className="mt-2">Ver Catálogo</Button>
+                          <Button className="mt-2">{t('viewCatalog')}</Button>
                         </Link>
                       )}
                     </CardContent>
@@ -670,8 +672,8 @@ const CustomerDashboard = () => {
                 ) : (
                   <div className="space-y-3">
                     {filteredOrders.map((order) => {
-                      const paymentStatus = paymentStatusMap[order.status] || { label: order.status, variant: 'outline' as const, icon: Clock, color: '', badgeClass: '' };
-                      const deliveryStatus = deliveryStatusMap[order.delivery_status] || { label: order.delivery_status || 'Em Processamento', variant: 'outline' as const, color: '' };
+                      const paymentStatus = paymentStatusMap[order.status] || { labelKey: order.status, variant: 'outline' as const, icon: Clock, color: '', badgeClass: '' };
+                      const deliveryStatus = deliveryStatusMap[order.delivery_status] || { labelKey: order.delivery_status || 'deliveryProcessing', variant: 'outline' as const, color: '' };
                       const PaymentIcon = paymentStatus.icon;
                       const isExpanded = expandedOrder === order.id;
 
@@ -697,7 +699,7 @@ const CustomerDashboard = () => {
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
                                 <span className="text-xs text-muted-foreground">
-                                  {new Date(order.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                  {new Date(order.created_at).toLocaleDateString(dateLocaleMap[lang], { day: '2-digit', month: 'short', year: 'numeric' })}
                                 </span>
                                 <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                               </div>
@@ -708,11 +710,11 @@ const CustomerDashboard = () => {
                               <div className="flex flex-wrap gap-1.5">
                                 <Badge variant={paymentStatus.variant} className={`flex items-center gap-1 text-xs ${paymentStatus.badgeClass || ''}`}>
                                   <PaymentIcon className="w-3 h-3" />
-                                  {paymentStatus.label}
+                                  {t(paymentStatus.labelKey)}
                                 </Badge>
                                 <Badge variant={deliveryStatus.variant} className="flex items-center gap-1 text-xs">
                                   <Truck className="w-3 h-3" />
-                                  {deliveryStatus.label}
+                                  {t(deliveryStatus.labelKey)}
                                 </Badge>
                               </div>
                               <div className="flex items-center gap-2">
@@ -765,7 +767,7 @@ const CustomerDashboard = () => {
                               <div className="pt-3 border-t border-border/50 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
                                 {/* Delivery Timeline */}
                                 <div className="bg-muted/30 border border-border/30 rounded-lg p-4">
-                                  <p className="text-xs font-semibold text-foreground uppercase tracking-wider mb-4">Timeline do Pedido</p>
+                                  <p className="text-xs font-semibold text-foreground uppercase tracking-wider mb-4">{t('orderTimeline')}</p>
                                   <div className="flex items-center justify-between relative">
                                     {/* Progress line */}
                                     <div className="absolute top-4 left-0 right-0 h-0.5 bg-border" />
@@ -779,10 +781,10 @@ const CustomerDashboard = () => {
                                       }}
                                     />
                                     {[
-                                      { key: 'PROCESSING', label: 'Processando', icon: Clock },
-                                      { key: 'SHIPPED', label: 'Enviado', icon: Package },
-                                      { key: 'IN_TRANSIT', label: 'Em Trânsito', icon: Truck },
-                                      { key: 'DELIVERED', label: 'Entregue', icon: CheckCircle2 },
+                                      { key: 'PROCESSING', labelKey: 'deliveryProcessingShort', icon: Clock },
+                                      { key: 'SHIPPED', labelKey: 'deliveryShipped', icon: Package },
+                                      { key: 'IN_TRANSIT', labelKey: 'deliveryInTransit', icon: Truck },
+                                      { key: 'DELIVERED', labelKey: 'deliveryDelivered', icon: CheckCircle2 },
                                     ].map((step, i) => {
                                       const statusOrder = ['PROCESSING', 'SHIPPED', 'IN_TRANSIT', 'DELIVERED'];
                                       const currentIdx = statusOrder.indexOf(order.delivery_status || 'PROCESSING');
@@ -800,7 +802,7 @@ const CustomerDashboard = () => {
                                             <StepIcon className="w-4 h-4" />
                                           </div>
                                           <span className={`text-[10px] mt-1.5 font-medium text-center ${isActive ? 'text-primary' : 'text-muted-foreground'}`}>
-                                            {step.label}
+                                            {t(step.labelKey)}
                                           </span>
                                         </div>
                                       );
@@ -811,30 +813,30 @@ const CustomerDashboard = () => {
                                 {/* Order Details Grid */}
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                                   <div>
-                                    <p className="text-muted-foreground text-xs">Quantidade</p>
-                                    <p className="font-medium text-foreground">{order.quantity} un.</p>
+                                    <p className="text-muted-foreground text-xs">{t('quantity')}</p>
+                                    <p className="font-medium text-foreground">{t('unitsCount', { count: order.quantity })}</p>
                                   </div>
                                   <div>
-                                    <p className="text-muted-foreground text-xs">Preço Unitário</p>
+                                    <p className="text-muted-foreground text-xs">{t('unitPrice')}</p>
                                     <p className="font-medium text-foreground">
                                       R$ {Number(order.unit_price).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                                     </p>
                                   </div>
                                   <div>
-                                    <p className="text-muted-foreground text-xs">Pagamento</p>
+                                    <p className="text-muted-foreground text-xs">{t('payment')}</p>
                                     <p className="font-medium text-foreground capitalize flex items-center gap-1">
                                       <CreditCard className="w-3.5 h-3.5 text-muted-foreground" />
-                                      {order.payment_method === 'credit_card' ? 'Cartão' : order.payment_method?.toUpperCase()}
-                                      {order.installments > 1 && ` (${order.installments}x de R$ ${(Number(order.total_value) / order.installments).toLocaleString('pt-BR', { minimumFractionDigits: 2 })})`}
+                                      {order.payment_method === 'credit_card' ? t('card') : order.payment_method?.toUpperCase()}
+                                      {order.installments > 1 && ` (${t('installmentsOf', { count: order.installments, value: (Number(order.total_value) / order.installments).toLocaleString(dateLocaleMap[lang], { minimumFractionDigits: 2 }) })})`}
                                     </p>
                                     {order.installments > 1 && order.payment_method === 'credit_card' && (
                                       <p className="text-[10px] text-muted-foreground mt-0.5">
-                                        Total c/ juros: R$ {Number(order.total_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                        {t('totalWithInterest')}: R$ {Number(order.total_value).toLocaleString(dateLocaleMap[lang], { minimumFractionDigits: 2 })}
                                       </p>
                                     )}
                                   </div>
                                   <div>
-                                    <p className="text-muted-foreground text-xs">Pedido</p>
+                                    <p className="text-muted-foreground text-xs">{t('order')}</p>
                                     <p className="font-mono text-xs text-foreground">{order.id.slice(0, 8).toUpperCase()}</p>
                                   </div>
                                 </div>
@@ -845,7 +847,7 @@ const CustomerDashboard = () => {
                                     <div className="flex items-start gap-2">
                                       <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
                                       <div className="text-sm">
-                                        <p className="text-xs text-muted-foreground font-medium mb-1">Endereço de Entrega</p>
+                                        <p className="text-xs text-muted-foreground font-medium mb-1">{t('deliveryAddress')}</p>
                                         <p className="text-foreground">
                                           {order.customer_address}, {order.customer_number}
                                           {order.customer_complement ? ` - ${order.customer_complement}` : ''}
@@ -853,7 +855,7 @@ const CustomerDashboard = () => {
                                         <p className="text-muted-foreground">
                                           {order.customer_district} - {order.customer_city}/{order.customer_state}
                                         </p>
-                                        <p className="text-muted-foreground">CEP: {order.customer_postal_code}</p>
+                                        <p className="text-muted-foreground">{t('cep')}: {order.customer_postal_code}</p>
                                       </div>
                                     </div>
                                   </div>
@@ -862,11 +864,11 @@ const CustomerDashboard = () => {
                                 {/* Tracking & Shipping Info */}
                                 {(order.tracking_code || order.shipping_service) && (
                                   <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 space-y-3">
-                                    <p className="text-xs font-semibold text-primary uppercase tracking-wider">Rastreamento</p>
+                                    <p className="text-xs font-semibold text-primary uppercase tracking-wider">{t('tracking')}</p>
                                     {order.shipping_service && (
                                       <div className="flex items-center gap-2 text-sm">
                                         <Truck className="w-4 h-4 text-muted-foreground" />
-                                        <span className="text-muted-foreground">Transportadora:</span>
+                                        <span className="text-muted-foreground">{t('carrier')}:</span>
                                         <span className="font-medium text-foreground">{order.shipping_service}</span>
                                       </div>
                                     )}
@@ -876,13 +878,13 @@ const CustomerDashboard = () => {
                                           <div className="flex items-center gap-2">
                                             <Package className="w-5 h-5 text-primary" />
                                             <div>
-                                              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Código de Rastreio</p>
+                                              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{t('trackingCode')}</p>
                                               <p className="font-mono font-bold text-foreground text-lg tracking-widest">{order.tracking_code}</p>
                                             </div>
                                           </div>
                                           <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                                             <Button variant="outline" size="sm" onClick={() => copyTracking(order.tracking_code)} className="gap-1">
-                                              <Copy className="w-3.5 h-3.5" /> Copiar
+                                              <Copy className="w-3.5 h-3.5" /> {t('copy')}
                                             </Button>
                                           </div>
                                         </div>
@@ -890,7 +892,7 @@ const CustomerDashboard = () => {
                                           <div className="mt-3" onClick={(e) => e.stopPropagation()}>
                                             <Button asChild className="w-full gap-2" size="sm">
                                               <a href={order.tracking_url} target="_blank" rel="noopener noreferrer">
-                                                <ExternalLink className="w-4 h-4" /> Rastrear Encomenda
+                                                <ExternalLink className="w-4 h-4" /> {t('trackPackage')}
                                               </a>
                                             </Button>
                                           </div>
@@ -899,7 +901,7 @@ const CustomerDashboard = () => {
                                     )}
                                     {order.shipping_cost > 0 && (
                                       <p className="text-xs text-muted-foreground">
-                                        Frete: R$ {Number(order.shipping_cost).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                        {t('shipping')}: R$ {Number(order.shipping_cost).toLocaleString(dateLocaleMap[lang], { minimumFractionDigits: 2 })}
                                       </p>
                                     )}
                                   </div>
@@ -926,7 +928,7 @@ const CustomerDashboard = () => {
                 <Card className="border-border/50">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <User className="w-5 h-5" /> Meus Dados
+                      <User className="w-5 h-5" /> {t('myData')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-5">
@@ -938,16 +940,16 @@ const CustomerDashboard = () => {
                       <>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor="profile-name">Nome completo</Label>
+                            <Label htmlFor="profile-name">{t('fullName')}</Label>
                             <Input
                               id="profile-name"
                               value={profileName}
                               onChange={(e) => setProfileName(e.target.value)}
-                              placeholder="Seu nome completo"
+                              placeholder={t('yourFullName')}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="profile-phone">Telefone</Label>
+                            <Label htmlFor="profile-phone">{t('phoneLabel')}</Label>
                             <div className="relative">
                               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                               <Input
@@ -962,14 +964,14 @@ const CustomerDashboard = () => {
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground font-medium">Email</p>
+                            <p className="text-xs text-muted-foreground font-medium">{t('email')}</p>
                             <p className="text-foreground font-medium text-sm">{user?.email}</p>
                           </div>
                           <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground font-medium">Membro desde</p>
+                            <p className="text-xs text-muted-foreground font-medium">{t('memberSince')}</p>
                             <p className="text-foreground font-medium text-sm">
                               {user?.created_at
-                                ? new Date(user.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+                                ? new Date(user.created_at).toLocaleDateString(dateLocaleMap[lang], { day: '2-digit', month: 'long', year: 'numeric' })
                                 : '-'
                               }
                             </p>
@@ -977,7 +979,7 @@ const CustomerDashboard = () => {
                         </div>
                         <Button onClick={saveProfile} disabled={profileSaving} className="w-full sm:w-auto">
                           {profileSaving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Save className="w-4 h-4 mr-1" />}
-                          Salvar Alterações
+                          {t('saveChanges')}
                         </Button>
                       </>
                     )}
