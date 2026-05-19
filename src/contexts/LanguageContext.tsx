@@ -149,6 +149,7 @@ interface LanguageContextType {
   lang: Language;
   setLang: (lang: Language) => void;
   t: (key: TranslationKey) => string;
+  refreshSeoTags: () => void;
 }
 
 export const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
