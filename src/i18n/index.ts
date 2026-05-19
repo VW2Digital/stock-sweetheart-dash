@@ -60,6 +60,8 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
+    ns: ['translation'],
+    defaultNS: 'translation',
     resources: {
       'pt-PT': { translation: ptPT },
       es: { translation: es },
