@@ -69,7 +69,7 @@ i18n
     },
     fallbackLng: 'pt-PT',
     supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
-    nonExplicitSupportedLngs: true, // qualquer 'pt-*' (ex.: pt-BR cacheado) cai em 'pt-PT'
+    nonExplicitSupportedLngs: false,
     load: 'currentOnly',
     interpolation: {
       escapeValue: false,
