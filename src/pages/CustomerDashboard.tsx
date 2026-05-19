@@ -35,24 +35,26 @@ async function sha256Hex(input: string): Promise<string> {
     .join('');
 }
 
-const paymentStatusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: any; color: string; badgeClass?: string }> = {
-  PENDING: { label: 'Aguardando Pagamento', variant: 'outline', icon: Clock, color: 'text-amber-500' },
-  PAID: { label: 'Pago', variant: 'default', icon: CheckCircle2, color: 'text-emerald-500', badgeClass: 'bg-emerald-500 hover:bg-emerald-600 text-white border-transparent' },
-  RECEIVED: { label: 'Pago', variant: 'default', icon: CheckCircle2, color: 'text-emerald-500', badgeClass: 'bg-emerald-500 hover:bg-emerald-600 text-white border-transparent' },
-  CONFIRMED: { label: 'Pago', variant: 'default', icon: CheckCircle2, color: 'text-emerald-500', badgeClass: 'bg-emerald-500 hover:bg-emerald-600 text-white border-transparent' },
-  OVERDUE: { label: 'Vencido', variant: 'destructive', icon: XCircle, color: 'text-red-500' },
-  REFUNDED: { label: 'Estornado', variant: 'secondary', icon: XCircle, color: 'text-muted-foreground' },
-  IN_REVIEW: { label: 'Em Análise', variant: 'outline', icon: Clock, color: 'text-amber-500' },
-  DECLINED: { label: 'Recusado', variant: 'destructive', icon: XCircle, color: 'text-red-500' },
+const paymentStatusMap: Record<string, { labelKey: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: any; color: string; badgeClass?: string }> = {
+  PENDING: { labelKey: 'statusAwaitingPayment', variant: 'outline', icon: Clock, color: 'text-amber-500' },
+  PAID: { labelKey: 'statusPaid', variant: 'default', icon: CheckCircle2, color: 'text-emerald-500', badgeClass: 'bg-emerald-500 hover:bg-emerald-600 text-white border-transparent' },
+  RECEIVED: { labelKey: 'statusPaid', variant: 'default', icon: CheckCircle2, color: 'text-emerald-500', badgeClass: 'bg-emerald-500 hover:bg-emerald-600 text-white border-transparent' },
+  CONFIRMED: { labelKey: 'statusPaid', variant: 'default', icon: CheckCircle2, color: 'text-emerald-500', badgeClass: 'bg-emerald-500 hover:bg-emerald-600 text-white border-transparent' },
+  OVERDUE: { labelKey: 'statusOverdue', variant: 'destructive', icon: XCircle, color: 'text-red-500' },
+  REFUNDED: { labelKey: 'statusRefunded', variant: 'secondary', icon: XCircle, color: 'text-muted-foreground' },
+  IN_REVIEW: { labelKey: 'statusInReview', variant: 'outline', icon: Clock, color: 'text-amber-500' },
+  DECLINED: { labelKey: 'statusDeclined', variant: 'destructive', icon: XCircle, color: 'text-red-500' },
 };
 
-const deliveryStatusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; color: string }> = {
-  PROCESSING: { label: 'Em Processamento', variant: 'outline', color: 'text-amber-500' },
-  SHIPPED: { label: 'Enviado', variant: 'default', color: 'text-blue-500' },
-  IN_TRANSIT: { label: 'Em Trânsito', variant: 'secondary', color: 'text-blue-500' },
-  DELIVERED: { label: 'Entregue', variant: 'default', color: 'text-emerald-500' },
-  RETURNED: { label: 'Devolvido', variant: 'destructive', color: 'text-red-500' },
+const deliveryStatusMap: Record<string, { labelKey: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; color: string }> = {
+  PROCESSING: { labelKey: 'deliveryProcessing', variant: 'outline', color: 'text-amber-500' },
+  SHIPPED: { labelKey: 'deliveryShipped', variant: 'default', color: 'text-blue-500' },
+  IN_TRANSIT: { labelKey: 'deliveryInTransit', variant: 'secondary', color: 'text-blue-500' },
+  DELIVERED: { labelKey: 'deliveryDelivered', variant: 'default', color: 'text-emerald-500' },
+  RETURNED: { labelKey: 'deliveryReturned', variant: 'destructive', color: 'text-red-500' },
 };
+
+const dateLocaleMap = { pt: 'pt-BR', es: 'es-ES', en: 'en-US' } as const;
 
 type StatusFilter = 'all' | 'PENDING' | 'RECEIVED' | 'CONFIRMED' | 'OVERDUE';
 type DeliveryFilter = 'all' | 'PROCESSING' | 'SHIPPED' | 'IN_TRANSIT' | 'DELIVERED';
