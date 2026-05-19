@@ -138,9 +138,9 @@ const CartPage = () => {
     }
     const minOrder = Number(coupon.min_order_value || 0);
     if (minOrder > 0 && previewTotal < minOrder) {
-      const faltam = (minOrder - previewTotal).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      const faltam = fmtPrice(minOrder - previewTotal);
       toast.error(`Cupom "${coupon.code}" não atinge o mínimo`, {
-        description: `Pedido mínimo de ${minOrder.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}. Faltam ${faltam}.`,
+        description: `Pedido mínimo de ${fmtPrice(minOrder)}. Faltam ${faltam}.`,
       });
       return;
     }
@@ -150,7 +150,7 @@ const CartPage = () => {
     const valor =
       coupon.discount_type === 'percentage'
         ? `${Number(coupon.discount_value)}% de desconto`
-        : `${Number(coupon.discount_value).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} de desconto`;
+        : `${fmtPrice(Number(coupon.discount_value))} de desconto`;
     toast.success(`Cupom "${coupon.code}" aplicado`, { description: valor });
   };
 
@@ -277,11 +277,11 @@ const CartPage = () => {
                         )}
                         {item.is_offer && (
                           <p className="text-xs text-muted-foreground line-through">
-                            R$ {item.original_price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            {fmtPrice(item.original_price)}
                           </p>
                         )}
                         <p className={`font-bold text-sm mt-0.5 ${item.is_offer ? 'text-destructive' : 'text-primary'}`}>
-                          R$ {item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          {fmtPrice(item.price)}
                         </p>
                         {!item.in_stock && (
                           <p className="text-xs text-destructive font-medium mt-1">{t('outOfStock')}</p>
@@ -375,7 +375,7 @@ const CartPage = () => {
                           const changed = bulkMode && q !== item.quantity;
                           return (
                             <p className={`font-bold text-sm ${changed ? 'text-primary' : 'text-foreground'}`}>
-                              R$ {subtotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                              {fmtPrice(subtotal)}
                             </p>
                           );
                         })()}
@@ -403,13 +403,13 @@ const CartPage = () => {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{previewItems} {previewItems === 1 ? 'item' : 'itens'}</span>
                       <span className="text-foreground">
-                        R$ {previewTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        {fmtPrice(previewTotal)}
                       </span>
                     </div>
                     {appliedCoupon && couponDiscount > 0 && (
                       <div className="flex justify-between text-success">
                         <span>Cupom {appliedCoupon.code}</span>
-                        <span>- R$ {couponDiscount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                        <span>- {fmtPrice(couponDiscount)}</span>
                       </div>
                     )}
                   </div>
@@ -450,7 +450,7 @@ const CartPage = () => {
                           const isApplied = appliedCoupon?.id === c.id;
                           const label = c.discount_type === 'percentage'
                             ? `${c.discount_value}% OFF`
-                            : `R$ ${Number(c.discount_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} OFF`;
+                            : `${fmtPrice(Number(c.discount_value))} OFF`;
                           return (
                             <button
                               key={c.id}
@@ -475,7 +475,7 @@ const CartPage = () => {
                   <div className="border-t border-border pt-3 flex justify-between font-bold">
                     <span className="text-foreground">{t('total')}</span>
                     <span className="text-primary text-lg">
-                      R$ {finalTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {fmtPrice(finalTotal)}
                     </span>
                   </div>
                   {bulkMode && hasChanges && (
