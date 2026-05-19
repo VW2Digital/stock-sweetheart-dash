@@ -8,6 +8,7 @@ import { BookOpen, Loader2, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { INTL_LOCALES } from '@/i18n';
+import { useAITranslateBatch } from '@/hooks/useAITranslate';
 
 interface BlogPost {
   id: string;
