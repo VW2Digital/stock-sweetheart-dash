@@ -88,13 +88,14 @@ const ErrorText = ({ msg }: { msg?: string }) =>
   ) : null;
 
 const STEPS = [
-  { key: 'customer', label: 'Dados', icon: User },
-  { key: 'address', label: 'Endereço', icon: MapPin },
-  { key: 'shipping', label: 'Frete', icon: Truck },
-  { key: 'payment', label: 'Pagamento', icon: CreditCard },
+  { key: 'customer', labelKey: 'stepCustomer', icon: User },
+  { key: 'address', labelKey: 'stepAddress', icon: MapPin },
+  { key: 'shipping', labelKey: 'stepShipping', icon: Truck },
+  { key: 'payment', labelKey: 'stepPayment', icon: CreditCard },
 ] as const;
 
 const StepIndicator = ({ currentStep }: { currentStep: CheckoutStep }) => {
+  const { t } = useLanguage();
   const currentIndex = STEPS.findIndex(s => s.key === currentStep);
 
   return (
@@ -123,7 +124,7 @@ const StepIndicator = ({ currentStep }: { currentStep: CheckoutStep }) => {
                   isCompleted || isCurrent ? 'text-foreground' : 'text-muted-foreground/50'
                 }`}
               >
-                {s.label}
+                {t(s.labelKey)}
               </span>
             </div>
             {i < STEPS.length - 1 && (
@@ -1636,7 +1637,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <MapPin className="w-4 h-4" /> Endereço de Entrega
+              <MapPin className="w-4 h-4" /> {t('deliveryAddress')}
             </CardTitle>
           </CardHeader>
         <CardContent className="space-y-3">
@@ -1646,7 +1647,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
               {/* If multiple addresses, show selector */}
               {savedAddresses.length > 1 && (
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Selecione o endereço</Label>
+                  <Label className="text-xs">{t('selectAddress')}</Label>
                   <select
                     value={selectedAddressId}
                     onChange={(e) => {
@@ -1668,7 +1669,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
                         {a.label} — {a.street}, {a.number} ({a.city}/{a.state})
                       </option>
                     ))}
-                    <option value="new">+ Novo endereço</option>
+                    <option value="new">+ {t('newAddress')}</option>
                   </select>
                 </div>
               )}
@@ -1677,12 +1678,12 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
               <div className="bg-muted/50 rounded-lg p-4 border border-border/50 space-y-1">
                 <p className="text-sm font-medium text-foreground">{addrStreet}, {addrNumber}{addrComplement ? ` - ${addrComplement}` : ''}</p>
                 <p className="text-xs text-muted-foreground">{addrDistrict} — {addrCity}/{addrState}</p>
-                <p className="text-xs text-muted-foreground">CEP: {addrPostalCode}</p>
+                <p className="text-xs text-muted-foreground">{t('cep')}: {addrPostalCode}</p>
               </div>
 
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => setEditingAddress(true)} className="flex-1">
-                  Editar endereço
+                  {t('editAddress')}
                 </Button>
                 {savedAddresses.length <= 1 && (
                   <Button variant="outline" size="sm" onClick={() => {
@@ -1691,14 +1692,14 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
                     setAddrComplement(''); setAddrDistrict(''); setAddrCity(''); setAddrState('');
                     setEditingAddress(true);
                   }} className="flex-1">
-                    Usar outro endereço
+                    {t('useAnotherAddress')}
                   </Button>
                 )}
               </div>
 
               <Button onClick={handleAddressNext} disabled={loadingShipping} className="w-full">
                 {loadingShipping ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                Continuar
+                {t('continue')}
               </Button>
             </div>
           ) : (
@@ -1706,7 +1707,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
               {/* Full address form */}
               {savedAddresses.length > 0 && (
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Endereço salvo</Label>
+                  <Label className="text-xs">{t('savedAddress')}</Label>
                   <select
                     value={selectedAddressId}
                     onChange={(e) => {
@@ -1728,12 +1729,12 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
                         {a.label} — {a.street}, {a.number} ({a.city}/{a.state})
                       </option>
                     ))}
-                    <option value="new">+ Novo endereço</option>
+                    <option value="new">+ {t('newAddress')}</option>
                   </select>
                 </div>
               )}
               <div className="space-y-1.5">
-                <Label className="text-xs">CEP *</Label>
+                <Label className="text-xs">{t('cep')} *</Label>
                 <Input
                   value={addrPostalCode}
                   onChange={(e) => {
@@ -1746,32 +1747,32 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
                   className={addressErrors.postalCode ? 'border-destructive' : ''}
                 />
                 <ErrorText msg={addressErrors.postalCode} />
-                {fetchingCep && <p className="text-xs text-muted-foreground">Buscando endereço...</p>}
+                {fetchingCep && <p className="text-xs text-muted-foreground">{t('fetchingAddress')}</p>}
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Endereço *</Label>
-                <Input value={addrStreet} onChange={(e) => { setAddrStreet(e.target.value); setAddressErrors(p => ({ ...p, address: undefined })); }} placeholder="Rua, Avenida..." className={addressErrors.address ? 'border-destructive' : ''} />
+                <Label className="text-xs">{t('address')} *</Label>
+                <Input value={addrStreet} onChange={(e) => { setAddrStreet(e.target.value); setAddressErrors(p => ({ ...p, address: undefined })); }} placeholder={t('streetPlaceholder')} className={addressErrors.address ? 'border-destructive' : ''} />
                 <ErrorText msg={addressErrors.address} />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Número *</Label>
+                  <Label className="text-xs">{t('addressNumber')} *</Label>
                   <Input value={addrNumber} onChange={(e) => { setAddrNumber(e.target.value); setAddressErrors(p => ({ ...p, number: undefined })); }} placeholder="123" className={addressErrors.number ? 'border-destructive' : ''} />
                   <ErrorText msg={addressErrors.number} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Complemento</Label>
-                  <Input value={addrComplement} onChange={(e) => setAddrComplement(e.target.value)} placeholder="Apto, Bloco..." />
+                  <Label className="text-xs">{t('complement')}</Label>
+                  <Input value={addrComplement} onChange={(e) => setAddrComplement(e.target.value)} placeholder={t('complementPlaceholder')} />
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Bairro *</Label>
+                <Label className="text-xs">{t('district')} *</Label>
                 <Input value={addrDistrict} onChange={(e) => { setAddrDistrict(e.target.value); setAddressErrors(p => ({ ...p, district: undefined })); }} placeholder="Centro" className={addressErrors.district ? 'border-destructive' : ''} />
                 <ErrorText msg={addressErrors.district} />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-2 space-y-1.5">
-                  <Label className="text-xs">Cidade *</Label>
+                  <Label className="text-xs">{t('city')} *</Label>
                   <Input value={addrCity} onChange={(e) => { setAddrCity(e.target.value); setAddressErrors(p => ({ ...p, city: undefined })); }} placeholder="São Paulo" className={addressErrors.city ? 'border-destructive' : ''} />
                   <ErrorText msg={addressErrors.city} />
                 </div>
@@ -1792,18 +1793,18 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
                     className="rounded border-border"
                   />
                   <Label htmlFor="save-address" className="text-xs text-muted-foreground cursor-pointer">
-                    Salvar este endereço na minha conta
+                    {t('saveThisAddress')}
                   </Label>
                 </div>
               )}
               <Button onClick={() => { setEditingAddress(false); handleAddressNext(); }} disabled={loadingShipping} className="w-full">
                 {loadingShipping ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                Calcular Frete
+                {t('calculateShipping')}
               </Button>
             </>
           )}
           <button type="button" onClick={() => setStep('customer')} className="text-xs text-muted-foreground hover:text-foreground w-full text-center">
-            ← Voltar aos dados pessoais
+            ← {t('backToData')}
           </button>
         </CardContent>
       </Card>
