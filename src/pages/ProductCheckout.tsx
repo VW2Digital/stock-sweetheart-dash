@@ -12,6 +12,7 @@ import Footer from '@/components/Footer';
 import { useCart } from '@/contexts/CartContext';
 import Header from '@/components/Header';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { translateValue } from '@/lib/translateValue';
 import { formatDate } from '@/i18n';
 import { useToast } from '@/hooks/use-toast';
 import JsonLd from '@/components/seo/JsonLd';
