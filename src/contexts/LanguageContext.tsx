@@ -1,6 +1,8 @@
-import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n, { SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/i18n';
 
-export type Language = 'pt' | 'es' | 'en';
+export type Language = SupportedLanguage;
 
 interface LanguageInfo {
   code: Language;
@@ -15,227 +17,51 @@ export const languages: LanguageInfo[] = [
   { code: 'en', flag: 'gb', short: 'EN', label: 'English' },
 ];
 
-const translations = {
-  // Catalog
-  catalog: { pt: 'Catálogo', es: 'Catálogo', en: 'Catalog' },
-  catalogTitle: { pt: 'Catálogo de Produtos', es: 'Catálogo de Productos', en: 'Product Catalog' },
-  catalogSubtitle: {
-    pt: 'Explore nossa linha completa de medicamentos com qualidade premium e certificação internacional.',
-    es: 'Explore nuestra línea completa de medicamentos con calidad premium y certificación internacional.',
-    en: 'Explore our complete line of medications with premium quality and international certification.',
-  },
-  searchPlaceholder: { pt: 'Buscar por nome, princípio ativo...', es: 'Buscar por nombre, principio activo...', en: 'Search by name, active ingredient...' },
-  allForms: { pt: 'Todas as formas', es: 'Todas las formas', en: 'All forms' },
-  allRoutes: { pt: 'Todas as vias', es: 'Todas las vías', en: 'All routes' },
-  all: { pt: 'Todos', es: 'Todos', en: 'All' },
-  inStock: { pt: 'Em estoque', es: 'En stock', en: 'In stock' },
-  outOfStock: { pt: 'Esgotado', es: 'Agotado', en: 'Out of stock' },
-  newest: { pt: 'Mais recentes', es: 'Más recientes', en: 'Newest' },
-  nameAZ: { pt: 'Nome A-Z', es: 'Nombre A-Z', en: 'Name A-Z' },
-  priceLow: { pt: 'Menor preço', es: 'Menor precio', en: 'Lowest price' },
-  priceHigh: { pt: 'Maior preço', es: 'Mayor precio', en: 'Highest price' },
-  productsFound: { pt: 'produtos encontrados', es: 'productos encontrados', en: 'products found' },
-  productFound: { pt: 'produto encontrado', es: 'producto encontrado', en: 'product found' },
-  loadingProducts: { pt: 'Carregando produtos...', es: 'Cargando productos...', en: 'Loading products...' },
-  noProducts: { pt: 'Nenhum produto encontrado com os filtros selecionados.', es: 'No se encontraron productos con los filtros seleccionados.', en: 'No products found with the selected filters.' },
-  clearFilters: { pt: 'Limpar filtros', es: 'Limpiar filtros', en: 'Clear filters' },
-  activeIngredient: { pt: 'Princípio ativo', es: 'Principio activo', en: 'Active ingredient' },
-  consult: { pt: 'Consultar', es: 'Consultar', en: 'Inquire' },
-  offer: { pt: 'OFERTA', es: 'OFERTA', en: 'SALE' },
-  allRights: { pt: 'Todos os direitos reservados', es: 'Todos los derechos reservados', en: 'All rights reserved' },
-
-  // Product page
-  selectDosage: { pt: 'Selecione a Dosagem', es: 'Seleccione la Dosis', en: 'Select Dosage' },
-  quantity: { pt: 'Quantidade', es: 'Cantidad', en: 'Quantity' },
-  price: { pt: 'Preço', es: 'Precio', en: 'Price' },
-  unavailable: { pt: 'Indisponível', es: 'No disponible', en: 'Unavailable' },
-  upTo6x: { pt: 'Aceitamos todos os cartões', es: 'Aceptamos todas las tarjetas', en: 'We accept all cards' },
-  pixAvailable: { pt: 'PIX disponível', es: 'PIX disponible', en: 'PIX available' },
-  buyNow: { pt: 'Comprar Agora', es: 'Comprar Ahora', en: 'Buy Now' },
-  soldOut: { pt: 'Produto Esgotado', es: 'Producto Agotado', en: 'Sold Out' },
-  productDetails: { pt: 'Detalhes do Produto', es: 'Detalles del Producto', en: 'Product Details' },
-  activeIngredientLabel: { pt: 'Princípio Ativo', es: 'Principio Activo', en: 'Active Ingredient' },
-  dosageLabel: { pt: 'Dosagem', es: 'Dosis', en: 'Dosage' },
-  pharmaForm: { pt: 'Forma Farmacêutica', es: 'Forma Farmacéutica', en: 'Pharmaceutical Form' },
-  adminRoute: { pt: 'Via de Administração', es: 'Vía de Administración', en: 'Administration Route' },
-  frequency: { pt: 'Frequência de Uso', es: 'Frecuencia de Uso', en: 'Usage Frequency' },
-  prescriptionNote: {
-    pt: '* Este medicamento requer prescrição médica. Consulte um profissional de saúde antes do uso.',
-    es: '* Este medicamento requiere prescripción médica. Consulte a un profesional de salud antes de usarlo.',
-    en: '* This medication requires a prescription. Consult a healthcare professional before use.',
-  },
-
-  // Trust badges
-  certifiedProduct: { pt: 'Produto Certificado', es: 'Producto Certificado', en: 'Certified Product' },
-  certifiedDesc: { pt: 'Aprovado por agências regulatórias', es: 'Aprobado por agencias regulatorias', en: 'Approved by regulatory agencies' },
-  fastDelivery: { pt: 'Entrega Rápida', es: 'Entrega Rápida', en: 'Fast Delivery' },
-  fastDeliveryDesc: { pt: 'Frete grátis para todo Brasil', es: 'Envío gratis a todo Brasil', en: 'Free shipping to all of Brazil' },
-  premiumQuality: { pt: 'Qualidade Premium', es: 'Calidad Premium', en: 'Premium Quality' },
-  premiumQualityDesc: { pt: 'Padrão internacional de qualidade', es: 'Estándar internacional de calidad', en: 'International quality standard' },
-  weeklyUse: { pt: 'Uso Semanal', es: 'Uso Semanal', en: 'Weekly Use' },
-  weeklyUseDesc: { pt: 'Aplicação uma vez por semana', es: 'Aplicación una vez por semana', en: 'Once a week application' },
-
-  // Bula
-  drugBulletin: { pt: 'Bula do Medicamento', es: 'Prospecto del Medicamento', en: 'Drug Information' },
-
-  // Testimonials
-  customerTestimonials: { pt: 'Depoimentos de Clientes', es: 'Testimonios de Clientes', en: 'Customer Testimonials' },
-  testimonialSubtitle: {
-    pt: 'Veja o que nossos clientes estão dizendo sobre o Liberty Pharma',
-    es: 'Vea lo que nuestros clientes dicen sobre Liberty Pharma',
-    en: 'See what our customers are saying about Liberty Pharma',
-  },
-
-  // Checkout
-  backToProduct: { pt: 'Voltar ao produto', es: 'Volver al producto', en: 'Back to product' },
-  orderSummary: { pt: 'Resumo do Pedido', es: 'Resumen del Pedido', en: 'Order Summary' },
-  qty: { pt: 'Qtd', es: 'Cant', en: 'Qty' },
-  buyerData: { pt: 'Dados do Comprador', es: 'Datos del Comprador', en: 'Buyer Information' },
-  fullName: { pt: 'Nome completo', es: 'Nombre completo', en: 'Full name' },
-  email: { pt: 'E-mail', es: 'Correo electrónico', en: 'Email' },
-  cpf: { pt: 'CPF', es: 'CPF', en: 'CPF' },
-  phoneLabel: { pt: 'Telefone', es: 'Teléfono', en: 'Phone' },
-  continueToPayment: { pt: 'Continuar para pagamento', es: 'Continuar al pago', en: 'Continue to payment' },
-  paymentMethod: { pt: 'Forma de Pagamento', es: 'Forma de Pago', en: 'Payment Method' },
-  creditCard: { pt: 'Cartão de Crédito', es: 'Tarjeta de Crédito', en: 'Credit Card' },
-  cardNumber: { pt: 'Número do cartão', es: 'Número de tarjeta', en: 'Card number' },
-  cardName: { pt: 'Nome no cartão', es: 'Nombre en la tarjeta', en: 'Name on card' },
-  month: { pt: 'Mês', es: 'Mes', en: 'Month' },
-  year: { pt: 'Ano', es: 'Año', en: 'Year' },
-  installments: { pt: 'Parcelas', es: 'Cuotas', en: 'Installments' },
-  cashPayment: { pt: 'à vista', es: 'al contado', en: 'in full' },
-  noInterest: { pt: 'sem juros', es: 'sin intereses', en: 'interest-free' },
-  holderData: { pt: 'Dados do titular', es: 'Datos del titular', en: 'Cardholder info' },
-  cep: { pt: 'CEP', es: 'Código postal', en: 'ZIP code' },
-  addressNumber: { pt: 'Número', es: 'Número', en: 'Number' },
-  pay: { pt: 'Pagar', es: 'Pagar', en: 'Pay' },
-  generatePix: { pt: 'Gerar PIX', es: 'Generar PIX', en: 'Generate PIX' },
-  pixGenerated: { pt: 'Pagamento PIX gerado!', es: '¡Pago PIX generado!', en: 'PIX payment generated!' },
-  scanQR: { pt: 'Escaneie o QR Code ou copie o código abaixo', es: 'Escanee el QR Code o copie el código', en: 'Scan the QR code or copy the code below' },
-  paymentProcessed: { pt: 'Pagamento processado!', es: '¡Pago procesado!', en: 'Payment processed!' },
-  confirmed: { pt: 'Confirmado', es: 'Confirmado', en: 'Confirmed' },
-  pending: { pt: 'Pendente', es: 'Pendiente', en: 'Pending' },
-  copied: { pt: 'Copiado!', es: '¡Copiado!', en: 'Copied!' },
-  value: { pt: 'Valor', es: 'Valor', en: 'Amount' },
-  loading: { pt: 'Carregando...', es: 'Cargando...', en: 'Loading...' },
-  productNotFound: { pt: 'Produto não encontrado.', es: 'Producto no encontrado.', en: 'Product not found.' },
-
-  // Validation
-  nameRequired: { pt: 'Nome é obrigatório', es: 'El nombre es obligatorio', en: 'Name is required' },
-  nameMin: { pt: 'Nome deve ter pelo menos 3 caracteres', es: 'El nombre debe tener al menos 3 caracteres', en: 'Name must be at least 3 characters' },
-  emailRequired: { pt: 'E-mail é obrigatório', es: 'El correo es obligatorio', en: 'Email is required' },
-  emailInvalid: { pt: 'E-mail inválido', es: 'Correo inválido', en: 'Invalid email' },
-  cpfRequired: { pt: 'CPF é obrigatório', es: 'CPF es obligatorio', en: 'CPF is required' },
-  cpfInvalid: { pt: 'CPF inválido', es: 'CPF inválido', en: 'Invalid CPF' },
-  phoneRequired: { pt: 'Telefone é obrigatório', es: 'El teléfono es obligatorio', en: 'Phone is required' },
-  phoneInvalid: { pt: 'Telefone inválido', es: 'Teléfono inválido', en: 'Invalid phone' },
-  cardNumberInvalid: { pt: 'Número do cartão inválido', es: 'Número de tarjeta inválido', en: 'Invalid card number' },
-  cardNameRequired: { pt: 'Nome no cartão é obrigatório', es: 'Nombre en tarjeta obligatorio', en: 'Name on card is required' },
-  monthInvalid: { pt: 'Mês inválido', es: 'Mes inválido', en: 'Invalid month' },
-  yearInvalid: { pt: 'Ano inválido', es: 'Año inválido', en: 'Invalid year' },
-  cvvInvalid: { pt: 'CVV inválido', es: 'CVV inválido', en: 'Invalid CVV' },
-  cepInvalid: { pt: 'CEP inválido', es: 'Código postal inválido', en: 'Invalid ZIP code' },
-  numberRequired: { pt: 'Número obrigatório', es: 'Número obligatorio', en: 'Number required' },
-  error: { pt: 'Erro', es: 'Error', en: 'Error' },
-  paymentError: { pt: 'Erro no pagamento', es: 'Error en el pago', en: 'Payment error' },
-  status: { pt: 'Status', es: 'Estado', en: 'Status' },
-  pixDescription: { pt: 'Ao confirmar, um QR Code PIX será gerado para pagamento imediato.', es: 'Al confirmar, se generará un QR Code PIX para pago inmediato.', en: 'A PIX QR Code will be generated for immediate payment.' },
-  backToData: { pt: 'Voltar aos dados pessoais', es: 'Volver a los datos personales', en: 'Back to personal data' },
-} as const;
-
-type TranslationKey = keyof typeof translations;
+const SUPPORTED: readonly Language[] = SUPPORTED_LANGUAGES;
 
 interface LanguageContextType {
   lang: Language;
   setLang: (lang: Language) => void;
-  t: (key: TranslationKey) => string;
+  t: (key: string) => string;
   refreshSeoTags: () => void;
 }
 
 export const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-const SUPPORTED: Language[] = ['pt', 'es', 'en'];
-
-const COOKIE_NAME = 'language';
-const STORAGE_KEY = 'language';
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 ano
-
-const readCookie = (name: string): string | null => {
-  if (typeof document === 'undefined') return null;
-  const match = document.cookie.split('; ').find((row) => row.startsWith(`${name}=`));
-  return match ? decodeURIComponent(match.split('=')[1]) : null;
+const normalize = (raw: string | undefined): Language => {
+  const code = (raw || 'pt').toLowerCase().split('-')[0] as Language;
+  return SUPPORTED.includes(code) ? code : 'pt';
 };
 
-const writeCookie = (name: string, value: string) => {
-  if (typeof document === 'undefined') return;
-  const secure = window.location.protocol === 'https:' ? '; Secure' : '';
-  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax${secure}`;
-};
-
-const readUrlLang = (): Language | null => {
-  if (typeof window === 'undefined') return null;
-  const param = new URLSearchParams(window.location.search).get('lang');
-  if (param && SUPPORTED.includes(param as Language)) return param as Language;
-  return null;
-};
-
-const detectBrowserLanguage = (): Language => {
-  // Português (Portugal) é sempre o idioma padrão.
-  // Deteção automática do browser foi desativada por requisito.
-  return 'pt';
-};
-
+/**
+ * Adaptador de compatibilidade sobre o i18next.
+ * Mantém a API legada `useLanguage()` para não partir os componentes existentes.
+ * Toda a tradução, deteção, persistência e fallback é feita pelo i18next.
+ */
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [lang, setLangState] = useState<Language>(() => {
-    // Prioridade: URL ?lang= > localStorage > cookie > deteção do browser
-    const fromUrl = readUrlLang();
-    if (fromUrl) return fromUrl;
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY) as Language | null;
-      if (saved && SUPPORTED.includes(saved)) return saved;
-    } catch { /* ignore */ }
-    const cookieLang = readCookie(COOKIE_NAME) as Language | null;
-    if (cookieLang && SUPPORTED.includes(cookieLang)) return cookieLang;
-    return detectBrowserLanguage();
-  });
-  const [seoTick, setSeoTick] = useState(0);
-  const refreshSeoTags = useCallback(() => setSeoTick((t) => t + 1), []);
+  const { t: i18nT, i18n: i18nInstance } = useTranslation();
+  const [lang, setLangState] = useState<Language>(() => normalize(i18nInstance.language));
+  const [, setSeoTick] = useState(0);
+  const refreshSeoTags = useCallback(() => setSeoTick((n) => n + 1), []);
+
+  // Mantém o estado React em sincronia com mudanças do i18next (incluindo entre abas)
+  useEffect(() => {
+    const onChange = (lng: string) => setLangState(normalize(lng));
+    i18nInstance.on('languageChanged', onChange);
+    return () => { i18nInstance.off('languageChanged', onChange); };
+  }, [i18nInstance]);
 
   const setLang = useCallback((l: Language) => {
-    setLangState(l);
-    try { localStorage.setItem(STORAGE_KEY, l); } catch { /* ignore */ }
-    writeCookie(COOKIE_NAME, l);
-  }, []);
+    if (!SUPPORTED.includes(l)) return;
+    i18nInstance.changeLanguage(l);
+  }, [i18nInstance]);
 
-  // Garante que a escolha inicial fica persistida em ambos os storages
+  // <html lang> + <link rel="alternate" hreflang> para SEO
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, lang); } catch { /* ignore */ }
-    writeCookie(COOKIE_NAME, lang);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Sincroniza alterações entre abas
-  useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY && e.newValue && SUPPORTED.includes(e.newValue as Language)) {
-        setLangState(e.newValue as Language);
-      }
-    };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
-
-  // Sync <html lang> + hreflang tags for SEO
-  useEffect(() => {
-    const htmlLangMap: Record<Language, string> = {
-      pt: 'pt-PT',
-      es: 'es',
-      en: 'en',
-    };
+    const htmlLangMap: Record<Language, string> = { pt: 'pt-PT', es: 'es', en: 'en' };
     document.documentElement.lang = htmlLangMap[lang];
 
     const head = document.head;
-    // Remove old hreflang/canonical-alternate tags managed by us
     head.querySelectorAll('link[data-i18n="hreflang"]').forEach((el) => el.remove());
 
     const baseUrl = `${window.location.origin}${window.location.pathname}`;
@@ -244,7 +70,6 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       { hreflang: 'es', lang: 'es' },
       { hreflang: 'en', lang: 'en' },
     ];
-
     alternates.forEach(({ hreflang, lang: l }) => {
       const link = document.createElement('link');
       link.rel = 'alternate';
@@ -253,18 +78,15 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       link.setAttribute('data-i18n', 'hreflang');
       head.appendChild(link);
     });
-
     const xDefault = document.createElement('link');
     xDefault.rel = 'alternate';
     xDefault.hreflang = 'x-default';
     xDefault.href = baseUrl;
     xDefault.setAttribute('data-i18n', 'hreflang');
     head.appendChild(xDefault);
-  }, [lang, seoTick]);
-
-  const t = useCallback((key: TranslationKey): string => {
-    return translations[key]?.[lang] || key;
   }, [lang]);
+
+  const t = useCallback((key: string): string => i18nT(key), [i18nT]);
 
   return (
     <LanguageContext.Provider value={{ lang, setLang, t, refreshSeoTags }}>
@@ -278,3 +100,6 @@ export const useLanguage = () => {
   if (!ctx) throw new Error('useLanguage must be used inside LanguageProvider');
   return ctx;
 };
+
+// Re-export para conveniência
+export { i18n };
