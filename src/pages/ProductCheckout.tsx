@@ -585,13 +585,13 @@ const ProductCheckout = () => {
                                   : 'border-border bg-card hover:border-primary/50'
                               }`}
                             >
-                              <p className="text-xs font-bold text-foreground">{tier.min_quantity}+ {t('unitsPlural')}</p>
+                              <p className="text-xs font-bold text-foreground">{t('tierMinQty', { count: tier.min_quantity, qty: tier.min_quantity })}</p>
                               <p className="text-sm font-extrabold text-primary mt-0.5">
                                 R$ {tier.price.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
                                 <span className="text-[10px] text-muted-foreground font-normal">{t('perUnit')}</span>
                               </p>
                               {economy > 0 && (
-                                <p className="text-[10px] text-success font-semibold mt-0.5">-{economy}%</p>
+                                <p className="text-[10px] text-success font-semibold mt-0.5">{t('discountPercent', { percent: economy })}</p>
                               )}
                             </button>
                           );
