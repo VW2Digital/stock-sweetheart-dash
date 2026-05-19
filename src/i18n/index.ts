@@ -9,6 +9,15 @@ import en from './locales/en.json';
 export const SUPPORTED_LANGUAGES = ['pt-PT', 'es', 'en'] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
+export const normalizeLng = (lng: string | undefined): SupportedLanguage => {
+  if (!lng) return 'pt-PT';
+  const lower = lng.toLowerCase();
+  if (lower.startsWith('pt')) return 'pt-PT';
+  if (lower.startsWith('es')) return 'es';
+  if (lower.startsWith('en')) return 'en';
+  return 'pt-PT';
+};
+
 /**
  * Mapa BCP-47 usado em Intl.* (moeda, data, número).
  * Apenas Português de Portugal (pt-PT) é suportado.
@@ -23,15 +32,6 @@ const DEFAULT_CURRENCY: Record<SupportedLanguage, string> = {
   'pt-PT': 'EUR',
   es: 'EUR',
   en: 'USD',
-};
-
-const normalizeLng = (lng: string | undefined): SupportedLanguage => {
-  if (!lng) return 'pt-PT';
-  const lower = lng.toLowerCase();
-  if (lower.startsWith('pt')) return 'pt-PT';
-  if (lower.startsWith('es')) return 'es';
-  if (lower.startsWith('en')) return 'en';
-  return 'pt-PT';
 };
 
 const intlLocale = (lng: string | undefined): string =>
