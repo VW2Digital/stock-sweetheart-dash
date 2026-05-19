@@ -1,6 +1,6 @@
 import { createContext, useContext, useCallback, useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import i18n, { SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/i18n';
+import i18n, { SUPPORTED_LANGUAGES, normalizeLng, type SupportedLanguage } from '@/i18n';
 
 export type Language = SupportedLanguage;
 
@@ -28,14 +28,7 @@ interface LanguageContextType {
 
 export const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-const normalize = (raw: string | undefined): Language => {
-  if (!raw) return 'pt-PT';
-  const lower = raw.toLowerCase();
-  if (lower.startsWith('pt')) return 'pt-PT';
-  if (lower.startsWith('es')) return 'es';
-  if (lower.startsWith('en')) return 'en';
-  return 'pt-PT';
-};
+const normalize = (raw: string | undefined): Language => normalizeLng(raw);
 
 /**
  * Adaptador de compatibilidade sobre o i18next.
