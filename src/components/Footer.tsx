@@ -42,8 +42,16 @@ const Footer = () => {
           <div className="space-y-3">
             <img src={logoImg} alt="Liberty Lumina" className="h-12 object-contain" />
             <div className="text-sm text-muted-foreground leading-relaxed space-y-2">
-              {footerText && <p>{footerText}</p>}
-              {footerMission && <p>{footerMission}</p>}
+              {(() => {
+                const textOverride = t('footerTextOverride');
+                const finalText = textOverride || footerText;
+                return finalText ? <p>{finalText}</p> : null;
+              })()}
+              {(() => {
+                const missionOverride = t('footerMissionOverride');
+                const finalMission = missionOverride || footerMission;
+                return finalMission ? <p>{finalMission}</p> : null;
+              })()}
               {footerEmail && <p>{t('emailLabelShort')}: {footerEmail}</p>}
               {footerPhone && <p>{t('phoneLabelShort')}: {footerPhone}</p>}
             </div>
