@@ -20,6 +20,7 @@ export default function BlogPostForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEdit = !!id && id !== 'novo';
+  const { t } = useLanguage();
 
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
