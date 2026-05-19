@@ -9,6 +9,7 @@ import { ShieldCheck, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import logoImg from '@/assets/liberty-pharma-icon.png';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -20,6 +21,7 @@ const Login = () => {
   const [forgotLoading, setForgotLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,8 +31,8 @@ const Login = () => {
       navigate('/admin');
     } catch (err: any) {
       toast({
-        title: 'Erro',
-        description: err.message || 'Email ou senha incorretos.',
+        title: t('error'),
+        description: err.message || t('invalidEmailOrPassword'),
         variant: 'destructive',
       });
     } finally {
@@ -48,14 +50,14 @@ const Login = () => {
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
       toast({
-        title: 'Email enviado',
-        description: 'Verifique sua caixa de entrada e copie o código de recuperação.',
+        title: t('emailSent'),
+        description: t('checkInboxForRecoveryCode'),
       });
       setForgotMode(false);
     } catch (err: any) {
       toast({
-        title: 'Erro',
-        description: err.message || 'Não foi possível enviar o email.',
+        title: t('error'),
+        description: err.message || t('couldNotSendEmail'),
         variant: 'destructive',
       });
     } finally {
@@ -80,12 +82,12 @@ const Login = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                {forgotMode ? 'Redefinir Senha' : 'Painel Administrativo'}
+                {forgotMode ? t('resetPassword') : t('adminPanel')}
               </h1>
               <p className="text-muted-foreground text-sm mt-1">
                 {forgotMode
-                  ? 'Informe seu email para receber o código de recuperação'
-                  : 'Faça login para gerenciar seus produtos'}
+                  ? t('enterEmailForRecoveryCode')
+                  : t('loginToManageProducts')}
               </p>
             </div>
           </CardHeader>
@@ -93,7 +95,7 @@ const Login = () => {
             {forgotMode ? (
               <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="forgot-email">Email</Label>
+                  <Label htmlFor="forgot-email">{t('email')}</Label>
                   <Input
                     id="forgot-email"
                     type="email"
@@ -104,7 +106,7 @@ const Login = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={forgotLoading}>
-                  {forgotLoading ? 'Enviando...' : 'Enviar código de recuperação'}
+                  {forgotLoading ? t('sending') : t('sendRecoveryCode')}
                 </Button>
                 <Button
                   type="button"
@@ -113,13 +115,13 @@ const Login = () => {
                   onClick={() => setForgotMode(false)}
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Voltar ao login
+                  {t('backToLogin')}
                 </Button>
               </form>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('email')}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -130,7 +132,7 @@ const Login = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Senha</Label>
+                  <Label htmlFor="password">{t('password')}</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -151,7 +153,7 @@ const Login = () => {
                   </div>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? 'Carregando...' : 'Entrar'}
+                  {loading ? t('loading') : t('login')}
                 </Button>
                 <div className="text-center">
                   <button
@@ -159,7 +161,7 @@ const Login = () => {
                     onClick={() => setForgotMode(true)}
                     className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
-                    Esqueceu a senha?
+                    {t('forgotPasswordQuestion')}
                   </button>
                 </div>
               </form>
