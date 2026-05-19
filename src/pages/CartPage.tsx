@@ -486,7 +486,7 @@ const CartPage = () => {
                     disabled={items.length === 0 || items.some(i => !i.in_stock) || bulkMode}
                     onClick={() => navigate('/checkout-carrinho')}
                   >
-                    Finalizar Compra
+                    {t('finishPurchase')}
                   </Button>
                   {items.some(i => !i.in_stock) && (
                     <p className="text-xs text-destructive text-center">Remova itens fora de estoque para continuar</p>
