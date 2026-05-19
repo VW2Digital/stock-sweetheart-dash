@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Package } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translateValue } from '@/lib/translateValue';
 import { usePublicCurrency } from '@/lib/publicCurrency';
+import { useAITranslateBatch } from '@/hooks/useAITranslate';
 
 interface ComboItem {
   quantity: number;
