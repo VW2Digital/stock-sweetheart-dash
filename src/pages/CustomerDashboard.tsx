@@ -928,7 +928,7 @@ const CustomerDashboard = () => {
                 <Card className="border-border/50">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <User className="w-5 h-5" /> Meus Dados
+                      <User className="w-5 h-5" /> {t('myData')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-5">
@@ -940,16 +940,16 @@ const CustomerDashboard = () => {
                       <>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor="profile-name">Nome completo</Label>
+                            <Label htmlFor="profile-name">{t('fullName')}</Label>
                             <Input
                               id="profile-name"
                               value={profileName}
                               onChange={(e) => setProfileName(e.target.value)}
-                              placeholder="Seu nome completo"
+                              placeholder={t('yourFullName')}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="profile-phone">Telefone</Label>
+                            <Label htmlFor="profile-phone">{t('phoneLabel')}
                             <div className="relative">
                               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                               <Input
@@ -964,14 +964,14 @@ const CustomerDashboard = () => {
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground font-medium">Email</p>
+                            <p className="text-xs text-muted-foreground font-medium">{t('email')}</p>
                             <p className="text-foreground font-medium text-sm">{user?.email}</p>
                           </div>
                           <div className="space-y-1">
-                            <p className="text-xs text-muted-foreground font-medium">Membro desde</p>
+                            <p className="text-xs text-muted-foreground font-medium">{t('memberSince')}</p>
                             <p className="text-foreground font-medium text-sm">
                               {user?.created_at
-                                ? new Date(user.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+                                ? new Date(user.created_at).toLocaleDateString(dateLocaleMap[lang], { day: '2-digit', month: 'long', year: 'numeric' })
                                 : '-'
                               }
                             </p>
@@ -979,7 +979,7 @@ const CustomerDashboard = () => {
                         </div>
                         <Button onClick={saveProfile} disabled={profileSaving} className="w-full sm:w-auto">
                           {profileSaving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Save className="w-4 h-4 mr-1" />}
-                          Salvar Alterações
+                          {t('saveChanges')}
                         </Button>
                       </>
                     )}
