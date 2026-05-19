@@ -152,6 +152,7 @@
   "youSave": "Ahorras: R$ {{amount}}",
   "discountOverRegular": "{{percent}}% de descuento sobre el precio regular",
   "totalWholesale": "Total Mayorista",
+  "total": "Total",
   "perUnitParen": "(por unidad)",
   "regularPriceLabel": "Precio regular:",
   "pixDiscountFull": "{{percent}}% de descuento en Pix: R$ {{amount}}",

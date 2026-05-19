@@ -471,7 +471,7 @@ const CartPage = () => {
                   </div>
 
                   <div className="border-t border-border pt-3 flex justify-between font-bold">
-                    <span className="text-foreground">Total</span>
+                    <span className="text-foreground">{t('total')}</span>
                     <span className="text-primary text-lg">
                       R$ {finalTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
