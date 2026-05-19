@@ -35,7 +35,6 @@ const pickImage = (urls: (string | null | undefined)[]): string => {
   return '';
 };
 
-import { usePublicCurrency } from '@/lib/publicCurrency';
 
 export default function CombosSection() {
   const [combos, setCombos] = useState<ComboCard[]>([]);

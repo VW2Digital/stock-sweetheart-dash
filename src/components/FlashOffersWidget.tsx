@@ -22,8 +22,7 @@ interface WidgetConfig {
   title: string;
 }
 
-const formatBRL = (v: number) =>
-  v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+// formatBRL agora vem do hook usePublicCurrency dentro do componente
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
