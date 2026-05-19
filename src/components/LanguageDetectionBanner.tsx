@@ -3,7 +3,7 @@ import { X, Globe } from 'lucide-react';
 import { useLanguage, languages, type Language } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 
-const SUPPORTED: Language[] = ['pt', 'es', 'en', 'zh'];
+const SUPPORTED: Language[] = ['pt', 'es', 'en'];
 const DISMISS_KEY = 'language-banner-dismissed';
 
 const detectBrowserLanguage = (): Language | null => {
@@ -14,7 +14,6 @@ const detectBrowserLanguage = (): Language | null => {
     if (lower.startsWith('pt')) return 'pt';
     if (lower.startsWith('es')) return 'es';
     if (lower.startsWith('en')) return 'en';
-    if (lower.startsWith('zh')) return 'zh';
   }
   return null;
 };
@@ -23,7 +22,6 @@ const messages: Record<Language, { text: string; change: string }> = {
   pt: { text: 'Detectamos seu idioma como', change: 'Mudar' },
   es: { text: 'Detectamos su idioma como', change: 'Cambiar' },
   en: { text: 'We detected your language as', change: 'Switch' },
-  zh: { text: '我们检测到您的语言是', change: '切换' },
 };
 
 const LanguageDetectionBanner = () => {
