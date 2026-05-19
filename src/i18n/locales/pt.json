@@ -540,6 +540,16 @@
     "copyLink": "Copiar link",
     "linkCopied": "Link copiado",
     "copyError": "Não foi possível copiar",
-    "home": "Início"
+    "home": "Início",
+    "shareLinksTitle": "Links de compartilhamento",
+    "shareLinksHelp": "Opcional. Se preenchidos, substituem o link padrão de cada botão de partilha do post.",
+    "shareFacebookLabel": "Facebook",
+    "shareTwitterLabel": "Twitter / X",
+    "shareLinkedinLabel": "LinkedIn",
+    "shareWhatsappLabel": "WhatsApp",
+    "shareFacebookPlaceholder": "https://facebook.com/...",
+    "shareTwitterPlaceholder": "https://twitter.com/...",
+    "shareLinkedinPlaceholder": "https://linkedin.com/...",
+    "shareWhatsappPlaceholder": "https://wa.me/..."
   }
 }

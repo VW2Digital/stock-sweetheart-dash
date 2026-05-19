@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Loader2, Upload, Eye, X, Facebook, Twitter, Linkedin, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import RichTextEditor from '@/components/RichTextEditor';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const slugify = (s: string) =>
   s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -19,6 +20,7 @@ export default function BlogPostForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEdit = !!id && id !== 'novo';
+  const { t } = useLanguage();
 
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
@@ -228,49 +230,49 @@ export default function BlogPostForm() {
 
           <Card className="p-5 space-y-4">
             <div>
-              <Label>Links de compartilhamento</Label>
+              <Label>{t('blog.shareLinksTitle')}</Label>
               <p className="text-xs text-muted-foreground mt-1">
-                Opcional. Se preenchidos, substituem o link padrão de cada botão de partilha do post.
+                {t('blog.shareLinksHelp')}
               </p>
             </div>
             <div className="space-y-2">
               <Label className="text-xs flex items-center gap-2 text-muted-foreground">
-                <Facebook className="h-3.5 w-3.5" /> Facebook
+                <Facebook className="h-3.5 w-3.5" /> {t('blog.shareFacebookLabel')}
               </Label>
               <Input
                 value={form.share_facebook_url}
                 onChange={(e) => update({ share_facebook_url: e.target.value })}
-                placeholder="https://facebook.com/..."
+                placeholder={t('blog.shareFacebookPlaceholder')}
               />
             </div>
             <div className="space-y-2">
               <Label className="text-xs flex items-center gap-2 text-muted-foreground">
-                <Twitter className="h-3.5 w-3.5" /> Twitter / X
+                <Twitter className="h-3.5 w-3.5" /> {t('blog.shareTwitterLabel')}
               </Label>
               <Input
                 value={form.share_twitter_url}
                 onChange={(e) => update({ share_twitter_url: e.target.value })}
-                placeholder="https://twitter.com/..."
+                placeholder={t('blog.shareTwitterPlaceholder')}
               />
             </div>
             <div className="space-y-2">
               <Label className="text-xs flex items-center gap-2 text-muted-foreground">
-                <Linkedin className="h-3.5 w-3.5" /> LinkedIn
+                <Linkedin className="h-3.5 w-3.5" /> {t('blog.shareLinkedinLabel')}
               </Label>
               <Input
                 value={form.share_linkedin_url}
                 onChange={(e) => update({ share_linkedin_url: e.target.value })}
-                placeholder="https://linkedin.com/..."
+                placeholder={t('blog.shareLinkedinPlaceholder')}
               />
             </div>
             <div className="space-y-2">
               <Label className="text-xs flex items-center gap-2 text-muted-foreground">
-                <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
+                <MessageCircle className="h-3.5 w-3.5" /> {t('blog.shareWhatsappLabel')}
               </Label>
               <Input
                 value={form.share_whatsapp_url}
                 onChange={(e) => update({ share_whatsapp_url: e.target.value })}
-                placeholder="https://wa.me/..."
+                placeholder={t('blog.shareWhatsappPlaceholder')}
               />
             </div>
           </Card>
