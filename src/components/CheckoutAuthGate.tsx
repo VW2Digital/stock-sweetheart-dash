@@ -134,37 +134,37 @@ const CheckoutAuthGate = ({ onAuthenticated }: Props) => {
     <div className="border border-border/50 rounded-xl p-5 bg-card mb-6">
       <div className="flex items-center gap-2 mb-1">
         <ShieldCheck className="w-5 h-5 text-primary" />
-        <h2 className="text-lg font-bold text-foreground">Identifique-se para finalizar</h2>
+        <h2 className="text-lg font-bold text-foreground">{t('identifyToCheckout')}</h2>
       </div>
       <p className="text-sm text-muted-foreground mb-4">
-        Crie uma conta rápida ou entre para concluir seu pedido com segurança.
+        {t('createOrLoginToCheckout')}
       </p>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as 'login' | 'signup')} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="signup" className="gap-2">
-            <UserPlus className="w-4 h-4" /> Criar Conta
+            <UserPlus className="w-4 h-4" /> {t('createAccount')}
           </TabsTrigger>
           <TabsTrigger value="login" className="gap-2">
-            <LogIn className="w-4 h-4" /> Já sou cliente
+            <LogIn className="w-4 h-4" /> {t('alreadyCustomer')}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="signup" className="mt-4">
           <form onSubmit={handleSignup} className="space-y-3">
             <div>
-              <Label htmlFor="signup-name">Nome completo</Label>
+              <Label htmlFor="signup-name">{t('fullName')}</Label>
               <Input
                 id="signup-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                placeholder="Seu nome"
+                placeholder={t('yourName')}
               />
             </div>
             <div>
-              <Label htmlFor="signup-email">Email</Label>
+              <Label htmlFor="signup-email">{t('email')}</Label>
               <Input
                 id="signup-email"
                 type="email"
@@ -175,7 +175,7 @@ const CheckoutAuthGate = ({ onAuthenticated }: Props) => {
               />
             </div>
             <div>
-              <Label htmlFor="signup-password">Senha</Label>
+              <Label htmlFor="signup-password">{t('password')}</Label>
               <div className="relative">
                 <Input
                   id="signup-password"
@@ -184,7 +184,7 @@ const CheckoutAuthGate = ({ onAuthenticated }: Props) => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder={t('min6Characters')}
                   className="pr-10"
                 />
                 <button
@@ -197,7 +197,7 @@ const CheckoutAuthGate = ({ onAuthenticated }: Props) => {
               </div>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Criar conta e continuar'}
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('createAccountAndContinue')}
             </Button>
           </form>
         </TabsContent>
@@ -205,7 +205,7 @@ const CheckoutAuthGate = ({ onAuthenticated }: Props) => {
         <TabsContent value="login" className="mt-4">
           <form onSubmit={handleLogin} className="space-y-3">
             <div>
-              <Label htmlFor="login-email">Email</Label>
+              <Label htmlFor="login-email">{t('email')}</Label>
               <Input
                 id="login-email"
                 type="email"
@@ -216,7 +216,7 @@ const CheckoutAuthGate = ({ onAuthenticated }: Props) => {
               />
             </div>
             <div>
-              <Label htmlFor="login-password">Senha</Label>
+              <Label htmlFor="login-password">{t('password')}</Label>
               <div className="relative">
                 <Input
                   id="login-password"
@@ -224,7 +224,7 @@ const CheckoutAuthGate = ({ onAuthenticated }: Props) => {
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   required
-                  placeholder="Sua senha"
+                placeholder={t('yourPassword')}
                   className="pr-10"
                 />
                 <button
@@ -237,14 +237,14 @@ const CheckoutAuthGate = ({ onAuthenticated }: Props) => {
               </div>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Entrar e continuar'}
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('loginAndContinue')}
             </Button>
             <div className="text-center">
               <a
                 href={`/cliente/login?redirect=${encodeURIComponent('/checkout-carrinho')}`}
                 className="text-xs text-muted-foreground hover:text-primary"
               >
-                Esqueceu a senha?
+                {t('forgotPasswordQuestion')}
               </a>
             </div>
           </form>
