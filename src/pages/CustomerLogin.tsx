@@ -136,7 +136,7 @@ const CustomerLogin = () => {
             <img src={logoImg} alt="Liberty Pharma" className="h-10 object-contain" />
           </Link>
           <Link to="/catalogo" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            Voltar ao catálogo
+            {t('backToCatalog')}
           </Link>
         </div>
       </header>
@@ -149,14 +149,14 @@ const CustomerLogin = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                {isForgotPassword ? 'Esqueci minha senha' : 'Área do Cliente'}
+                {isForgotPassword ? t('forgotMyPassword') : t('customerArea')}
               </h1>
               <p className="text-muted-foreground text-sm mt-1">
                 {isForgotPassword
-                  ? 'Informe seu email para receber o código de redefinição'
+                  ? t('enterEmailForResetCode')
                   : isSignUp
-                    ? 'Crie sua conta para acompanhar seus pedidos'
-                    : 'Faça login para acompanhar seus pedidos'
+                    ? t('createAccountToTrackOrders')
+                    : t('loginToTrackOrders')
                 }
               </p>
             </div>
@@ -165,7 +165,7 @@ const CustomerLogin = () => {
             {isForgotPassword ? (
               <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('email')}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -177,24 +177,24 @@ const CustomerLogin = () => {
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                  Enviar código de redefinição
+                  {t('sendResetCode')}
                 </Button>
                 <button
                   type="button"
                   onClick={() => setIsForgotPassword(false)}
                   className="w-full text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-1 transition-colors"
                 >
-                  <ArrowLeft className="w-3 h-3" /> Voltar ao login
+                  <ArrowLeft className="w-3 h-3" /> {t('backToLogin')}
                 </button>
               </form>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 {isSignUp && (
                   <div className="space-y-2">
-                    <Label htmlFor="name">Nome completo</Label>
+                    <Label htmlFor="name">{t('fullName')}</Label>
                     <Input
                       id="name"
-                      placeholder="Seu nome"
+                      placeholder={t('yourName')}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
@@ -203,7 +203,7 @@ const CustomerLogin = () => {
                 )}
                 {isSignUp && (
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Telefone (WhatsApp)</Label>
+                    <Label htmlFor="phone">{t('whatsappPhone')}</Label>
                     <Input
                       id="phone"
                       type="tel"
@@ -215,12 +215,12 @@ const CustomerLogin = () => {
                       required
                     />
                     <p className="text-xs text-muted-foreground">
-                      Usaremos para avisar você sobre o status do pedido e entrega.
+                      {t('phoneOrderStatusNotice')}
                     </p>
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('email')}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -232,14 +232,14 @@ const CustomerLogin = () => {
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Senha</Label>
+                    <Label htmlFor="password">{t('password')}
                     {!isSignUp && (
                       <button
                         type="button"
                         onClick={() => setIsForgotPassword(true)}
                         className="text-xs text-primary hover:underline"
                       >
-                        Esqueceu a senha?
+                        {t('forgotPasswordQuestion')}
                       </button>
                     )}
                   </div>
@@ -264,16 +264,16 @@ const CustomerLogin = () => {
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                  {isSignUp ? 'Criar Conta' : 'Entrar'}
+                  {isSignUp ? t('createAccount') : t('login')}
                 </Button>
                 <p className="text-sm text-center text-muted-foreground">
-                  {isSignUp ? 'Já tem conta?' : 'Não tem conta?'}{' '}
+                  {isSignUp ? t('alreadyHaveAccount') : t('noAccount')}{' '}
                   <button
                     type="button"
                     onClick={() => setIsSignUp(!isSignUp)}
                     className="text-primary font-medium hover:underline"
                   >
-                    {isSignUp ? 'Fazer login' : 'Criar conta'}
+                    {isSignUp ? t('signInAction') : t('createAccountLower')}
                   </button>
                 </p>
               </form>
