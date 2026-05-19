@@ -542,7 +542,7 @@ const ProductCheckout = () => {
 
             {(variation?.subtitle || product.subtitle) && (
               <div className="bg-muted/50 rounded-lg px-4 py-3 border border-border/30">
-                <p className="text-sm text-muted-foreground">{variation?.subtitle || product.subtitle}</p>
+                <p className="text-sm text-muted-foreground">{translateValue(variation?.subtitle || product.subtitle)}</p>
               </div>
             )}
 
