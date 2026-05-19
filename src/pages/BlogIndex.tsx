@@ -6,6 +6,8 @@ import Footer from '@/components/Footer';
 import { Card } from '@/components/ui/card';
 import { BookOpen, Loader2, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { INTL_LOCALES } from '@/i18n';
 
 interface BlogPost {
   id: string;
