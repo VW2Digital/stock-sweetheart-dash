@@ -87,7 +87,9 @@ export default function CombosSection() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {combos.map((c) => {
+          {combos.map((c, ci) => {
+            const tName = translated[ci * 2] || c.name;
+            const tSubtitle = translated[ci * 2 + 1] || c.subtitle;
             const discount = c.compare_price > c.price
               ? Math.round(((c.compare_price - c.price) / c.compare_price) * 100)
               : 0;
