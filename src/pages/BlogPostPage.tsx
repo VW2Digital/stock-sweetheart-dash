@@ -105,12 +105,12 @@ export default function BlogPostPage() {
               <ChevronRight className="h-4 w-4" />
               <Link to="/blog" className="hover:text-foreground transition-colors">{t('blog.blogLabel')}</Link>
               <ChevronRight className="h-4 w-4" />
-              <span className="text-foreground truncate">{post.title}</span>
+              <span className="text-foreground truncate">{tTitle || post.title}</span>
             </nav>
 
             {/* Título */}
             <h1 className="text-3xl sm:text-5xl font-bold text-foreground tracking-tight leading-tight mb-8">
-              {post.title}
+              {tTitle || post.title}
             </h1>
 
             {/* Autor */}
