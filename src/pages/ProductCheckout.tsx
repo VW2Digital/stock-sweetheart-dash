@@ -119,7 +119,7 @@ const VideoTestimonialCard = ({ thumbnail, name, videoUrl }: {thumbnail: string;
 const ProductCheckout = () => {
   const { id } = useParams<{id: string;}>();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
   const [searchParams] = useSearchParams();
