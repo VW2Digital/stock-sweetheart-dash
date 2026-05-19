@@ -523,9 +523,9 @@ const ProductCheckout = () => {
                   <CheckCircle2 className="absolute top-2 right-2 w-5 h-5 text-primary" />
                   }
                       {v.image_url && (
-                        <img src={v.image_url} alt={v.dosage} className="w-12 h-12 object-contain mb-1 rounded" />
+                        <img src={v.image_url} alt={translateValue(v.dosage)} className="w-12 h-12 object-contain mb-1 rounded" />
                       )}
-                      <p className="font-semibold text-foreground">{v.dosage}</p>
+                      <p className="font-semibold text-foreground">{translateValue(v.dosage)}</p>
                       {v.is_offer && v.offer_price ? (
                         <>
                           <p className="text-muted-foreground text-xs line-through">R$ {Number(v.price).toLocaleString('pt-BR')}</p>
