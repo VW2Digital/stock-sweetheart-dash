@@ -155,6 +155,29 @@ export const LanguageContext = createContext<LanguageContextType | undefined>(un
 
 const SUPPORTED: Language[] = ['pt', 'es', 'en'];
 
+const COOKIE_NAME = 'language';
+const STORAGE_KEY = 'language';
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 ano
+
+const readCookie = (name: string): string | null => {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.split('; ').find((row) => row.startsWith(`${name}=`));
+  return match ? decodeURIComponent(match.split('=')[1]) : null;
+};
+
+const writeCookie = (name: string, value: string) => {
+  if (typeof document === 'undefined') return;
+  const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax${secure}`;
+};
+
+const readUrlLang = (): Language | null => {
+  if (typeof window === 'undefined') return null;
+  const param = new URLSearchParams(window.location.search).get('lang');
+  if (param && SUPPORTED.includes(param as Language)) return param as Language;
+  return null;
+};
+
 const detectBrowserLanguage = (): Language => {
   if (typeof navigator === 'undefined') return 'pt';
   const candidates = [
@@ -172,16 +195,40 @@ const detectBrowserLanguage = (): Language => {
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [lang, setLangState] = useState<Language>(() => {
-    const saved = localStorage.getItem('language') as Language;
-    if (saved && SUPPORTED.includes(saved)) return saved;
-    const detected = detectBrowserLanguage();
-    try { localStorage.setItem('language', detected); } catch { /* ignore */ }
-    return detected;
+    // Prioridade: URL ?lang= > localStorage > cookie > deteção do browser
+    const fromUrl = readUrlLang();
+    if (fromUrl) return fromUrl;
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY) as Language | null;
+      if (saved && SUPPORTED.includes(saved)) return saved;
+    } catch { /* ignore */ }
+    const cookieLang = readCookie(COOKIE_NAME) as Language | null;
+    if (cookieLang && SUPPORTED.includes(cookieLang)) return cookieLang;
+    return detectBrowserLanguage();
   });
 
   const setLang = useCallback((l: Language) => {
     setLangState(l);
-    localStorage.setItem('language', l);
+    try { localStorage.setItem(STORAGE_KEY, l); } catch { /* ignore */ }
+    writeCookie(COOKIE_NAME, l);
+  }, []);
+
+  // Garante que a escolha inicial fica persistida em ambos os storages
+  useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEY, lang); } catch { /* ignore */ }
+    writeCookie(COOKIE_NAME, lang);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sincroniza alterações entre abas
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY && e.newValue && SUPPORTED.includes(e.newValue as Language)) {
+        setLangState(e.newValue as Language);
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
   }, []);
 
   // Sync <html lang> + hreflang tags for SEO
