@@ -30,6 +30,14 @@ interface Props {
  * fixo no maior valor, no estilo da referência.
  */
 export function DashboardSalesOverview({ total, delta, bars, range, onRangeChange, customRange, onCustomRangeChange }: Props) {
+  const { format, convert, currency, meta } = useAdminCurrency();
+  const sym = meta[currency].symbol;
+  const shortBRL = (v: number): string => {
+    const conv = convert(v);
+    if (conv >= 1_000_000) return `${sym} ${(conv / 1_000_000).toFixed(1)}M`;
+    if (conv >= 1_000) return `${sym} ${(conv / 1_000).toFixed(1)}k`;
+    return format(v, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  };
   const max = Math.max(...bars.map((b) => b.value), 1);
   const peakIdx = bars.reduce((best, b, i, arr) => (b.value > arr[best].value ? i : best), 0);
   const positive = delta >= 0;
