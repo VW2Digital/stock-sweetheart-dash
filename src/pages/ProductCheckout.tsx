@@ -151,6 +151,22 @@ const ProductCheckout = () => {
   const installmentReqIdRef = useRef(0);
   const shippingReqIdRef = useRef(0);
   const [currentUserId, setCurrentUserId] = useState<string>('anon');
+  const productVariations = product?.product_variations || [];
+  const productTexts = useMemo(() => {
+    if (!product) return [];
+    return [
+      product.name || '',
+      product.subtitle || '',
+      product.active_ingredient || '',
+      product.pharma_form || '',
+      product.administration_route || '',
+      product.frequency || '',
+      ...productVariations.map((v: any) => v.dosage || ''),
+      ...productVariations.map((v: any) => v.subtitle || ''),
+      ...banners.map((b: any) => b.text || ''),
+    ];
+  }, [product, productVariations, banners]);
+  const translatedProductTexts = useAITranslateBatch(productTexts, lang);
   useEffect(() => {
     let active = true;
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -341,17 +357,16 @@ const ProductCheckout = () => {
 
   const variations = product.product_variations || [];
   const variation = variations[selectedVariation];
-  const productTexts = [
-    product.name || '',
-    product.subtitle || '',
-    ...variations.map((v: any) => v.dosage || ''),
-    ...banners.map((b: any) => b.text || ''),
-  ];
-  const translatedProductTexts = useAITranslateBatch(productTexts, lang);
   const translatedProductName = translatedProductTexts[0] || product.name;
   const translatedProductSubtitle = translatedProductTexts[1] || product.subtitle;
-  const dosageOffset = 2;
-  const bannerOffset = dosageOffset + variations.length;
+  const activeIngredientOffset = 2;
+  const pharmaFormOffset = 3;
+  const adminRouteOffset = 4;
+  const frequencyOffset = 5;
+  const dosageOffset = 6;
+  const variationSubtitleOffset = dosageOffset + variations.length;
+  const bannerOffset = variationSubtitleOffset + variations.length;
+  const translatedVariationSubtitle = translatedProductTexts[variationSubtitleOffset + selectedVariation] || variation?.subtitle || translatedProductSubtitle;
   const variationImages = variation?.images?.length > 0 ? variation.images : variation?.image_url ? [variation.image_url] : [];
   const images = variationImages.length > 0 ? variationImages : [productHeroImg];
 
@@ -369,11 +384,11 @@ const ProductCheckout = () => {
   ];
 
   const details = [
-    { label: detailLabels.product_label_active_ingredient?.trim() || t('activeIngredientLabel'), value: translateValue(product.active_ingredient) },
-    { label: detailLabels.product_label_dosage?.trim() || t('dosageLabel'), value: translateValue(variation?.dosage) },
-    { label: detailLabels.product_label_pharma_form?.trim() || t('pharmaForm'), value: translateValue(product.pharma_form) },
-    { label: detailLabels.product_label_admin_route?.trim() || t('adminRoute'), value: translateValue(product.administration_route) },
-    { label: detailLabels.product_label_frequency?.trim() || t('frequency'), value: translateValue(product.frequency) },
+    { label: detailLabels.product_label_active_ingredient?.trim() || t('activeIngredientLabel'), value: translatedProductTexts[activeIngredientOffset] || translateValue(product.active_ingredient) },
+    { label: detailLabels.product_label_dosage?.trim() || t('dosageLabel'), value: translatedProductTexts[dosageOffset + selectedVariation] || translateValue(variation?.dosage) },
+    { label: detailLabels.product_label_pharma_form?.trim() || t('pharmaForm'), value: translatedProductTexts[pharmaFormOffset] || translateValue(product.pharma_form) },
+    { label: detailLabels.product_label_admin_route?.trim() || t('adminRoute'), value: translatedProductTexts[adminRouteOffset] || translateValue(product.administration_route) },
+    { label: detailLabels.product_label_frequency?.trim() || t('frequency'), value: translatedProductTexts[frequencyOffset] || translateValue(product.frequency) },
   ];
 
   const isDigital = !!variation?.is_digital;
@@ -554,7 +569,7 @@ const ProductCheckout = () => {
 
             {(variation?.subtitle || product.subtitle) && (
               <div className="bg-muted/50 rounded-lg px-4 py-3 border border-border/30">
-                <p className="text-sm text-muted-foreground">{translatedProductSubtitle || translateValue(variation?.subtitle || product.subtitle)}</p>
+                <p className="text-sm text-muted-foreground">{translatedVariationSubtitle || translateValue(variation?.subtitle || product.subtitle)}</p>
               </div>
             )}
 
