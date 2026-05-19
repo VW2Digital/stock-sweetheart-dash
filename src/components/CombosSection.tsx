@@ -40,8 +40,18 @@ const pickImage = (urls: (string | null | undefined)[]): string => {
 export default function CombosSection() {
   const [combos, setCombos] = useState<ComboCard[]>([]);
   const [loading, setLoading] = useState(true);
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { format: fmtBRL } = usePublicCurrency();
+
+  const textsToTranslate = useMemo(() => {
+    const arr: string[] = [];
+    combos.forEach((c) => {
+      arr.push(c.name || '');
+      arr.push(c.subtitle || '');
+    });
+    return arr;
+  }, [combos]);
+  const translated = useAITranslateBatch(textsToTranslate, lang);
 
   useEffect(() => {
     (async () => {
