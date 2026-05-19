@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Package } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { translateValue } from '@/lib/translateValue';
 
 interface ComboItem {
   quantity: number;
@@ -99,7 +100,7 @@ export default function CombosSection() {
                     </div>
                   )}
                   <h3 className="font-bold text-foreground text-base sm:text-lg leading-tight line-clamp-2 pr-12 mb-3 group-hover:text-primary transition-colors">
-                    {c.name}
+                    {translateValue(c.name)}
                   </h3>
 
                   <div className={`grid ${tileGridClass} gap-2 mb-3`}>
@@ -148,7 +149,7 @@ export default function CombosSection() {
 
                   <div className="mt-auto space-y-1">
                     {c.subtitle && (
-                      <p className="text-xs text-muted-foreground line-clamp-1">{c.subtitle}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{translateValue(c.subtitle)}</p>
                     )}
                     <div className="flex items-baseline gap-2 flex-wrap">
                       <span className="text-primary font-bold text-xl">{fmtBRL(c.price)}</span>
