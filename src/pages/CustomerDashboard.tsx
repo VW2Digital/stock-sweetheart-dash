@@ -710,10 +710,10 @@ const CustomerDashboard = () => {
                                 <span className="font-mono text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
                                   #{order.id.slice(0, 8).toUpperCase()}
                                 </span>
-                                <h3 className="font-semibold text-foreground text-sm truncate">{order.product_name}</h3>
+                                <h3 className="font-semibold text-foreground text-sm truncate">{translateValue(order.product_name)}</h3>
                                 {order.dosage && (
                                   <span className="text-xs text-muted-foreground bg-muted/80 px-1.5 py-0.5 rounded shrink-0">
-                                    {order.dosage}
+                                    {translateValue(order.dosage)}
                                   </span>
                                 )}
                               </div>
@@ -1106,9 +1106,9 @@ const CustomerDashboard = () => {
                               <div key={order.id} data-review-order={order.id} className={`border rounded-lg p-4 space-y-3 transition-colors ${isReviewing ? 'border-primary/60 bg-primary/5' : 'border-border/50'}`}>
                                 <div className="flex items-center justify-between">
                                   <div>
-                                    <p className="font-semibold text-sm text-foreground">{order.product_name}</p>
+                                    <p className="font-semibold text-sm text-foreground">{translateValue(order.product_name)}</p>
                                     <p className="text-xs text-muted-foreground">
-                                      {order.dosage && `${order.dosage} · `}
+                                      {order.dosage && `${translateValue(order.dosage)} · `}
                                       Pedido #{order.id.slice(0, 8).toUpperCase()} · {new Date(order.created_at).toLocaleDateString('pt-BR')}
                                     </p>
                                   </div>
