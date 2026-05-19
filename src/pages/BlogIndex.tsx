@@ -62,9 +62,9 @@ export default function BlogIndex() {
       {/* Cabeçalho centralizado */}
       <section className="border-b border-border bg-muted/20">
         <div className="max-w-6xl mx-auto px-4 py-14 sm:py-20 text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold text-foreground tracking-tight">Blog Liberty Pharma</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold text-foreground tracking-tight">{t('blog.title')}</h1>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Novidades, dicas de saúde, conteúdos exclusivos e tudo sobre nossos produtos.
+            {t('blog.subtitle')}
           </p>
         </div>
       </section>
