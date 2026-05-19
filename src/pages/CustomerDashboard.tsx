@@ -26,6 +26,7 @@ import CustomerDownloads from '@/components/CustomerDownloads';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { translateValue } from '@/lib/translateValue';
 
 async function sha256Hex(input: string): Promise<string> {
   const buf = new TextEncoder().encode(input.trim().toLowerCase());
@@ -44,6 +45,8 @@ const paymentStatusMap: Record<string, { labelKey: string; variant: 'default' | 
   REFUNDED: { labelKey: 'statusRefunded', variant: 'secondary', icon: XCircle, color: 'text-muted-foreground' },
   IN_REVIEW: { labelKey: 'statusInReview', variant: 'outline', icon: Clock, color: 'text-amber-500' },
   DECLINED: { labelKey: 'statusDeclined', variant: 'destructive', icon: XCircle, color: 'text-red-500' },
+  CANCELLED: { labelKey: 'statusCancelled', variant: 'destructive', icon: XCircle, color: 'text-red-500' },
+  REFUSED: { labelKey: 'statusRefused', variant: 'destructive', icon: XCircle, color: 'text-red-500' },
 };
 
 const deliveryStatusMap: Record<string, { labelKey: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; color: string }> = {
