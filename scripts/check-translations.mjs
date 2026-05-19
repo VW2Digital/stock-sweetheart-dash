@@ -70,6 +70,10 @@ function extractKeys(files) {
   return used;
 }
 
+function hasLocaleKey(locale, key) {
+  return key in locale || `${key}_one` in locale || `${key}_other` in locale;
+}
+
 function main() {
   const files = walk(SRC_DIR);
   const usedKeys = extractKeys(files);
@@ -84,7 +88,7 @@ function main() {
 
   for (const [key, where] of usedKeys) {
     for (const lang of LOCALES) {
-      if (!(key in locales[lang])) {
+      if (!hasLocaleKey(locales[lang], key)) {
         missingByLang[lang].push({ key, where: [...where] });
         missingCount++;
       }
@@ -92,9 +96,12 @@ function main() {
   }
 
   // Chaves órfãs: existem no pt.json mas nunca são usadas no código.
-  const orphans = Object.keys(locales.pt).filter((k) => !usedKeys.has(k));
+  const orphans = Object.keys(locales.pt).filter((k) => {
+    const base = k.replace(/_(one|other)$/, "");
+    return !usedKeys.has(k) && !usedKeys.has(base);
+  });
 
-  console.log(`\n🔎 Verificação de traduções`);
+  console.log(`\nVerificação de traduções`);
   console.log(`   Arquivos analisados : ${files.length}`);
   console.log(`   Chaves usadas no app: ${usedKeys.size}`);
   for (const lang of LOCALES) {
@@ -105,10 +112,10 @@ function main() {
   for (const lang of LOCALES) {
     const miss = missingByLang[lang];
     if (miss.length === 0) {
-      console.log(`\n✅ ${lang}.json: todas as chaves usadas existem.`);
+      console.log(`\nOK ${lang}.json: todas as chaves usadas existem.`);
     } else {
       hasError = true;
-      console.log(`\n❌ ${lang}.json: ${miss.length} chave(s) faltando:`);
+      console.log(`\nERRO ${lang}.json: ${miss.length} chave(s) faltando:`);
       for (const { key, where } of miss) {
         console.log(`   - ${key}`);
         for (const f of where.slice(0, 3)) console.log(`       em ${f}`);
@@ -118,7 +125,7 @@ function main() {
   }
 
   if (orphans.length > 0) {
-    console.log(`\n⚠️  ${orphans.length} chave(s) órfã(s) em pt.json (não referenciadas no código):`);
+    console.log(`\nAVISO ${orphans.length} chave(s) órfã(s) em pt.json (não referenciadas no código):`);
     for (const k of orphans.slice(0, 20)) console.log(`   - ${k}`);
     if (orphans.length > 20) console.log(`   ... +${orphans.length - 20}`);
   }
@@ -128,7 +135,7 @@ function main() {
     console.error(`Falha: ${missingCount} entrada(s) de tradução faltando.`);
     process.exit(1);
   }
-  console.log("Tudo certo! 🎉");
+  console.log("Tudo certo!");
 }
 
 main();
