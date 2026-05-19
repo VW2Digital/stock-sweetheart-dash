@@ -25,8 +25,7 @@ interface ComboCard {
   combo_items: ComboItem[];
 }
 
-const fmtBRL = (n: number) =>
-  Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+// fmtBRL agora é dinâmico via usePublicCurrency (hook chamado no componente)
 
 const pickImage = (urls: (string | null | undefined)[]): string => {
   for (const u of urls) {
@@ -35,10 +34,13 @@ const pickImage = (urls: (string | null | undefined)[]): string => {
   return '';
 };
 
+import { usePublicCurrency } from '@/lib/publicCurrency';
+
 export default function CombosSection() {
   const [combos, setCombos] = useState<ComboCard[]>([]);
   const [loading, setLoading] = useState(true);
   const { t } = useLanguage();
+  const { format: fmtBRL } = usePublicCurrency();
 
   useEffect(() => {
     (async () => {
