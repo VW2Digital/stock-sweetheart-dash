@@ -61,7 +61,7 @@ type DeliveryFilter = 'all' | 'PROCESSING' | 'SHIPPED' | 'IN_TRANSIT' | 'DELIVER
 
 const CustomerDashboard = () => {
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { totalItems } = useCart();
@@ -117,11 +117,11 @@ const CustomerDashboard = () => {
         if (data.invoiceUrl) {
           window.open(data.invoiceUrl, '_blank');
         } else {
-          toast({ title: 'Link de pagamento indisponível', description: 'Não foi possível obter o link para finalizar o pagamento.', variant: 'destructive' });
+          toast({ title: t('paymentLinkUnavailable'), description: t('paymentLinkUnavailableDesc'), variant: 'destructive' });
         }
       }
     } catch (err: any) {
-      toast({ title: 'Erro', description: err.message || 'Não foi possível processar', variant: 'destructive' });
+      toast({ title: t('error'), description: err.message || t('couldNotProcess'), variant: 'destructive' });
     } finally {
       setPayNowLoading(null);
     }
@@ -129,7 +129,7 @@ const CustomerDashboard = () => {
 
   const copyPixCode = (text: string) => {
     navigator.clipboard.writeText(text);
-    toast({ title: 'Código PIX copiado!' });
+    toast({ title: t('pixCodeCopied') });
   };
   useEffect(() => {
     let userEmail = '';
