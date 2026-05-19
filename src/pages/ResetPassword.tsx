@@ -266,7 +266,7 @@ const ResetPassword = () => {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="password">{t('newPassword')}
+                  <Label htmlFor="password">{t('newPassword')}</Label>
                   <div className="relative">
                     <Input
                       id="password"
