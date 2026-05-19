@@ -95,7 +95,7 @@ export default function BlogIndex() {
 
               {topics.length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3">Tópicos</p>
+                  <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3">{t('blog.topics')}</p>
                   <div className="flex flex-wrap gap-2">
                     {topics.map((t) => (
                       <button
