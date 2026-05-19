@@ -29,12 +29,14 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { TRUST_BAR_ICONS, DEFAULT_TRUST_BAR, DEFAULT_TRUST_BAR_BG, DEFAULT_TRUST_BAR_SPEED, type TrustBarItem } from '@/pages/settings/SettingsTrustBar';
 import { ProductCardSkeletonGrid } from '@/components/ProductCardSkeleton';
 import { getAbContext, trackAbEvent } from '@/lib/abTest';
+import { usePublicCurrency } from '@/lib/publicCurrency';
 import { loadAbConfig, getCachedAbConfig, formatDiscountBadge, DEFAULT_AB_CONFIG, type AbTestConfig } from '@/lib/abTestConfig';
 import ProductCardImageCarousel from '@/components/ProductCardImageCarousel';
 import { translateValue } from '@/lib/translateValue';
 import { useAITranslateBatch } from '@/hooks/useAITranslate';
 
 const Catalog = () => {
+  const { format: fmtPrice, convert: convertPrice, symbol: currencySymbol, locale: currencyLocale } = usePublicCurrency();
   const { totalItems, addToCart } = useCart();
   // A/B test do card de produto
   const ab = useMemo(() => getAbContext(), []);
@@ -369,8 +371,9 @@ const Catalog = () => {
               const pixDiscount = displayPrice && pixPercentSetting > 0 ? Math.round(displayPrice * (1 - pixPercentSetting / 100) * 100) / 100 : null;
               const pixPercent = pixPercentSetting;
               const formatPriceParts = (val: number) => {
-                const [intPart, decPart] = val.toFixed(2).split('.');
-                return { intPart: Number(intPart).toLocaleString('pt-BR'), decPart };
+                const converted = convertPrice(val);
+                const [intPart, decPart] = converted.toFixed(2).split('.');
+                return { intPart: Number(intPart).toLocaleString(currencyLocale), decPart };
               };
 
               return (
@@ -495,15 +498,15 @@ const Catalog = () => {
                           <div className="pt-1">
                             {hasWholesale && retailPrice && wholesaleUnitPrice && wholesaleUnitPrice < retailPrice ? (
                               <p className="text-muted-foreground text-xs line-through">
-                                R$ {retailPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                {fmtPrice(retailPrice)}
                               </p>
                             ) : offerPrice ? (
                               <p className="text-muted-foreground text-xs line-through">
-                                R$ {price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                {fmtPrice(price)}
                               </p>
                             ) : null}
                             <div className="flex items-baseline flex-wrap">
-                              <span className="text-foreground text-xs sm:text-sm font-medium">R$</span>
+                              <span className="text-foreground text-xs sm:text-sm font-medium">{currencySymbol}</span>
                               <span className="text-foreground text-lg sm:text-2xl font-extrabold ml-1 leading-none">
                                 {formatPriceParts(displayPrice!).intPart}
                               </span>
