@@ -1793,18 +1793,18 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
                     className="rounded border-border"
                   />
                   <Label htmlFor="save-address" className="text-xs text-muted-foreground cursor-pointer">
-                    Salvar este endereço na minha conta
+                    {t('saveThisAddress')}
                   </Label>
                 </div>
               )}
               <Button onClick={() => { setEditingAddress(false); handleAddressNext(); }} disabled={loadingShipping} className="w-full">
                 {loadingShipping ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                Calcular Frete
+                {t('calculateShipping')}
               </Button>
             </>
           )}
           <button type="button" onClick={() => setStep('customer')} className="text-xs text-muted-foreground hover:text-foreground w-full text-center">
-            ← Voltar aos dados pessoais
+            ← {t('backToData')}
           </button>
         </CardContent>
       </Card>
