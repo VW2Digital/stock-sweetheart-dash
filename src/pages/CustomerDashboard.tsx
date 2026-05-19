@@ -23,10 +23,12 @@ import Footer from '@/components/Footer';
 import AddressManager from '@/components/AddressManager';
 import SupportChat from '@/components/SupportChat';
 import CustomerDownloads from '@/components/CustomerDownloads';
+import ReviewsList from '@/components/ReviewsList';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translateValue } from '@/lib/translateValue';
+import { useAITranslateBatch } from '@/hooks/useAITranslate';
 
 async function sha256Hex(input: string): Promise<string> {
   const buf = new TextEncoder().encode(input.trim().toLowerCase());
@@ -1096,49 +1098,22 @@ const CustomerDashboard = () => {
                         <p className="text-sm text-muted-foreground">{t('noPaidOrdersToReview')}</p>
                       </div>
                     ) : (
-                      <div className="space-y-3">
-                        {orders
-                          .filter(o => ['PAID', 'RECEIVED', 'CONFIRMED', 'RECEIVED_IN_CASH'].includes(o.status))
-                          .map((order) => {
-                            const existingReview = reviews.find(r => r.order_id === order.id);
-                            const isReviewing = reviewingOrderId === order.id;
-
-                            return (
-                              <div key={order.id} data-review-order={order.id} className={`border rounded-lg p-4 space-y-3 transition-colors ${isReviewing ? 'border-primary/60 bg-primary/5' : 'border-border/50'}`}>
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <p className="font-semibold text-sm text-foreground">{translateValue(order.product_name)}</p>
-                                    <p className="text-xs text-muted-foreground">
-                                      {order.dosage && `${translateValue(order.dosage)} · `}
-                                      {t('order')} #{order.id.slice(0, 8).toUpperCase()} · {new Date(order.created_at).toLocaleDateString(dateLocaleMap[lang])}
-                                    </p>
-                                  </div>
-                                  {existingReview ? (
-                                    <div className="flex items-center gap-1">
-                                      {[1, 2, 3, 4, 5].map(s => (
-                                        <Star key={s} className={`w-4 h-4 ${s <= existingReview.rating ? 'text-primary fill-primary' : 'text-muted-foreground/30'}`} />
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => {
-                                        setReviewingOrderId(isReviewing ? null : order.id);
-                                        setReviewRating(5);
-                                        setReviewComment('');
-                                      }}
-                                    >
-                                      <Star className="w-4 h-4 mr-1" /> {t('review')}
-                                    </Button>
-                                  )}
-                                </div>
-
-                                {existingReview && existingReview.comment && (
-                                  <p className="text-sm text-muted-foreground italic">"{existingReview.comment}"</p>
-                                )}
-
-                                {isReviewing && !existingReview && (
+                      <ReviewsList
+                        orders={orders.filter(o => ['PAID', 'RECEIVED', 'CONFIRMED', 'RECEIVED_IN_CASH'].includes(o.status))}
+                        reviews={reviews}
+                        lang={lang}
+                        t={t}
+                        dateLocaleMap={dateLocaleMap}
+                        reviewingOrderId={reviewingOrderId}
+                        setReviewingOrderId={setReviewingOrderId}
+                        reviewRating={reviewRating}
+                        setReviewRating={setReviewRating}
+                        reviewComment={reviewComment}
+                        setReviewComment={setReviewComment}
+                        reviewSaving={reviewSaving}
+                        submitReview={submitReview}
+                        renderEditor={(order, existingReview, isReviewing) => (
+                          isReviewing && !existingReview && (
                                   <div className="space-y-3 pt-2 border-t border-border/50 animate-in fade-in slide-in-from-top-2 duration-200">
                                     <div className="space-y-1">
                                       <Label className="text-xs">{t('rating')}</Label>
@@ -1179,11 +1154,9 @@ const CustomerDashboard = () => {
                                       </Button>
                                     </div>
                                   </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                      </div>
+                          )
+                        )}
+                      />
                     )}
                   </CardContent>
                 </Card>
