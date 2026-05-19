@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useLanguage, type Language } from '@/contexts/LanguageContext';
 
-const SUPPORTED: Language[] = ['pt', 'es', 'en'];
+const SUPPORTED: Language[] = ['pt', 'pt-PT', 'es', 'en'];
 
 /**
  * Mantém o idioma em sincronia com o parâmetro ?lang= apenas quando

@@ -26,6 +26,7 @@ interface CurrencyMeta {
 
 const LANG_TO_CURRENCY: Record<Language, CurrencyMeta> = {
   pt: { code: 'BRL', locale: 'pt-BR', symbol: 'R$' },
+  'pt-PT': { code: 'EUR', locale: 'pt-PT', symbol: '€' },
   en: { code: 'USD', locale: 'en-US', symbol: 'US$' },
   es: { code: 'EUR', locale: 'es-ES', symbol: '€' },
 };
