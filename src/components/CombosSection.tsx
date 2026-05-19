@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Package } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translateValue } from '@/lib/translateValue';
+import { usePublicCurrency } from '@/lib/publicCurrency';
 
 interface ComboItem {
   quantity: number;
