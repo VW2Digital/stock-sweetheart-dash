@@ -183,5 +183,24 @@
   "tierMinQty_one": "{{qty}}+ unit",
   "tierMinQty_other": "{{qty}}+ units",
   "discountPercent": "-{{percent}}%",
-  "loadingRecommendations": "Loading recommendations"
+  "loadingRecommendations": "Loading recommendations",
+  "productValue": {
+    "conteudo_digital_educativo": "Educational Digital Content",
+    "versao_completa": "Full Version",
+    "e_book_pdf": "E-book PDF",
+    "download_digital": "Digital Download",
+    "acesso_vitalicio": "Lifetime Access",
+    "uso_diario": "Daily use",
+    "uso_semanal": "Weekly use",
+    "uso_mensal": "Monthly use",
+    "oral": "Oral",
+    "topico": "Topical",
+    "injetavel": "Injectable",
+    "comprimido": "Tablet",
+    "capsula": "Capsule",
+    "pomada": "Ointment",
+    "solucao": "Solution",
+    "gel": "Gel",
+    "creme": "Cream"
+  }
 }
