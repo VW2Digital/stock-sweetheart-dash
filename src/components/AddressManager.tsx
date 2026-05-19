@@ -11,7 +11,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { MapPin, Plus, Trash2, Star, Loader2, X, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { cleanCep, formatCep as formatCepUtil, isValidCep, cepErrorMessage } from '@/lib/cep';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { cleanCep, formatCep as formatCepUtil, isValidCep } from '@/lib/cep';
 
 export interface Address {
   id: string;
@@ -29,6 +30,7 @@ export interface Address {
 
 const AddressManager = () => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -37,7 +39,7 @@ const AddressManager = () => {
   const [fetchingCep, setFetchingCep] = useState(false);
 
   // Form fields
-  const [label, setLabel] = useState('Casa');
+  const [label, setLabel] = useState(t('homeAddressLabel'));
   const [postalCode, setPostalCode] = useState('');
   const [street, setStreet] = useState('');
   const [number, setNumber] = useState('');
@@ -61,7 +63,7 @@ const AddressManager = () => {
       if (error) throw error;
       setAddresses((data as any[]) || []);
     } catch (err: any) {
-      toast({ title: 'Erro ao carregar endereços', description: err.message, variant: 'destructive' });
+      toast({ title: t('addressesLoadError'), description: err.message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -70,7 +72,7 @@ const AddressManager = () => {
   useEffect(() => { fetchAddresses(); }, []);
 
   const resetForm = () => {
-    setLabel('Casa');
+    setLabel(t('homeAddressLabel'));
     setPostalCode('');
     setStreet('');
     setNumber('');
@@ -84,6 +86,14 @@ const AddressManager = () => {
   };
 
   const formatCep = formatCepUtil;
+
+  const getCepError = (value: string) => {
+    const digits = cleanCep(value);
+    if (digits.length === 0) return t('cepRequired');
+    if (digits.length !== 8) return t('cepMustHave8Digits');
+    if (/^(\d)\1{7}$/.test(digits) || digits.startsWith('0000')) return t('cepInvalid');
+    return null;
+  };
 
   const fetchAddressByCep = async (cep: string) => {
     const digits = cleanCep(cep);
@@ -103,22 +113,22 @@ const AddressManager = () => {
   };
 
   const handleSave = async () => {
-    const cepError = cepErrorMessage(postalCode);
+    const cepError = getCepError(postalCode);
     if (cepError) {
       toast({ title: cepError, variant: 'destructive' }); return;
     }
     if (!street.trim() || !number.trim() || !district.trim() || !city.trim() || !state.trim()) {
-      toast({ title: 'Preencha todos os campos obrigatórios', variant: 'destructive' }); return;
+      toast({ title: t('fillRequiredFields'), variant: 'destructive' }); return;
     }
 
     setSaving(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Não autenticado');
+      if (!session) throw new Error(t('notAuthenticated'));
 
       const payload = {
         user_id: session.user.id,
-        label: label.trim() || 'Casa',
+        label: label.trim() || t('homeAddressLabel'),
         postal_code: cleanCep(postalCode),
         street: street.trim(),
         number: number.trim(),
@@ -135,19 +145,19 @@ const AddressManager = () => {
           .update(payload)
           .eq('id', editingId);
         if (error) throw error;
-        toast({ title: 'Endereço atualizado!' });
+        toast({ title: t('addressUpdated') });
       } else {
         const { error } = await supabase
           .from('addresses')
           .insert(payload);
         if (error) throw error;
-        toast({ title: 'Endereço salvo!' });
+        toast({ title: t('addressSaved') });
       }
 
       resetForm();
       await fetchAddresses();
     } catch (err: any) {
-      toast({ title: 'Erro ao salvar', description: err.message, variant: 'destructive' });
+      toast({ title: t('saveError'), description: err.message, variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -171,10 +181,10 @@ const AddressManager = () => {
     try {
       const { error } = await supabase.from('addresses').delete().eq('id', id);
       if (error) throw error;
-      toast({ title: 'Endereço removido!' });
+      toast({ title: t('addressRemoved') });
       await fetchAddresses();
     } catch (err: any) {
-      toast({ title: 'Erro ao remover', description: err.message, variant: 'destructive' });
+      toast({ title: t('removeError'), description: err.message, variant: 'destructive' });
     }
   };
 
@@ -185,10 +195,10 @@ const AddressManager = () => {
         .update({ is_default: true })
         .eq('id', id);
       if (error) throw error;
-      toast({ title: 'Endereço padrão atualizado!' });
+      toast({ title: t('defaultAddressUpdated') });
       await fetchAddresses();
     } catch (err: any) {
-      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+      toast({ title: t('error'), description: err.message, variant: 'destructive' });
     }
   };
 
@@ -196,11 +206,11 @@ const AddressManager = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-          <MapPin className="w-5 h-5" /> Meus Endereços
+          <MapPin className="w-5 h-5" /> {t('myAddresses')}
         </h3>
         {!showForm && (
           <Button size="sm" onClick={() => { resetForm(); setShowForm(true); }}>
-            <Plus className="w-4 h-4 mr-1" /> Novo Endereço
+            <Plus className="w-4 h-4 mr-1" /> {t('newAddressTitle')}
           </Button>
         )}
       </div>
@@ -211,7 +221,7 @@ const AddressManager = () => {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base">
-                {editingId ? 'Editar Endereço' : 'Novo Endereço'}
+                {editingId ? t('editAddressTitle') : t('newAddressTitle')}
               </CardTitle>
               <Button variant="ghost" size="icon" onClick={resetForm}>
                 <X className="w-4 h-4" />
@@ -221,11 +231,11 @@ const AddressManager = () => {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs">Nome do endereço</Label>
-                <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Ex: Casa, Trabalho" />
+                <Label className="text-xs">{t('addressName')}</Label>
+                <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder={t('addressNamePlaceholder')} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">CEP *</Label>
+                <Label className="text-xs">{t('cep')} *</Label>
                 <div className="relative">
                   <Input
                     value={postalCode}
@@ -242,26 +252,26 @@ const AddressManager = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="sm:col-span-2 space-y-1.5">
-                <Label className="text-xs">Rua / Logradouro *</Label>
+                <Label className="text-xs">{t('streetAddress')} *</Label>
                 <Input value={street} onChange={(e) => setStreet(e.target.value)} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Número *</Label>
+                <Label className="text-xs">{t('addressNumber')} *</Label>
                 <Input value={number} onChange={(e) => setNumber(e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs">Complemento</Label>
-                <Input value={complement} onChange={(e) => setComplement(e.target.value)} placeholder="Apto, Bloco..." />
+                <Label className="text-xs">{t('complement')}</Label>
+                <Input value={complement} onChange={(e) => setComplement(e.target.value)} placeholder={t('complementPlaceholder')} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs">Bairro *</Label>
+                <Label className="text-xs">{t('district')} *</Label>
                 <Input value={district} onChange={(e) => setDistrict(e.target.value)} />
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Cidade *</Label>
+                  <Label className="text-xs">{t('city')} *</Label>
                   <Input value={city} onChange={(e) => setCity(e.target.value)} />
                 </div>
                 <div className="space-y-1.5">
@@ -279,15 +289,15 @@ const AddressManager = () => {
                 className="rounded border-border"
               />
               <Label htmlFor="is-default" className="text-sm text-muted-foreground cursor-pointer">
-                Usar como endereço padrão
+                {t('useAsDefaultAddress')}
               </Label>
             </div>
             <div className="flex gap-2">
               <Button onClick={handleSave} disabled={saving}>
                 {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
-                {editingId ? 'Atualizar' : 'Salvar'}
+                {editingId ? t('update') : t('save')}
               </Button>
-              <Button variant="outline" onClick={resetForm}>Cancelar</Button>
+              <Button variant="outline" onClick={resetForm}>{t('cancel')}</Button>
             </div>
           </CardContent>
         </Card>
@@ -302,9 +312,9 @@ const AddressManager = () => {
         <Card className="border-border/50">
           <CardContent className="py-10 text-center space-y-3">
             <MapPin className="w-10 h-10 text-muted-foreground/40 mx-auto" />
-            <p className="text-sm text-muted-foreground">Nenhum endereço cadastrado</p>
+            <p className="text-sm text-muted-foreground">{t('noAddresses')}</p>
             <Button size="sm" onClick={() => setShowForm(true)}>
-              <Plus className="w-4 h-4 mr-1" /> Adicionar Endereço
+              <Plus className="w-4 h-4 mr-1" /> {t('addAddress')}
             </Button>
           </CardContent>
         </Card>
@@ -318,7 +328,7 @@ const AddressManager = () => {
                     <span className="font-semibold text-foreground text-sm">{addr.label}</span>
                     {addr.is_default && (
                       <Badge variant="default" className="text-[10px] px-1.5 py-0">
-                        <Star className="w-2.5 h-2.5 mr-0.5" /> Padrão
+                        <Star className="w-2.5 h-2.5 mr-0.5" /> {t('default')}
                       </Badge>
                     )}
                   </div>
@@ -326,15 +336,15 @@ const AddressManager = () => {
                 <div className="text-sm text-muted-foreground space-y-0.5">
                   <p>{addr.street}, {addr.number}{addr.complement ? ` - ${addr.complement}` : ''}</p>
                   <p>{addr.district} - {addr.city}/{addr.state}</p>
-                  <p>CEP: {addr.postal_code.replace(/(\d{5})(\d{3})/, '$1-$2')}</p>
+                  <p>{t('cep')}: {addr.postal_code.replace(/(\d{5})(\d{3})/, '$1-$2')}</p>
                 </div>
                 <div className="flex gap-1.5 pt-1">
                   <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => handleEdit(addr)}>
-                    Editar
+                    {t('edit')}
                   </Button>
                   {!addr.is_default && (
                     <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => handleSetDefault(addr.id)}>
-                      <Star className="w-3 h-3 mr-1" /> Tornar Padrão
+                      <Star className="w-3 h-3 mr-1" /> {t('makeDefault')}
                     </Button>
                   )}
                   <AlertDialog>
@@ -345,14 +355,14 @@ const AddressManager = () => {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Remover endereço?</AlertDialogTitle>
+                        <AlertDialogTitle>{t('removeAddressQuestion')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          O endereço "{addr.label}" será removido permanentemente.
+                          {t('addressWillBeRemoved', { label: addr.label })}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(addr.id)}>Remover</AlertDialogAction>
+                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(addr.id)}>{t('remove')}</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
