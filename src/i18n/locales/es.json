@@ -515,5 +515,31 @@
   "errorTitle": "¡Ups! Algo salió mal",
   "errorDescription": "Encontramos un problema inesperado en esta pantalla. Puedes intentar nuevamente o recargar la página.",
   "tryAgain": "Intentar nuevamente",
-  "reloadPage": "Recargar"
+  "reloadPage": "Recargar",
+  "blog": {
+    "title": "Blog Liberty Pharma",
+    "subtitle": "Novedades, consejos de salud, contenidos exclusivos y todo sobre nuestros productos.",
+    "categories": "Categorías",
+    "topics": "Temas",
+    "blogLabel": "Blog",
+    "noPosts": "Ningún post publicado aún.",
+    "noPostsForFilter": "Ningún post para este filtro.",
+    "featured": "Destacado",
+    "loading": "Cargando...",
+    "pageTitle": "Blog | Liberty Pharma",
+    "postNotFound": "Post no encontrado",
+    "postNotFoundDesc": "Puede haber sido eliminado o aún no se ha publicado.",
+    "backToBlog": "Volver al blog",
+    "publishedOn": "Publicado el",
+    "minuteRead": "minuto de lectura",
+    "minutesRead": "minutos de lectura",
+    "shareFacebook": "Compartir en Facebook",
+    "shareTwitter": "Compartir en Twitter",
+    "shareLinkedin": "Compartir en LinkedIn",
+    "shareWhatsapp": "Compartir en WhatsApp",
+    "copyLink": "Copiar enlace",
+    "linkCopied": "Enlace copiado",
+    "copyError": "No se pudo copiar",
+    "home": "Inicio"
+  }
 }

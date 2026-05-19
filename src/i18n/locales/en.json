@@ -515,5 +515,31 @@
   "errorTitle": "Oops! Something went wrong",
   "errorDescription": "We encountered an unexpected problem on this screen. You can try again or reload the page.",
   "tryAgain": "Try again",
-  "reloadPage": "Reload"
+  "reloadPage": "Reload",
+  "blog": {
+    "title": "Liberty Pharma Blog",
+    "subtitle": "News, health tips, exclusive content and everything about our products.",
+    "categories": "Categories",
+    "topics": "Topics",
+    "blogLabel": "Blog",
+    "noPosts": "No posts published yet.",
+    "noPostsForFilter": "No posts for this filter.",
+    "featured": "Featured",
+    "loading": "Loading...",
+    "pageTitle": "Blog | Liberty Pharma",
+    "postNotFound": "Post not found",
+    "postNotFoundDesc": "It may have been removed or has not been published yet.",
+    "backToBlog": "Back to blog",
+    "publishedOn": "Published on",
+    "minuteRead": "minute read",
+    "minutesRead": "minutes read",
+    "shareFacebook": "Share on Facebook",
+    "shareTwitter": "Share on Twitter",
+    "shareLinkedin": "Share on LinkedIn",
+    "shareWhatsapp": "Share on WhatsApp",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "copyError": "Could not copy",
+    "home": "Home"
+  }
 }
