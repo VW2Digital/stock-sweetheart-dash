@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCart, getEffectivePrice } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import productHeroImg from '@/assets/product-hero.png';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translateValue } from '@/lib/translateValue';
 import { usePublicCurrency } from '@/lib/publicCurrency';
+import { useAITranslateBatch } from '@/hooks/useAITranslate';
 
 interface UpsellVariation {
   id: string;
@@ -38,12 +39,17 @@ interface UpsellProduct {
 
 const UpsellSection = () => {
   const { format: fmtPrice } = usePublicCurrency();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { items, addToCart } = useCart();
   const [upsells, setUpsells] = useState<UpsellProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVariations, setSelectedVariations] = useState<Record<string, string>>({});
   const [adding, setAdding] = useState<string | null>(null);
+  const textsToTranslate = useMemo(
+    () => upsells.flatMap((product) => [product.name || '', product.subtitle || '', ...product.variations.map((v) => v.dosage || '')]),
+    [upsells],
+  );
+  const translated = useAITranslateBatch(textsToTranslate, lang);
 
   useEffect(() => {
     if (items.length === 0) {
@@ -137,6 +143,10 @@ const UpsellSection = () => {
 
       <div className="space-y-3">
         {upsells.map(product => {
+          const productIndex = upsells.findIndex((p) => p.id === product.id);
+          const baseOffset = upsells.slice(0, productIndex).reduce((acc, p) => acc + 2 + p.variations.length, 0);
+          const translatedName = translated[baseOffset] || translateValue(product.name);
+          const translatedSubtitle = translated[baseOffset + 1] || translateValue(product.subtitle);
           const variation = product.variations.find(v => v.id === selectedVariations[product.id]) || product.variations[0];
           const effectivePrice = variation.is_offer && variation.offer_price > 0 ? variation.offer_price : variation.price;
           const hasDiscount = variation.is_offer && variation.offer_price > 0 && variation.offer_price < variation.price;
@@ -151,13 +161,13 @@ const UpsellSection = () => {
             >
               <img
                 src={image}
-                alt={translateValue(product.name)}
+                alt={translatedName}
                 className="w-16 h-16 object-contain rounded-lg border border-border/50 bg-muted p-1 flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-foreground text-sm leading-tight">{translateValue(product.name)}</p>
+                <p className="font-bold text-foreground text-sm leading-tight">{translatedName}</p>
                 {product.subtitle && (
-                  <p className="text-[11px] text-muted-foreground line-clamp-1">{translateValue(product.subtitle)}</p>
+                  <p className="text-[11px] text-muted-foreground line-clamp-1">{translatedSubtitle}</p>
                 )}
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                   {product.variations.length > 1 ? (
@@ -169,15 +179,15 @@ const UpsellSection = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {product.variations.map(v => (
+                        {product.variations.map((v, vIdx) => (
                           <SelectItem key={v.id} value={v.id} className="text-xs">
-                            {translateValue(v.dosage)}
+                            {translated[baseOffset + 2 + vIdx] || translateValue(v.dosage)}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   ) : (
-                    <Badge variant="secondary" className="text-[10px]">{translateValue(variation.dosage)}</Badge>
+                    <Badge variant="secondary" className="text-[10px]">{translated[baseOffset + 2] || translateValue(variation.dosage)}</Badge>
                   )}
                   <div className="flex items-baseline gap-1.5">
                     {hasDiscount && (
