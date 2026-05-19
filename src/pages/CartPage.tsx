@@ -219,7 +219,7 @@ const CartPage = () => {
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <ShoppingCart className="w-6 h-6" /> Meu Carrinho
+            <ShoppingCart className="w-6 h-6" /> {t('myCart')}
           </h1>
           {!loading && items.length > 1 && !bulkMode && (
             <Button variant="outline" size="sm" onClick={() => setBulkMode(true)}>
