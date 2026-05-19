@@ -79,6 +79,7 @@ i18n
       lookupQuerystring: 'lang',
       lookupLocalStorage: 'language',
       lookupCookie: 'language',
+      convertDetectedLanguage: (lng: string) => normalizeLng(lng),
       caches: ['localStorage', 'cookie'],
       cookieMinutes: 60 * 24 * 365, // 1 ano
       cookieOptions: { path: '/', sameSite: 'lax' },
