@@ -44,20 +44,20 @@ const Footer = () => {
             <div className="text-sm text-muted-foreground leading-relaxed space-y-2">
               {footerText && <p>{footerText}</p>}
               {footerMission && <p>{footerMission}</p>}
-              {footerEmail && <p>E-mail: {footerEmail}</p>}
-              {footerPhone && <p>Tel: {footerPhone}</p>}
+              {footerEmail && <p>{t('emailLabelShort')}: {footerEmail}</p>}
+              {footerPhone && <p>{t('phoneLabelShort')}: {footerPhone}</p>}
             </div>
           </div>
 
           {/* Column 2 - Payment Methods */}
           <div className="space-y-3">
-            <h4 className="font-semibold text-primary md:text-foreground">Formas de Pagamento</h4>
+            <h4 className="font-semibold text-primary md:text-foreground">{t('paymentMethodsTitle')}</h4>
             <img src={paymentMethodsImg} alt="Formas de pagamento: Visa, Mastercard, Maestro, Elo, Alelo, Amex, Banco do Brasil, Hipercard, Diners, Pix" className="w-[calc(100%-20px)] object-contain object-left my-[20px] mr-[20px] ml-0" />
           </div>
 
           {/* Column 3 - Security Seals */}
           <div className="space-y-3">
-            <h4 className="font-semibold text-primary md:text-foreground">Selos de Segurança</h4>
+            <h4 className="font-semibold text-primary md:text-foreground">{t('securitySealsTitle')}</h4>
             <div className="grid grid-cols-2 items-center gap-3">
               <img src={seloSiteProtegido} alt="Compra Segura - Site Protegido - Certificado SSL" className="h-12 w-auto max-w-full object-contain object-left" />
               <img src={seloSafeBrowsing} alt="Safe Browsing Google" className="h-12 w-auto max-w-full object-contain object-left" />
@@ -66,7 +66,7 @@ const Footer = () => {
 
           {/* Column 4 - Shipping Methods */}
           <div className="space-y-3">
-            <h4 className="font-semibold text-primary md:text-foreground">Formas de Envio</h4>
+            <h4 className="font-semibold text-primary md:text-foreground">{t('shippingMethodsTitle')}</h4>
             <div className="grid grid-cols-2 gap-3">
               <div className="p-2 flex items-center justify-start h-12">
                 <img src={logoSedex} alt="SEDEX" className="max-h-10 w-auto object-contain" />
@@ -87,19 +87,19 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="border-t border-border/50 pt-6 flex flex-col items-center gap-4 text-center">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Liberty Lumina — {t('allRights')}
+            {t('footerCopyright', { year: new Date().getFullYear(), rights: t('allRights') })}
           </p>
           <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm">
             <Link to="/politica-de-privacidade" className="text-muted-foreground hover:text-foreground transition-colors">
-              Política de Privacidade
+              {t('privacyPolicy')}
             </Link>
             <span className="text-border">|</span>
             <Link to="/termos-de-uso" className="text-muted-foreground hover:text-foreground transition-colors">
-              Termos de Uso
+              {t('termsOfUse')}
             </Link>
             <span className="text-border">|</span>
             <Link to="/contato" className="text-muted-foreground hover:text-foreground transition-colors">
-              Contato
+              {t('contact')}
             </Link>
           </nav>
         </div>

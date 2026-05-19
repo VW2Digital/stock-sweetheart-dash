@@ -15,11 +15,14 @@ import { ShoppingCart, User, Menu, LogOut, Package, Home, ChevronRight, Search, 
 import logoImg from '@/assets/liberty-header-logo.png';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { fetchSetting } from '@/lib/api';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { formatCurrency as formatCurrencyI18n } from '@/i18n';
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { totalItems, totalPrice } = useCart();
+  const { t, lang } = useLanguage();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -59,17 +62,16 @@ const Header = () => {
     }
   };
 
-  const formatCurrency = (value: number) =>
-    value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const formatCurrency = (value: number) => formatCurrencyI18n(value, 'BRL', lang);
 
   const isActive = (path: string) => location.pathname === path;
 
   const navLinks = [
-    { to: '/catalogo', label: 'Catálogo', icon: Home },
-    { to: '/carrinho', label: 'Carrinho', icon: ShoppingCart },
+    { to: '/catalogo', label: t('catalog'), icon: Home },
+    { to: '/carrinho', label: t('cart'), icon: ShoppingCart },
     ...(isLoggedIn
-      ? [{ to: '/minha-conta', label: 'Minha Conta', icon: User }]
-      : [{ to: '/cliente/login', label: 'Entrar', icon: User }]),
+      ? [{ to: '/minha-conta', label: t('myAccount'), icon: User }]
+      : [{ to: '/cliente/login', label: t('login'), icon: User }]),
   ];
 
   const whatsappUrl = whatsappNumber
@@ -103,7 +105,7 @@ const Header = () => {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   type="text"
-                  placeholder="Busque por produtos"
+                  placeholder={t('searchProducts')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10 pr-4 h-10 bg-background border-border rounded-lg text-sm"
@@ -120,9 +122,9 @@ const Header = () => {
                   <button className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
                     <Headset className="w-6 h-6 text-primary" />
                     <div className="hidden lg:block text-left leading-tight">
-                      <span className="text-[11px] text-muted-foreground">Central de</span>
+                      <span className="text-[11px] text-muted-foreground">{t('supportCenterShort1')}</span>
                       <span className="flex items-center gap-0.5 text-sm font-semibold">
-                        Atendimento <ChevronDown className="w-3 h-3" />
+                        {t('supportCenterShort2')} <ChevronDown className="w-3 h-3" />
                       </span>
                     </div>
                   </button>
@@ -137,13 +139,13 @@ const Header = () => {
                   )}
                   <DropdownMenuItem asChild>
                     <Link to="/contato" className="flex items-center gap-2">
-                      <Headset className="w-4 h-4" /> Contato
+                      <Headset className="w-4 h-4" /> {t('contact')}
                     </Link>
                   </DropdownMenuItem>
                   {isLoggedIn && (
                     <DropdownMenuItem asChild>
                       <Link to="/minha-conta" className="flex items-center gap-2">
-                        <Package className="w-4 h-4" /> Suporte
+                        <Package className="w-4 h-4" /> {t('support')}
                       </Link>
                     </DropdownMenuItem>
                   )}
@@ -158,16 +160,16 @@ const Header = () => {
                     <div className="hidden lg:block text-left leading-tight">
                       {isLoggedIn ? (
                         <>
-                          <span className="text-[11px] text-muted-foreground">Minha</span>
+                          <span className="text-[11px] text-muted-foreground">{t('myAccountShort1')}</span>
                           <span className="flex items-center gap-0.5 text-sm font-semibold">
-                            Conta <ChevronDown className="w-3 h-3" />
+                            {t('myAccountShort2')} <ChevronDown className="w-3 h-3" />
                           </span>
                         </>
                       ) : (
                         <>
-                          <span className="text-[11px] text-muted-foreground">Entrar ou</span>
+                          <span className="text-[11px] text-muted-foreground">{t('loginOr')}</span>
                           <span className="flex items-center gap-0.5 text-sm font-semibold">
-                            Cadastrar <ChevronDown className="w-3 h-3" />
+                            {t('register')} <ChevronDown className="w-3 h-3" />
                           </span>
                         </>
                       )}
@@ -179,28 +181,28 @@ const Header = () => {
                     <>
                       <DropdownMenuItem asChild>
                         <Link to="/minha-conta" className="flex items-center gap-2">
-                          <User className="w-4 h-4" /> Minha Conta
+                          <User className="w-4 h-4" /> {t('myAccount')}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link to="/minha-conta" className="flex items-center gap-2">
-                          <Package className="w-4 h-4" /> Meus Pedidos
+                          <Package className="w-4 h-4" /> {t('myOrders')}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 text-destructive">
-                        <LogOut className="w-4 h-4" /> Sair
+                        <LogOut className="w-4 h-4" /> {t('logout')}
                       </DropdownMenuItem>
                     </>
                   ) : (
                     <>
                       <DropdownMenuItem asChild>
                         <Link to="/cliente/login" className="flex items-center gap-2">
-                          <User className="w-4 h-4" /> Entrar
+                          <User className="w-4 h-4" /> {t('login')}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link to="/cliente/login" className="flex items-center gap-2">
-                          <User className="w-4 h-4" /> Cadastrar
+                          <User className="w-4 h-4" /> {t('register')}
                         </Link>
                       </DropdownMenuItem>
                     </>
@@ -222,7 +224,7 @@ const Header = () => {
                   )}
                 </div>
                 <div className="hidden lg:block text-left leading-tight">
-                  <span className="text-[11px] text-muted-foreground">Meu Carrinho</span>
+                  <span className="text-[11px] text-muted-foreground">{t('myCart')}</span>
                   <p className="text-sm font-semibold">{formatCurrency(totalPrice)}</p>
                 </div>
               </Link>
@@ -262,7 +264,7 @@ const Header = () => {
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
                         type="text"
-                        placeholder="Busque por produtos"
+                        placeholder={t('searchProducts')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-10 pr-4 h-9 text-sm"
@@ -305,7 +307,7 @@ const Header = () => {
                       className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-foreground hover:bg-muted/60 transition-all"
                     >
                       <Headset className="w-4.5 h-4.5 text-muted-foreground" />
-                      Central de Atendimento
+                      {t('supportCenter')}
                       <ChevronRight className="w-4 h-4 ml-auto text-muted-foreground/40" />
                     </Link>
 
@@ -315,7 +317,7 @@ const Header = () => {
                         className="flex items-center gap-3 px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-all text-sm font-medium mt-3 border-t border-border/30 pt-4"
                       >
                         <LogOut className="w-4 h-4" />
-                        Sair
+                        {t('logout')}
                       </button>
                     )}
                     <div className="border-t border-border/30 mt-3 pt-4 px-3">
