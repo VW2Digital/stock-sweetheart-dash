@@ -1012,19 +1012,18 @@ const CustomerDashboard = () => {
                 <Card className="border-border/50">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <BellRing className="w-5 h-5" /> Preferências de Contato
+                      <BellRing className="w-5 h-5" /> {t('contactPreferences')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <p className="text-sm text-muted-foreground">
-                      Escolha como você prefere receber lembretes da loja, como o aviso de itens deixados no carrinho.
-                      Mensagens essenciais sobre seus pedidos (pagamento, envio, entrega) serão enviadas mesmo se você desativar.
+                      {t('contactPreferencesDescription')}
                     </p>
                     <div className="flex items-center justify-between gap-4 rounded-lg border border-border/60 p-3">
                       <div className="flex items-start gap-3 min-w-0">
                         <Mail className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
                         <div className="min-w-0">
-                          <p className="font-medium text-sm">Email de marketing</p>
+                          <p className="font-medium text-sm">{t('marketingEmail')}</p>
                           <p className="text-xs text-muted-foreground break-all">{user?.email}</p>
                         </div>
                       </div>
@@ -1032,16 +1031,16 @@ const CustomerDashboard = () => {
                         checked={allowEmailMkt}
                         disabled={prefsSaving}
                         onCheckedChange={(v) => saveContactPreferences({ email: v })}
-                        aria-label="Receber emails de marketing"
+                        aria-label={t('receiveMarketingEmails')}
                       />
                     </div>
                     <div className="flex items-center justify-between gap-4 rounded-lg border border-border/60 p-3">
                       <div className="flex items-start gap-3 min-w-0">
                         <MessageSquare className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
                         <div className="min-w-0">
-                          <p className="font-medium text-sm">WhatsApp de marketing</p>
+                          <p className="font-medium text-sm">{t('marketingWhatsApp')}</p>
                           <p className="text-xs text-muted-foreground">
-                            {profilePhone || 'Cadastre um telefone para receber'}
+                            {profilePhone || t('registerPhoneToReceive')}
                           </p>
                         </div>
                       </div>
@@ -1049,7 +1048,7 @@ const CustomerDashboard = () => {
                         checked={allowWhatsAppMkt}
                         disabled={prefsSaving}
                         onCheckedChange={(v) => saveContactPreferences({ whatsapp: v })}
-                        aria-label="Receber WhatsApp de marketing"
+                        aria-label={t('receiveMarketingWhatsApp')}
                       />
                     </div>
                   </CardContent>
@@ -1060,7 +1059,7 @@ const CustomerDashboard = () => {
                   <Card className="border-border/50">
                     <CardHeader>
                       <CardTitle className="text-lg flex items-center gap-2">
-                        <MapPin className="w-5 h-5" /> Último Endereço Usado
+                        <MapPin className="w-5 h-5" /> {t('lastUsedAddress')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -1072,7 +1071,7 @@ const CustomerDashboard = () => {
                         <p className="text-muted-foreground">
                           {orders[0].customer_district} - {orders[0].customer_city}/{orders[0].customer_state}
                         </p>
-                        <p className="text-muted-foreground">CEP: {orders[0].customer_postal_code}</p>
+                        <p className="text-muted-foreground">{t('cep')}: {orders[0].customer_postal_code}</p>
                       </div>
                     </CardContent>
                   </Card>
