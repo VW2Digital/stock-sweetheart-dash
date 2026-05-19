@@ -332,8 +332,8 @@ const Catalog = () => {
         {!loading && flatItems.length > 0 && (
           <div className="mt-8 mb-4 flex items-center gap-3">
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-foreground leading-tight">​Catálogo </h2>
-              <p className="text-xs text-muted-foreground">Compre unidades avulsas das nossas variações</p>
+              <h2 className="text-lg sm:text-xl font-bold text-foreground leading-tight">{t('catalogDividerTitle')}</h2>
+              <p className="text-xs text-muted-foreground">{t('catalogDividerSubtitle')}</p>
             </div>
             <div className="flex-1 h-px bg-border ml-2" />
           </div>
@@ -432,7 +432,7 @@ const Catalog = () => {
                               {variantCfg.showFreeShippingImageBadge && product.free_shipping && (
                                 <Badge className="bg-success text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 shadow-sm gap-0.5 rounded-md">
                                   <Truck className="w-2.5 h-2.5" />
-                                  FRETE GRÁTIS
+                                  {t('freeShippingUpper')}
                                 </Badge>
                               )}
                               {!inStock && (
@@ -442,7 +442,7 @@ const Catalog = () => {
                             <div className="absolute top-2 right-2 z-20 flex flex-col gap-1 items-end">
                               {variantCfg.showBestsellerBadge && product.is_bestseller && (
                                 <Badge className="bg-warning text-white text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 shadow-md rounded-md">
-                                  Mais Vendido
+                                  {t('bestseller')}
                                 </Badge>
                               )}
                             </div>
@@ -458,7 +458,7 @@ const Catalog = () => {
                               {variantCfg.showFreeShippingImageBadge && product.free_shipping && (
                                 <Badge className="bg-success text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 gap-0.5">
                                   <Truck className="w-2.5 h-2.5" />
-                                  FRETE GRÁTIS
+                                  {t('freeShippingUpper')}
                                 </Badge>
                               )}
                               {!inStock && (
@@ -468,7 +468,7 @@ const Catalog = () => {
                             <div className="absolute top-2 right-2 z-20 flex flex-col gap-1 items-end">
                               {variantCfg.showBestsellerBadge && product.is_bestseller && (
                                 <Badge className="bg-success text-white text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5">
-                                  Mais Vendido
+                                  {t('bestseller')}
                                 </Badge>
                               )}
                             </div>
@@ -477,7 +477,7 @@ const Catalog = () => {
                         {hasWholesale && wholesaleMinQty && (
                           <div className="absolute bottom-2 left-2 z-20">
                             <Badge variant="outline" className="bg-background/80 backdrop-blur-sm text-[9px] text-primary border-primary/30 font-bold gap-0.5 px-1.5">
-                              <Layers className="w-2.5 h-2.5" /> Atacado a partir de {wholesaleMinQty} unid.
+                              <Layers className="w-2.5 h-2.5" /> {t('wholesaleFrom', { qty: wholesaleMinQty })}
                             </Badge>
                           </div>
                         )}
@@ -532,18 +532,18 @@ const Catalog = () => {
                                 {formatPriceParts(displayPrice!).decPart}
                               </span>
                               {hasWholesale && (
-                                <span className="text-muted-foreground text-[10px] sm:text-xs ml-1">/un.</span>
+                                <span className="text-muted-foreground text-[10px] sm:text-xs ml-1">{t('perUnit')}</span>
                               )}
                             </div>
                             {hasWholesale && wholesaleMinQty && (
                               <p className="text-primary text-[10px] sm:text-xs font-semibold mt-0.5">
-                                Preço atacado · mín. {wholesaleMinQty} un.
+                                {t('wholesalePriceMin', { qty: wholesaleMinQty })}
                               </p>
                             )}
                             {pixDiscount && (
                               <>
                                 <p className="text-success text-[10px] sm:text-xs font-semibold mt-0.5">
-                                  {pixPercent}% OFF no Pix
+                                  {t('pixOff', { percent: pixPercent })}
                                 </p>
                               </>
                             )}
@@ -555,16 +555,16 @@ const Catalog = () => {
                                   const effectiveMax = Math.max(maxInst, 1);
                                   if (installmentsInterest === 'sem_juros') {
                                     const installmentValue = displayPrice! / effectiveMax;
-                                    return <>ou R$ {displayPrice!.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em{' '}
+                                    return <>{t('orPriceIn', { price: displayPrice!.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) })}{' '}
                                       <span className="text-primary font-medium">
-                                        {effectiveMax}x R$ {installmentValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} sem juros
+                                        {t('installmentsNoInterest', { count: effectiveMax, value: installmentValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) })}
                                       </span>
                                     </>;
                                   } else {
                                     const result = calcularParcelamento(displayPrice!, effectiveMax, interestTable);
-                                    return <>ou R$ {result.valorFinal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} em{' '}
+                                    return <>{t('orPriceIn', { price: result.valorFinal.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) })}{' '}
                                       <span className="text-primary font-medium">
-                                        {effectiveMax}x R$ {result.valorParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                        {t('installmentsWithInterest', { count: effectiveMax, value: result.valorParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) })}
                                       </span>
                                     </>;
                                   }
@@ -585,14 +585,14 @@ const Catalog = () => {
                     {variantCfg.showFreeShippingBanner && product.free_shipping && (
                       <div className="mx-3 mb-1.5 rounded-md bg-transparent border border-transparent px-2 py-1 flex items-center gap-1">
                         <Truck className="w-3 h-3 text-success flex-shrink-0" />
-                        <span className="text-success text-[10px] font-semibold">Frete Grátis</span>
+                        <span className="text-success text-[10px] font-semibold">{t('freeShipping')}</span>
                       </div>
                     )}
 
                     {/* Wholesale Tier Selector */}
                     {variation && hasWholesale && wholesaleTiers.length > 1 && (
                       <div className="px-3 pb-2 space-y-1">
-                        <p className="text-[10px] text-muted-foreground font-medium">Escolha a quantidade:</p>
+                        <p className="text-[10px] text-muted-foreground font-medium">{t('chooseQuantity')}</p>
                         <div className="flex flex-wrap gap-1">
                           {wholesaleTiers.map((tier, tIdx) => {
                             const isActive = tIdx === selectedTierIdx;
@@ -611,7 +611,7 @@ const Catalog = () => {
                                     : 'border-border bg-background text-muted-foreground hover:border-primary/50'
                                 }`}
                               >
-                                {tier.min_quantity}+ un.
+                                {tier.min_quantity}+ {t('unitsShort')}
                               </button>
                             );
                           })}

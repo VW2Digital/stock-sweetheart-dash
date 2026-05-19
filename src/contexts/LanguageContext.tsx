@@ -22,7 +22,7 @@ const SUPPORTED: readonly Language[] = SUPPORTED_LANGUAGES;
 interface LanguageContextType {
   lang: Language;
   setLang: (lang: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, options?: Record<string, unknown>) => string;
   refreshSeoTags: () => void;
 }
 
@@ -86,7 +86,11 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     head.appendChild(xDefault);
   }, [lang]);
 
-  const t = useCallback((key: string): string => i18nT(key), [i18nT]);
+  const t = useCallback(
+    (key: string, options?: Record<string, unknown>): string =>
+      i18nT(key, options as any) as string,
+    [i18nT],
+  );
 
   return (
     <LanguageContext.Provider value={{ lang, setLang, t, refreshSeoTags }}>
