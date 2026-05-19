@@ -183,7 +183,7 @@ const CustomerDashboard = () => {
       if (error) throw error;
       setOrders(data || []);
     } catch (err: any) {
-      toast({ title: 'Erro ao carregar pedidos', description: err.message, variant: 'destructive' });
+      toast({ title: t('ordersLoadError'), description: err.message, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -230,9 +230,9 @@ const CustomerDashboard = () => {
           phone: profilePhone.trim(),
         }, { onConflict: 'user_id' });
       if (error) throw error;
-      toast({ title: 'Perfil atualizado com sucesso!' });
+      toast({ title: t('profileUpdated') });
     } catch (err: any) {
-      toast({ title: 'Erro ao salvar perfil', description: err.message, variant: 'destructive' });
+      toast({ title: t('profileSaveError'), description: err.message, variant: 'destructive' });
     } finally {
       setProfileSaving(false);
     }
@@ -241,11 +241,11 @@ const CustomerDashboard = () => {
   const handleAvatarUpload = async (file: File) => {
     if (!user) return;
     if (!file.type.startsWith('image/')) {
-      toast({ title: 'Arquivo inválido', description: 'Envie uma imagem (JPG, PNG ou WEBP).', variant: 'destructive' });
+      toast({ title: t('invalidFile'), description: t('sendImageFile'), variant: 'destructive' });
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast({ title: 'Imagem muito grande', description: 'O tamanho máximo é 5 MB.', variant: 'destructive' });
+      toast({ title: t('imageTooLarge'), description: t('maxImageSize'), variant: 'destructive' });
       return;
     }
     setAvatarUploading(true);
@@ -263,9 +263,9 @@ const CustomerDashboard = () => {
         .upsert({ user_id: user.id, avatar_url: publicUrl }, { onConflict: 'user_id' });
       if (updErr) throw updErr;
       setCustomAvatarUrl(publicUrl);
-      toast({ title: 'Foto de perfil atualizada!' });
+      toast({ title: t('profilePhotoUpdated') });
     } catch (err: any) {
-      toast({ title: 'Erro ao enviar foto', description: err.message, variant: 'destructive' });
+      toast({ title: t('photoUploadError'), description: err.message, variant: 'destructive' });
     } finally {
       setAvatarUploading(false);
     }
@@ -280,9 +280,9 @@ const CustomerDashboard = () => {
         .upsert({ user_id: user.id, avatar_url: '' }, { onConflict: 'user_id' });
       if (error) throw error;
       setCustomAvatarUrl('');
-      toast({ title: 'Foto removida' });
+      toast({ title: t('photoRemoved') });
     } catch (err: any) {
-      toast({ title: 'Erro ao remover', description: err.message, variant: 'destructive' });
+      toast({ title: t('removeError'), description: err.message, variant: 'destructive' });
     } finally {
       setAvatarUploading(false);
     }
