@@ -13,9 +13,13 @@ import Footer from '@/components/Footer';
 import CheckoutAuthGate from '@/components/CheckoutAuthGate';
 import productHeroImg from '@/assets/product-hero.png';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { translateValue } from '@/lib/translateValue';
+import { PiggyBank } from 'lucide-react';
 
 const CartCheckout = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { toast } = useToast();
   const { items, totalPrice, clearCart, loading } = useCart();
   const [ready, setReady] = useState(false);
@@ -130,7 +134,7 @@ const CartCheckout = () => {
         <AnimatedSection variant="fadeUp">
           {/* Order Summary */}
            <div className="border border-border/50 rounded-xl p-5 bg-card mb-6">
-              <h2 className="text-lg font-bold text-foreground mb-4">Resumo do Pedido</h2>
+              <h2 className="text-lg font-bold text-foreground mb-4">{t('orderSummary')}</h2>
               <div className="space-y-4">
                 {items.map((item) => {
                   // Single source of truth: item.price is the effective unit
@@ -152,13 +156,13 @@ const CartCheckout = () => {
                       <div className="flex items-center gap-4">
                         <img
                           src={item.image_url || productHeroImg}
-                          alt={item.product_name}
+                          alt={translateValue(item.product_name)}
                           className="w-14 h-14 object-contain rounded-lg border border-border/50 bg-muted p-1"
                         />
                         <div className="flex-1">
-                          <p className="font-bold text-foreground text-sm">{item.product_name}</p>
+                          <p className="font-bold text-foreground text-sm">{translateValue(item.product_name)}</p>
                           {item.dosage && !item.product_name.toLowerCase().includes(item.dosage.toLowerCase()) && (
-                            <p className="text-xs text-muted-foreground">{item.dosage}</p>
+                            <p className="text-xs text-muted-foreground">{translateValue(item.dosage)}</p>
                           )}
                         </div>
                       </div>
@@ -167,7 +171,7 @@ const CartCheckout = () => {
                         <div className="ml-[4.5rem] space-y-1.5">
                           <div className="flex items-center gap-2">
                             <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/10 text-[10px]">
-                              Atacado
+                              {t('wholesale')}
                             </Badge>
                             <Badge variant="secondary" className="text-[10px] text-destructive bg-destructive/10 border-destructive/20">
                               -{discountPct}%
@@ -176,7 +180,7 @@ const CartCheckout = () => {
                           <div className="border border-success/20 rounded-lg p-3 bg-success/5 space-y-1">
                             <div className="flex items-center justify-between">
                               <span className="text-xs text-muted-foreground">
-                                {item.quantity}x R$ {effectiveUnit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} (por unidade)
+                                {t('unitPriceLine', { qty: item.quantity, price: effectiveUnit.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) })}
                               </span>
                               <span className="font-bold text-sm text-primary">
                                 R$ {effectiveTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -184,17 +188,17 @@ const CartCheckout = () => {
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-[11px] text-muted-foreground">
-                                Preço regular: <span className="line-through">R$ {referenceTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                                {t('regularPriceLabel')} <span className="line-through">R$ {referenceTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                               </span>
                               <span className="text-[11px] text-success font-semibold">
-                                Economia: R$ {(referenceTotal - effectiveTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                {t('savingsAmount', { amount: (referenceTotal - effectiveTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) })}
                               </span>
                             </div>
                           </div>
                         </div>
                       ) : (
                         <div className="ml-[4.5rem] flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground">Qtd: {item.quantity}</span>
+                          <span className="text-xs text-muted-foreground">{t('qtyWithValue', { qty: item.quantity })}</span>
                           <span className={`font-bold text-sm ${item.is_offer ? 'text-destructive' : 'text-primary'}`}>
                             R$ {effectiveTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                           </span>
@@ -217,7 +221,9 @@ const CartCheckout = () => {
                 return (
                   <div className="border-t border-border mt-4 pt-3">
                     <div className="flex items-center justify-between bg-success/10 rounded-lg px-4 py-2.5 mb-3">
-                      <span className="text-sm font-medium text-success">💰 Você está economizando</span>
+                      <span className="text-sm font-medium text-success inline-flex items-center gap-1.5">
+                        <PiggyBank className="w-4 h-4" /> {t('youAreSaving')}
+                      </span>
                       <span className="text-lg font-bold text-success">
                         R$ {totalSavings.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </span>
@@ -227,7 +233,7 @@ const CartCheckout = () => {
               })()}
 
               <div className="border-t border-border mt-4 pt-3 flex justify-between font-bold">
-                <span className="text-foreground">Total</span>
+                <span className="text-foreground">{t('total')}</span>
                 <span className="text-primary text-lg">
                   R$ {totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </span>

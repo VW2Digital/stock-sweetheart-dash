@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/select';
 import { Plus, Sparkles, Check } from 'lucide-react';
 import productHeroImg from '@/assets/product-hero.png';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { translateValue } from '@/lib/translateValue';
 
 interface UpsellVariation {
   id: string;
@@ -34,6 +36,7 @@ interface UpsellProduct {
 }
 
 const UpsellSection = () => {
+  const { t } = useLanguage();
   const { items, addToCart } = useCart();
   const [upsells, setUpsells] = useState<UpsellProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -123,11 +126,11 @@ const UpsellSection = () => {
     <Card className="border-primary/30 bg-primary/5 p-5 mb-6">
       <div className="flex items-center gap-2 mb-4">
         <Sparkles className="w-5 h-5 text-primary" />
-        <h2 className="text-lg font-bold text-foreground">Leve também</h2>
-        <Badge className="bg-primary text-primary-foreground text-[10px]">Oferta especial</Badge>
+        <h2 className="text-lg font-bold text-foreground">{t('upsellTitle')}</h2>
+        <Badge className="bg-primary text-primary-foreground text-[10px]">{t('specialOffer')}</Badge>
       </div>
       <p className="text-xs text-muted-foreground mb-4">
-        Aproveite e adicione esses produtos com 1 clique antes de finalizar.
+        {t('upsellSubtitle')}
       </p>
 
       <div className="space-y-3">
@@ -146,13 +149,13 @@ const UpsellSection = () => {
             >
               <img
                 src={image}
-                alt={product.name}
+                alt={translateValue(product.name)}
                 className="w-16 h-16 object-contain rounded-lg border border-border/50 bg-muted p-1 flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-foreground text-sm leading-tight">{product.name}</p>
+                <p className="font-bold text-foreground text-sm leading-tight">{translateValue(product.name)}</p>
                 {product.subtitle && (
-                  <p className="text-[11px] text-muted-foreground line-clamp-1">{product.subtitle}</p>
+                  <p className="text-[11px] text-muted-foreground line-clamp-1">{translateValue(product.subtitle)}</p>
                 )}
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                   {product.variations.length > 1 ? (
@@ -166,13 +169,13 @@ const UpsellSection = () => {
                       <SelectContent>
                         {product.variations.map(v => (
                           <SelectItem key={v.id} value={v.id} className="text-xs">
-                            {v.dosage}
+                            {translateValue(v.dosage)}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   ) : (
-                    <Badge variant="secondary" className="text-[10px]">{variation.dosage}</Badge>
+                    <Badge variant="secondary" className="text-[10px]">{translateValue(variation.dosage)}</Badge>
                   )}
                   <div className="flex items-baseline gap-1.5">
                     {hasDiscount && (
@@ -204,7 +207,7 @@ const UpsellSection = () => {
                 ) : (
                   <>
                     <Plus className="w-4 h-4 sm:mr-1" />
-                    <span className="hidden sm:inline">Adicionar</span>
+                    <span className="hidden sm:inline">{t('add')}</span>
                   </>
                 )}
               </Button>
