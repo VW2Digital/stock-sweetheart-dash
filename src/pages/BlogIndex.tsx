@@ -6,6 +6,8 @@ import Footer from '@/components/Footer';
 import { Card } from '@/components/ui/card';
 import { BookOpen, Loader2, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { INTL_LOCALES } from '@/i18n';
 
 interface BlogPost {
   id: string;
@@ -19,12 +21,13 @@ interface BlogPost {
 }
 
 export default function BlogIndex() {
+  const { t, lang } = useLanguage();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTopic, setActiveTopic] = useState<string | null>(null);
 
   useEffect(() => {
-    document.title = 'Blog | Liberty Pharma';
+    document.title = t('blog.pageTitle');
     (async () => {
       const { data } = await supabase
         .from('blog_posts')
@@ -34,7 +37,7 @@ export default function BlogIndex() {
       setPosts((data as BlogPost[]) || []);
       setLoading(false);
     })();
-  }, []);
+  }, [t]);
 
   const topics = useMemo(() => {
     const set = new Set<string>();
@@ -48,7 +51,7 @@ export default function BlogIndex() {
   );
 
   const formatDate = (d: string | null, fallback: string) =>
-    new Date(d || fallback).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+    new Date(d || fallback).toLocaleDateString(INTL_LOCALES[lang], { day: '2-digit', month: 'short', year: 'numeric' });
 
   const [featured, ...rest] = filtered;
 
@@ -59,9 +62,9 @@ export default function BlogIndex() {
       {/* Cabeçalho centralizado */}
       <section className="border-b border-border bg-muted/20">
         <div className="max-w-6xl mx-auto px-4 py-14 sm:py-20 text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold text-foreground tracking-tight">Blog Liberty Pharma</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold text-foreground tracking-tight">{t('blog.title')}</h1>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Novidades, dicas de saúde, conteúdos exclusivos e tudo sobre nossos produtos.
+            {t('blog.subtitle')}
           </p>
         </div>
       </section>
@@ -72,13 +75,13 @@ export default function BlogIndex() {
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : posts.length === 0 ? (
-          <Card className="p-12 text-center text-muted-foreground">Nenhum post publicado ainda.</Card>
+          <Card className="p-12 text-center text-muted-foreground">{t('blog.noPosts')}</Card>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)] gap-10">
             {/* Sidebar */}
             <aside className="space-y-8 lg:sticky lg:top-24 self-start">
               <div>
-                <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3">Categorias</p>
+                <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3">{t('blog.categories')}</p>
                 <button
                   onClick={() => setActiveTopic(null)}
                   className={cn(
@@ -86,13 +89,13 @@ export default function BlogIndex() {
                     activeTopic === null ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
                   )}
                 >
-                  <BookOpen className="h-4 w-4" /> Blog
+                  <BookOpen className="h-4 w-4" /> {t('blog.blogLabel')}
                 </button>
               </div>
 
               {topics.length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3">Tópicos</p>
+                  <p className="text-xs font-semibold tracking-widest text-muted-foreground uppercase mb-3">{t('blog.topics')}</p>
                   <div className="flex flex-wrap gap-2">
                     {topics.map((t) => (
                       <button
@@ -116,7 +119,7 @@ export default function BlogIndex() {
             {/* Lista de posts */}
             <div className="space-y-12">
               {filtered.length === 0 ? (
-                <Card className="p-10 text-center text-muted-foreground">Nenhum post para este filtro.</Card>
+                <Card className="p-10 text-center text-muted-foreground">{t('blog.noPostsForFilter')}</Card>
               ) : (
                 <>
                   {/* Featured */}
@@ -138,7 +141,7 @@ export default function BlogIndex() {
                       <div className="space-y-3 pt-1">
                         <div className="flex items-center gap-2">
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                            Destaque
+                            {t('blog.featured')}
                           </span>
                           <span className="text-xs text-muted-foreground">
                             {formatDate(featured.published_at, featured.created_at)}

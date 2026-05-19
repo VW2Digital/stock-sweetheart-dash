@@ -5,6 +5,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { ChevronRight, Clock, Facebook, Home, Linkedin, Loader2, MessageCircle, Twitter, User } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { INTL_LOCALES } from '@/i18n';
 
 interface BlogPost {
   id: string;
@@ -19,6 +21,7 @@ interface BlogPost {
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { t, lang } = useLanguage();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -64,9 +67,9 @@ export default function BlogPostPage() {
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
-      toast.success('Link copiado');
+      toast.success(t('blog.linkCopied'));
     } catch {
-      toast.error('Não foi possível copiar');
+      toast.error(t('blog.copyError'));
     }
   };
 
@@ -80,19 +83,19 @@ export default function BlogPostPage() {
           </div>
         ) : notFound || !post ? (
           <div className="text-center py-20 max-w-3xl mx-auto px-4">
-            <h1 className="text-2xl font-bold text-foreground">Post não encontrado</h1>
-            <p className="text-muted-foreground mt-2">Ele pode ter sido removido ou ainda não foi publicado.</p>
-            <Link to="/blog" className="inline-block mt-6 text-primary hover:underline">Voltar ao blog</Link>
+            <h1 className="text-2xl font-bold text-foreground">{t('blog.postNotFound')}</h1>
+            <p className="text-muted-foreground mt-2">{t('blog.postNotFoundDesc')}</p>
+            <Link to="/blog" className="inline-block mt-6 text-primary hover:underline">{t('blog.backToBlog')}</Link>
           </div>
         ) : (
           <article className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
             {/* Breadcrumbs */}
             <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
-              <Link to="/" className="hover:text-foreground transition-colors" aria-label="Início">
+              <Link to="/" className="hover:text-foreground transition-colors" aria-label={t('blog.home')}>
                 <Home className="h-4 w-4" />
               </Link>
               <ChevronRight className="h-4 w-4" />
-              <Link to="/blog" className="hover:text-foreground transition-colors">Blog</Link>
+              <Link to="/blog" className="hover:text-foreground transition-colors">{t('blog.blogLabel')}</Link>
               <ChevronRight className="h-4 w-4" />
               <span className="text-foreground truncate">{post.title}</span>
             </nav>
@@ -110,8 +113,8 @@ export default function BlogPostPage() {
               <div className="leading-tight">
                 <p className="text-sm font-semibold text-foreground">{post.author_name || 'Liberty Pharma'}</p>
                 <p className="text-xs text-muted-foreground">
-                  Publicado em{' '}
-                  {new Date(post.published_at || post.created_at).toLocaleDateString('pt-BR', {
+                  {t('blog.publishedOn')}{' '}
+                  {new Date(post.published_at || post.created_at).toLocaleDateString(INTL_LOCALES[lang], {
                     day: '2-digit', month: 'short', year: 'numeric',
                   })}
                 </p>
@@ -122,28 +125,28 @@ export default function BlogPostPage() {
             <div className="flex items-center justify-between gap-4 py-3 border-y border-border mb-10">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4" />
-                {readingMinutes} {readingMinutes === 1 ? 'minuto' : 'minutos'} de leitura
+                {readingMinutes} {readingMinutes === 1 ? t('blog.minuteRead') : t('blog.minutesRead')}
               </div>
               <div className="flex items-center gap-1">
-                <button onClick={() => share('facebook')} title="Compartilhar no Facebook"
+                <button onClick={() => share('facebook')} title={t('blog.shareFacebook')}
                   className="h-8 w-8 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                   <Facebook className="h-4 w-4" />
                 </button>
-                <button onClick={() => share('twitter')} title="Compartilhar no Twitter"
+                <button onClick={() => share('twitter')} title={t('blog.shareTwitter')}
                   className="h-8 w-8 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                   <Twitter className="h-4 w-4" />
                 </button>
-                <button onClick={() => share('linkedin')} title="Compartilhar no LinkedIn"
+                <button onClick={() => share('linkedin')} title={t('blog.shareLinkedin')}
                   className="h-8 w-8 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                   <Linkedin className="h-4 w-4" />
                 </button>
-                <button onClick={() => share('whatsapp')} title="Compartilhar no WhatsApp"
+                <button onClick={() => share('whatsapp')} title={t('blog.shareWhatsapp')}
                   className="h-8 w-8 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                   <MessageCircle className="h-4 w-4" />
                 </button>
-                <button onClick={copyLink} title="Copiar link"
+                <button onClick={copyLink} title={t('blog.copyLink')}
                   className="h-8 px-3 ml-1 inline-flex items-center justify-center rounded-full text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                  Copiar link
+                  {t('blog.copyLink')}
                 </button>
               </div>
             </div>
