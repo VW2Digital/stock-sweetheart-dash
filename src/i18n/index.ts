@@ -3,30 +3,40 @@ import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
 import pt from './locales/pt.json';
+import ptPT from './locales/pt-PT.json';
 import es from './locales/es.json';
 import en from './locales/en.json';
 
-export const SUPPORTED_LANGUAGES = ['pt', 'es', 'en'] as const;
+export const SUPPORTED_LANGUAGES = ['pt', 'pt-PT', 'es', 'en'] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
 /**
  * Mapa BCP-47 usado em Intl.* (moeda, data, número).
- * Mantemos PT-PT, ES-ES e EN-US como padrão para formatação.
+ * `pt` = Português do Brasil (pt-BR), `pt-PT` = Português de Portugal.
  */
 export const INTL_LOCALES: Record<SupportedLanguage, string> = {
-  pt: 'pt-PT',
+  pt: 'pt-BR',
+  'pt-PT': 'pt-PT',
   es: 'es-ES',
   en: 'en-US',
 };
 
 const DEFAULT_CURRENCY: Record<SupportedLanguage, string> = {
   pt: 'BRL',
+  'pt-PT': 'EUR',
   es: 'BRL',
   en: 'BRL',
 };
 
+const normalizeLng = (lng: string | undefined): SupportedLanguage => {
+  if (!lng) return 'pt';
+  if (lng === 'pt-PT' || lng.toLowerCase() === 'pt-pt') return 'pt-PT';
+  const base = lng.split('-')[0] as SupportedLanguage;
+  return (SUPPORTED_LANGUAGES as readonly string[]).includes(base) ? base : 'pt';
+};
+
 const intlLocale = (lng: string | undefined): string =>
-  INTL_LOCALES[(lng?.split('-')[0] as SupportedLanguage)] || INTL_LOCALES.pt;
+  INTL_LOCALES[normalizeLng(lng)] || INTL_LOCALES.pt;
 
 /**
  * i18next: motor de tradução de toda a aplicação.
@@ -53,13 +63,15 @@ i18n
   .init({
     resources: {
       pt: { translation: pt },
+      'pt-PT': { translation: ptPT },
       es: { translation: es },
       en: { translation: en },
     },
-    fallbackLng: 'pt',
+    // pt-PT herda chaves em falta de pt (pt-BR), depois cai para pt.
+    fallbackLng: { 'pt-PT': ['pt-PT', 'pt'], default: ['pt'] },
     supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
-    nonExplicitSupportedLngs: true, // 'pt-PT' → 'pt'
-    load: 'languageOnly',
+    nonExplicitSupportedLngs: false, // mantém 'pt-PT' distinto de 'pt'
+    load: 'currentOnly',
     interpolation: {
       escapeValue: false,
       // Aceita pluralização e variáveis. Datas/valores formatados via formatter abaixo.
@@ -88,7 +100,7 @@ i18n
 i18n.services.formatter?.add('currency', (value, lng, options) => {
   const num = Number(value);
   if (Number.isNaN(num)) return String(value);
-  const currency = (options?.currency as string) || DEFAULT_CURRENCY[(lng?.split('-')[0] as SupportedLanguage)] || 'BRL';
+  const currency = (options?.currency as string) || DEFAULT_CURRENCY[normalizeLng(lng)] || 'BRL';
   return new Intl.NumberFormat(intlLocale(lng), {
     style: 'currency',
     currency,

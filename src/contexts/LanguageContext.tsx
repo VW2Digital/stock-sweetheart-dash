@@ -12,7 +12,8 @@ interface LanguageInfo {
 }
 
 export const languages: LanguageInfo[] = [
-  { code: 'pt', flag: 'pt', short: 'PT', label: 'Português' },
+  { code: 'pt', flag: 'br', short: 'BR', label: 'Português (Brasil)' },
+  { code: 'pt-PT', flag: 'pt', short: 'PT', label: 'Português (Portugal)' },
   { code: 'es', flag: 'es', short: 'ES', label: 'Español' },
   { code: 'en', flag: 'gb', short: 'EN', label: 'English' },
 ];
@@ -29,7 +30,9 @@ interface LanguageContextType {
 export const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 const normalize = (raw: string | undefined): Language => {
-  const code = (raw || 'pt').toLowerCase().split('-')[0] as Language;
+  if (!raw) return 'pt';
+  if (raw === 'pt-PT' || raw.toLowerCase() === 'pt-pt') return 'pt-PT';
+  const code = raw.toLowerCase().split('-')[0] as Language;
   return SUPPORTED.includes(code) ? code : 'pt';
 };
 
@@ -58,7 +61,12 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
   // <html lang> + <link rel="alternate" hreflang> para SEO
   useEffect(() => {
-    const htmlLangMap: Record<Language, string> = { pt: 'pt-PT', es: 'es', en: 'en' };
+    const htmlLangMap: Record<Language, string> = {
+      pt: 'pt-BR',
+      'pt-PT': 'pt-PT',
+      es: 'es',
+      en: 'en',
+    };
     document.documentElement.lang = htmlLangMap[lang];
 
     const head = document.head;
@@ -66,7 +74,8 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
     const baseUrl = `${window.location.origin}${window.location.pathname}`;
     const alternates: Array<{ hreflang: string; lang: Language }> = [
-      { hreflang: 'pt-PT', lang: 'pt' },
+      { hreflang: 'pt-BR', lang: 'pt' },
+      { hreflang: 'pt-PT', lang: 'pt-PT' },
       { hreflang: 'es', lang: 'es' },
       { hreflang: 'en', lang: 'en' },
     ];
