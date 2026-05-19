@@ -35,6 +35,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminKpiCard } from '@/components/admin/AdminKpiCard';
 import iconPedidos from '@/assets/icon-pedidos-3d.png';
+import { useAdminCurrency } from '@/contexts/AdminCurrencyContext';
 
 const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; badgeClass?: string }> = {
   PENDING: { label: 'Pendente', variant: 'outline' },
@@ -151,6 +152,7 @@ const emailTemplates = [
 ];
 
 const OrdersPage = () => {
+  const { format: fmtMoney } = useAdminCurrency();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [orders, setOrders] = useState<any[]>([]);
@@ -722,7 +724,7 @@ const OrdersPage = () => {
       />
 
       {(() => {
-        const fmt = (n: number) => n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        const fmt = (n: number) => fmtMoney(n);
         const paidStatuses = new Set(['PAID', 'CONFIRMED', 'RECEIVED']);
         const totalValue = filteredOrders.reduce((s, o: any) => s + Number(o.total_value || 0), 0);
         const paidOrders = filteredOrders.filter((o: any) => paidStatuses.has(o.status));
@@ -1025,7 +1027,7 @@ const OrdersPage = () => {
                     </div>
                     <p className="text-xs text-muted-foreground truncate pl-7">{order.product_name}{order.dosage ? ` - ${order.dosage}` : ''}</p>
                     <div className="flex items-center justify-between gap-2 pl-7">
-                      <span className="font-bold text-base text-primary">R$ {Number(order.total_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                      <span className="font-bold text-base text-primary">{fmtMoney(Number(order.total_value))}</span>
                       <PaymentIcon method={order.payment_method} />
                     </div>
                     <div className="flex flex-wrap gap-1.5 pl-7">
@@ -1106,7 +1108,7 @@ const OrdersPage = () => {
                           <PaymentIcon method={order.payment_method} />
                         </TableCell>
                         <TableCell className="font-semibold whitespace-nowrap">
-                          R$ {Number(order.total_value).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          {fmtMoney(Number(order.total_value))}
                         </TableCell>
                         <TableCell>
                           <Badge variant={status.variant} className={`text-[10px] ${status.badgeClass || ''}`}>{status.label}</Badge>
