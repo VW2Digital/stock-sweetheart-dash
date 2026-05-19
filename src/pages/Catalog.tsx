@@ -161,6 +161,8 @@ const Catalog = () => {
     () => [...new Set(products.map((p) => p.administration_route).filter(Boolean))],
     [products]
   );
+  const translatedPharmaForms = useAITranslateBatch(pharmaForms, lang);
+  const translatedAdminRoutes = useAITranslateBatch(adminRoutes, lang);
 
   const filtered = useMemo(() => {
     let result = [...products];
@@ -205,6 +207,28 @@ const Catalog = () => {
 
     return items;
   }, [filtered, sortBy]);
+
+  const catalogTextsToTranslate = useMemo(() => {
+    const arr: string[] = [];
+    flatItems.forEach(({ product, variation }) => {
+      const cleanName = variation?.is_digital
+        ? product.name.replace(/\s+digital\s*$/i, '').trim()
+        : product.name;
+      const displayName = variation?.dosage
+        && !variation?.is_digital
+        && !cleanName.toLowerCase().includes(variation.dosage.toLowerCase())
+        ? `${cleanName} ${variation.dosage}`
+        : cleanName;
+      arr.push(displayName || '');
+      arr.push(variation?.subtitle || product.subtitle || '');
+    });
+    return arr;
+  }, [flatItems]);
+  const translatedCatalogTexts = useAITranslateBatch(catalogTextsToTranslate, lang);
+  const translatedCtaTextBatch = useAITranslateBatch([variantCfg.ctaText || ''], lang);
+  const ctaText = variantCfg.ctaText?.trim().toLowerCase() === 'adicionar ao carrinho'
+    ? t('addToCart')
+    : translatedCtaTextBatch[0] || translateValue(variantCfg.ctaText);
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
