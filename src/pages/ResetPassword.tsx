@@ -325,7 +325,7 @@ const ResetPassword = () => {
                   {confirmPassword.length > 0 && (
                     <p className={`text-xs flex items-center gap-1 ${passwordsMatch ? 'text-primary' : 'text-destructive'}`}>
                       {passwordsMatch ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
-                      {passwordsMatch ? 'As senhas coincidem' : 'As senhas não coincidem'}
+                      {passwordsMatch ? t('passwordsMatch') : t('passwordsDoNotMatch')}
                     </p>
                   )}
                 </div>
@@ -341,7 +341,7 @@ const ResetPassword = () => {
                   disabled={loading || !allValid || !passwordsMatch}
                 >
                   {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                  Redefinir Senha
+                  {t('resetPassword')}
                 </Button>
               </form>
             )}
