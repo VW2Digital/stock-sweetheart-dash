@@ -3,8 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 
 const memCache = new Map<string, string>();
 
+const CACHE_VERSION = 'v2';
+
 function loadCache(target: string, text: string): string | null {
-  const key = `aitr:${target}:${text}`;
+  const key = `aitr:${CACHE_VERSION}:${target}:${text}`;
   if (memCache.has(key)) return memCache.get(key)!;
   try {
     const v = sessionStorage.getItem(key);
@@ -14,7 +16,7 @@ function loadCache(target: string, text: string): string | null {
 }
 
 function saveCache(target: string, text: string, value: string) {
-  const key = `aitr:${target}:${text}`;
+  const key = `aitr:${CACHE_VERSION}:${target}:${text}`;
   memCache.set(key, value);
   try { sessionStorage.setItem(key, value); } catch {}
 }
