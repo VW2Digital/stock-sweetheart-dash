@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ChevronRight, Clock, Facebook, Home, Linkedin, Loader2, MessageCircle, Twitter, User } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface BlogPost {
   id: string;
@@ -39,35 +39,127 @@ export default function BlogPostPage() {
     })();
   }, [slug]);
 
+  const readingMinutes = useMemo(() => {
+    if (!post?.content) return 1;
+    const text = post.content.replace(/<[^>]+>/g, ' ');
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    return Math.max(1, Math.round(words / 200));
+  }, [post?.content]);
+
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareText = post?.title || '';
+
+  const share = (network: 'facebook' | 'twitter' | 'linkedin' | 'whatsapp') => {
+    const u = encodeURIComponent(shareUrl);
+    const t = encodeURIComponent(shareText);
+    const map = {
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${u}`,
+      twitter: `https://twitter.com/intent/tweet?url=${u}&text=${t}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${u}`,
+      whatsapp: `https://api.whatsapp.com/send?text=${t}%20${u}`,
+    };
+    window.open(map[network], '_blank', 'noopener,noreferrer,width=600,height=520');
+  };
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('Link copiado');
+    } catch {
+      toast.error('Não foi possível copiar');
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-8">
-        <Button variant="ghost" asChild className="gap-2 mb-4">
-          <Link to="/blog"><ArrowLeft className="h-4 w-4" /> Voltar ao blog</Link>
-        </Button>
-
+      <main className="flex-1 w-full">
         {loading ? (
-          <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+          <div className="flex justify-center py-20">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
         ) : notFound || !post ? (
-          <div className="text-center py-16">
+          <div className="text-center py-20 max-w-3xl mx-auto px-4">
             <h1 className="text-2xl font-bold text-foreground">Post não encontrado</h1>
             <p className="text-muted-foreground mt-2">Ele pode ter sido removido ou ainda não foi publicado.</p>
+            <Link to="/blog" className="inline-block mt-6 text-primary hover:underline">Voltar ao blog</Link>
           </div>
         ) : (
-          <article className="space-y-6">
-            <header className="space-y-3">
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground">{post.title}</h1>
-              <p className="text-sm text-muted-foreground">
-                {post.author_name && <span>{post.author_name} · </span>}
-                {new Date(post.published_at || post.created_at).toLocaleDateString('pt-BR')}
-              </p>
-            </header>
+          <article className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+            {/* Breadcrumbs */}
+            <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
+              <Link to="/" className="hover:text-foreground transition-colors" aria-label="Início">
+                <Home className="h-4 w-4" />
+              </Link>
+              <ChevronRight className="h-4 w-4" />
+              <Link to="/blog" className="hover:text-foreground transition-colors">Blog</Link>
+              <ChevronRight className="h-4 w-4" />
+              <span className="text-foreground truncate">{post.title}</span>
+            </nav>
+
+            {/* Título */}
+            <h1 className="text-3xl sm:text-5xl font-bold text-foreground tracking-tight leading-tight mb-8">
+              {post.title}
+            </h1>
+
+            {/* Autor */}
+            <div className="flex items-center gap-3 mb-6">
+              <span className="w-11 h-11 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+                <User className="h-5 w-5" />
+              </span>
+              <div className="leading-tight">
+                <p className="text-sm font-semibold text-foreground">{post.author_name || 'Liberty Pharma'}</p>
+                <p className="text-xs text-muted-foreground">
+                  Publicado em{' '}
+                  {new Date(post.published_at || post.created_at).toLocaleDateString('pt-BR', {
+                    day: '2-digit', month: 'short', year: 'numeric',
+                  })}
+                </p>
+              </div>
+            </div>
+
+            {/* Tempo de leitura + share */}
+            <div className="flex items-center justify-between gap-4 py-3 border-y border-border mb-10">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock className="h-4 w-4" />
+                {readingMinutes} {readingMinutes === 1 ? 'minuto' : 'minutos'} de leitura
+              </div>
+              <div className="flex items-center gap-1">
+                <button onClick={() => share('facebook')} title="Compartilhar no Facebook"
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                  <Facebook className="h-4 w-4" />
+                </button>
+                <button onClick={() => share('twitter')} title="Compartilhar no Twitter"
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                  <Twitter className="h-4 w-4" />
+                </button>
+                <button onClick={() => share('linkedin')} title="Compartilhar no LinkedIn"
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                  <Linkedin className="h-4 w-4" />
+                </button>
+                <button onClick={() => share('whatsapp')} title="Compartilhar no WhatsApp"
+                  className="h-8 w-8 inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                  <MessageCircle className="h-4 w-4" />
+                </button>
+                <button onClick={copyLink} title="Copiar link"
+                  className="h-8 px-3 ml-1 inline-flex items-center justify-center rounded-full text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                  Copiar link
+                </button>
+              </div>
+            </div>
+
+            {/* Capa */}
             {post.cover_image && (
-              <img src={post.cover_image} alt={post.title} className="w-full rounded-lg border border-border" />
+              <img
+                src={post.cover_image}
+                alt={post.title}
+                className="w-full aspect-[16/9] object-cover rounded-lg border border-border mb-10"
+              />
             )}
+
+            {/* Conteúdo */}
             <div
-              className="prose prose-neutral dark:prose-invert max-w-none whitespace-pre-wrap text-foreground"
+              className="prose prose-neutral dark:prose-invert max-w-none prose-headings:text-foreground prose-p:text-foreground prose-a:text-primary prose-strong:text-foreground prose-li:text-foreground"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           </article>
