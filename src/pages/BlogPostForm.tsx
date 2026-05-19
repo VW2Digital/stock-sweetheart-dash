@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Loader2, Upload } from 'lucide-react';
+import { ArrowLeft, Loader2, Upload, Eye, X } from 'lucide-react';
 import { toast } from 'sonner';
 import RichTextEditor from '@/components/RichTextEditor';
 
@@ -23,10 +23,19 @@ export default function BlogPostForm() {
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState(false);
   const [form, setForm] = useState({
     title: '', slug: '', excerpt: '', content: '', cover_image: '',
     author_name: '', published: false,
   });
+
+  useEffect(() => {
+    if (!preview) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setPreview(false); };
+    window.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
+  }, [preview]);
 
   useEffect(() => {
     if (!isEdit) return;
@@ -101,9 +110,14 @@ export default function BlogPostForm() {
 
   return (
     <div className="space-y-4 w-full">
-      <Button variant="ghost" onClick={() => navigate('/admin/blog')} className="gap-2">
-        <ArrowLeft className="h-4 w-4" /> Voltar
-      </Button>
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <Button variant="ghost" onClick={() => navigate('/admin/blog')} className="gap-2">
+          <ArrowLeft className="h-4 w-4" /> Voltar
+        </Button>
+        <Button variant="outline" onClick={() => setPreview(true)} className="gap-2">
+          <Eye className="h-4 w-4" /> Preview em tela cheia
+        </Button>
+      </div>
 
       <Card className="p-6 space-y-4">
         <h1 className="text-2xl font-bold text-foreground">{isEdit ? 'Editar post' : 'Novo post'}</h1>
@@ -173,6 +187,41 @@ export default function BlogPostForm() {
           <Button variant="outline" onClick={() => navigate('/admin/blog')}>Cancelar</Button>
         </div>
       </Card>
+
+      {preview && (
+        <div className="fixed inset-0 z-[100] bg-background overflow-y-auto">
+          <div className="sticky top-0 z-10 flex items-center justify-between gap-3 px-4 sm:px-8 py-3 border-b border-border bg-card/95 backdrop-blur">
+            <div className="text-xs sm:text-sm text-muted-foreground truncate">
+              Preview · /blog/{form.slug || 'meu-post'}
+            </div>
+            <Button variant="ghost" size="sm" onClick={() => setPreview(false)} className="gap-2">
+              <X className="h-4 w-4" /> Fechar (Esc)
+            </Button>
+          </div>
+          <article className="mx-auto max-w-3xl px-4 sm:px-8 py-8 sm:py-12">
+            {form.cover_image && (
+              <img
+                src={form.cover_image}
+                alt={form.title}
+                className="w-full aspect-[16/9] object-cover rounded-lg mb-8 border border-border"
+              />
+            )}
+            <h1 className="text-3xl sm:text-5xl font-bold text-foreground leading-tight mb-4">
+              {form.title || 'Sem título'}
+            </h1>
+            {form.author_name && (
+              <p className="text-sm text-muted-foreground mb-6">Por {form.author_name}</p>
+            )}
+            {form.excerpt && (
+              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">{form.excerpt}</p>
+            )}
+            <div
+              className="prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-foreground prose-a:text-primary prose-strong:text-foreground"
+              dangerouslySetInnerHTML={{ __html: form.content || '<p class="text-muted-foreground">Sem conteúdo ainda...</p>' }}
+            />
+          </article>
+        </div>
+      )}
     </div>
   );
 }
