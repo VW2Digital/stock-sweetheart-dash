@@ -202,7 +202,8 @@
     "solucao": "Solution",
     "gel": "Gel",
     "creme": "Cream",
-    "pdf_bonus": "PDF + Bonus"
+    "pdf_bonus": "PDF + Bonus",
+    "combo_teste": "Test Combo"
   },
   "footerMissionOverride": "Our mission is to democratize access to next-generation inputs that support metabolic control, type 2 diabetes management, and weight loss, offering advanced solutions with proven efficacy and pharmaceutical quality for everyone.",
   "footerTextOverride": ""
