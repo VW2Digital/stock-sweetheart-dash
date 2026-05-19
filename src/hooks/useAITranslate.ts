@@ -23,14 +23,14 @@ function saveCache(target: string, text: string, value: string) {
 
 /**
  * Translates an array of strings to the target language via the
- * `translate-text` edge function. When target is 'pt' (source) or empty,
+ * `translate-text` edge function. When target is 'pt-PT' (source) or empty,
  * the original strings are returned unchanged.
  */
 export function useAITranslateBatch(texts: string[], target: string) {
   const [result, setResult] = useState<string[]>(texts);
 
   useEffect(() => {
-    if (!target || target === 'pt' || texts.length === 0) {
+    if (!target || target === 'pt-PT' || target === 'pt' || texts.length === 0) {
       setResult(texts);
       return;
     }
