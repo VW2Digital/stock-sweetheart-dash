@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Package } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { translateValue } from '@/lib/translateValue';
 import { usePublicCurrency } from '@/lib/publicCurrency';
+import { useAITranslateBatch } from '@/hooks/useAITranslate';
 
 interface ComboItem {
   quantity: number;
@@ -39,8 +40,18 @@ const pickImage = (urls: (string | null | undefined)[]): string => {
 export default function CombosSection() {
   const [combos, setCombos] = useState<ComboCard[]>([]);
   const [loading, setLoading] = useState(true);
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { format: fmtBRL } = usePublicCurrency();
+
+  const textsToTranslate = useMemo(() => {
+    const arr: string[] = [];
+    combos.forEach((c) => {
+      arr.push(c.name || '');
+      arr.push(c.subtitle || '');
+    });
+    return arr;
+  }, [combos]);
+  const translated = useAITranslateBatch(textsToTranslate, lang);
 
   useEffect(() => {
     (async () => {
@@ -76,7 +87,9 @@ export default function CombosSection() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {combos.map((c) => {
+          {combos.map((c, ci) => {
+            const tName = translated[ci * 2] || c.name;
+            const tSubtitle = translated[ci * 2 + 1] || c.subtitle;
             const discount = c.compare_price > c.price
               ? Math.round(((c.compare_price - c.price) / c.compare_price) * 100)
               : 0;
@@ -102,7 +115,7 @@ export default function CombosSection() {
                     </div>
                   )}
                   <h3 className="font-bold text-foreground text-base sm:text-lg leading-tight line-clamp-2 pr-12 mb-3 group-hover:text-primary transition-colors">
-                    {translateValue(c.name)}
+                    {tName}
                   </h3>
 
                   <div className={`grid ${tileGridClass} gap-2 mb-3`}>
@@ -151,7 +164,7 @@ export default function CombosSection() {
 
                   <div className="mt-auto space-y-1">
                     {c.subtitle && (
-                      <p className="text-xs text-muted-foreground line-clamp-1">{translateValue(c.subtitle)}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{tSubtitle}</p>
                     )}
                     <div className="flex items-baseline gap-2 flex-wrap">
                       <span className="text-primary font-bold text-xl">{fmtBRL(c.price)}</span>
