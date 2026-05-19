@@ -12,6 +12,7 @@ import Footer from '@/components/Footer';
 import { useCart } from '@/contexts/CartContext';
 import Header from '@/components/Header';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { formatDate } from '@/i18n';
 import { useToast } from '@/hooks/use-toast';
 import JsonLd from '@/components/seo/JsonLd';
 import ProductRecommendations from '@/components/ProductRecommendations';
@@ -928,7 +929,7 @@ const ProductCheckout = () => {
                       <CheckCircle2 className="w-3 h-3 mr-1" /> {t('verifiedCustomer')}
                     </Badge>
                     <span className="text-[10px] text-muted-foreground">
-                      {t('{{date, date}}', { date: rev.created_at })}
+                      {formatDate(rev.created_at, 'short', lang)}
                     </span>
                   </div>
                 </div>
