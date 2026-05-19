@@ -11,7 +11,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { MapPin, Plus, Trash2, Star, Loader2, X, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { cleanCep, formatCep as formatCepUtil, isValidCep, cepErrorMessage } from '@/lib/cep';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { cleanCep, formatCep as formatCepUtil, isValidCep } from '@/lib/cep';
 
 export interface Address {
   id: string;
@@ -29,6 +30,7 @@ export interface Address {
 
 const AddressManager = () => {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -37,7 +39,7 @@ const AddressManager = () => {
   const [fetchingCep, setFetchingCep] = useState(false);
 
   // Form fields
-  const [label, setLabel] = useState('Casa');
+  const [label, setLabel] = useState(t('homeAddressLabel'));
   const [postalCode, setPostalCode] = useState('');
   const [street, setStreet] = useState('');
   const [number, setNumber] = useState('');
@@ -85,6 +87,14 @@ const AddressManager = () => {
 
   const formatCep = formatCepUtil;
 
+  const getCepError = (value: string) => {
+    const digits = cleanCep(value);
+    if (digits.length === 0) return t('cepRequired');
+    if (digits.length !== 8) return t('cepMustHave8Digits');
+    if (/^(\d)\1{7}$/.test(digits) || digits.startsWith('0000')) return t('cepInvalid');
+    return null;
+  };
+
   const fetchAddressByCep = async (cep: string) => {
     const digits = cleanCep(cep);
     if (!isValidCep(digits)) return;
@@ -103,22 +113,22 @@ const AddressManager = () => {
   };
 
   const handleSave = async () => {
-    const cepError = cepErrorMessage(postalCode);
+    const cepError = getCepError(postalCode);
     if (cepError) {
       toast({ title: cepError, variant: 'destructive' }); return;
     }
     if (!street.trim() || !number.trim() || !district.trim() || !city.trim() || !state.trim()) {
-      toast({ title: 'Preencha todos os campos obrigatórios', variant: 'destructive' }); return;
+      toast({ title: t('fillRequiredFields'), variant: 'destructive' }); return;
     }
 
     setSaving(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Não autenticado');
+      if (!session) throw new Error(t('notAuthenticated'));
 
       const payload = {
         user_id: session.user.id,
-        label: label.trim() || 'Casa',
+        label: label.trim() || t('homeAddressLabel'),
         postal_code: cleanCep(postalCode),
         street: street.trim(),
         number: number.trim(),
@@ -135,19 +145,19 @@ const AddressManager = () => {
           .update(payload)
           .eq('id', editingId);
         if (error) throw error;
-        toast({ title: 'Endereço atualizado!' });
+        toast({ title: t('addressUpdated') });
       } else {
         const { error } = await supabase
           .from('addresses')
           .insert(payload);
         if (error) throw error;
-        toast({ title: 'Endereço salvo!' });
+        toast({ title: t('addressSaved') });
       }
 
       resetForm();
       await fetchAddresses();
     } catch (err: any) {
-      toast({ title: 'Erro ao salvar', description: err.message, variant: 'destructive' });
+      toast({ title: t('saveError'), description: err.message, variant: 'destructive' });
     } finally {
       setSaving(false);
     }
@@ -171,10 +181,10 @@ const AddressManager = () => {
     try {
       const { error } = await supabase.from('addresses').delete().eq('id', id);
       if (error) throw error;
-      toast({ title: 'Endereço removido!' });
+      toast({ title: t('addressRemoved') });
       await fetchAddresses();
     } catch (err: any) {
-      toast({ title: 'Erro ao remover', description: err.message, variant: 'destructive' });
+      toast({ title: t('removeError'), description: err.message, variant: 'destructive' });
     }
   };
 
@@ -185,10 +195,10 @@ const AddressManager = () => {
         .update({ is_default: true })
         .eq('id', id);
       if (error) throw error;
-      toast({ title: 'Endereço padrão atualizado!' });
+      toast({ title: t('defaultAddressUpdated') });
       await fetchAddresses();
     } catch (err: any) {
-      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+      toast({ title: t('error'), description: err.message, variant: 'destructive' });
     }
   };
 
