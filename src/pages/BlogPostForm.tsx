@@ -99,7 +99,7 @@ export default function BlogPostForm() {
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
 
   return (
-    <div className="space-y-4 max-w-4xl">
+    <div className="space-y-4 w-full">
       <Button variant="ghost" onClick={() => navigate('/admin/blog')} className="gap-2">
         <ArrowLeft className="h-4 w-4" /> Voltar
       </Button>
