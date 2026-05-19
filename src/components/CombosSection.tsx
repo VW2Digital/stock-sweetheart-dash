@@ -164,7 +164,7 @@ export default function CombosSection() {
 
                   <div className="mt-auto space-y-1">
                     {c.subtitle && (
-                      <p className="text-xs text-muted-foreground line-clamp-1">{translateValue(c.subtitle)}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{tSubtitle}</p>
                     )}
                     <div className="flex items-baseline gap-2 flex-wrap">
                       <span className="text-primary font-bold text-xl">{fmtBRL(c.price)}</span>
