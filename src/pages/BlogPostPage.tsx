@@ -119,7 +119,7 @@ export default function BlogPostPage() {
                 <User className="h-5 w-5" />
               </span>
               <div className="leading-tight">
-                <p className="text-sm font-semibold text-foreground">{post.author_name || 'Liberty Pharma'}</p>
+                <p className="text-sm font-semibold text-foreground">{tAuthor || post.author_name || 'Liberty Pharma'}</p>
                 <p className="text-xs text-muted-foreground">
                   {t('blog.publishedOn')}{' '}
                   {new Date(post.published_at || post.created_at).toLocaleDateString(INTL_LOCALES[lang], {
