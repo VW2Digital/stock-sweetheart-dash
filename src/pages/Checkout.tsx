@@ -12,6 +12,7 @@ import Footer from '@/components/Footer';
 import productHeroImg from '@/assets/product-hero.png';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
+import { usePublicCurrency } from '@/lib/publicCurrency';
 
 const Checkout = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +20,7 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { format: fmtPrice, isBRL } = usePublicCurrency();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVariation, setSelectedVariation] = useState(0);
@@ -131,24 +133,24 @@ const Checkout = () => {
                 {variation?.is_offer && variation?.offer_price ? (
                   <>
                     <p className="text-sm text-muted-foreground line-through">
-                      R$ {(originalPrice * quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {fmtPrice(originalPrice * quantity)}
                     </p>
                     <p className="text-xl font-bold text-destructive">
-                      R$ {totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {fmtPrice(totalPrice)}
                     </p>
                   </>
                 ) : unitPrice < basePrice ? (
                   <>
                     <p className="text-sm text-muted-foreground line-through">
-                      R$ {(basePrice * quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {fmtPrice(basePrice * quantity)}
                     </p>
                     <p className="text-xl font-bold text-primary">
-                      R$ {totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {fmtPrice(totalPrice)}
                     </p>
                   </>
                 ) : (
                   <p className="text-xl font-bold text-primary">
-                    R$ {totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    {fmtPrice(totalPrice)}
                   </p>
                 )}
               </div>
@@ -163,7 +165,7 @@ const Checkout = () => {
                   <div className="flex items-center justify-between bg-success/10 rounded-lg px-4 py-2.5">
                     <span className="text-sm font-medium text-success">💰 Você está economizando</span>
                     <span className="text-lg font-bold text-success">
-                      R$ {savings.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      {fmtPrice(savings)}
                     </span>
                   </div>
                 </div>
