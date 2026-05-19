@@ -411,19 +411,19 @@ const CustomerDashboard = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-foreground">
-              Olá, {userName}! 👋
+              {t('helloUser', { name: userName })}
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Acompanhe seus pedidos e entregas
+              {t('trackOrdersAndDeliveries')}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={refreshOrders}>
-              <RotateCw className="w-4 h-4 mr-1" /> Atualizar
+              <RotateCw className="w-4 h-4 mr-1" /> {t('refresh')}
             </Button>
             <Link to="/catalogo">
               <Button size="sm">
-                <ShoppingCart className="w-4 h-4 mr-1" /> Comprar
+                <ShoppingCart className="w-4 h-4 mr-1" /> {t('shop')}
               </Button>
             </Link>
           </div>
@@ -478,7 +478,7 @@ const CustomerDashboard = () => {
                       disabled={avatarUploading}
                       className="text-[11px] text-muted-foreground hover:text-destructive flex items-center gap-1"
                     >
-                      <Trash2 className="w-3 h-3" /> Remover foto
+                      <Trash2 className="w-3 h-3" /> {t('removePhoto')}
                     </button>
                   )}
                   <Button variant="default" size="sm" onClick={handleLogout} className="w-full gap-1">
