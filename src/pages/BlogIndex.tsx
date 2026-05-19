@@ -21,12 +21,13 @@ interface BlogPost {
 }
 
 export default function BlogIndex() {
+  const { t, lang } = useLanguage();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTopic, setActiveTopic] = useState<string | null>(null);
 
   useEffect(() => {
-    document.title = 'Blog | Liberty Pharma';
+    document.title = t('blog.pageTitle');
     (async () => {
       const { data } = await supabase
         .from('blog_posts')
@@ -36,7 +37,7 @@ export default function BlogIndex() {
       setPosts((data as BlogPost[]) || []);
       setLoading(false);
     })();
-  }, []);
+  }, [t]);
 
   const topics = useMemo(() => {
     const set = new Set<string>();
@@ -50,7 +51,7 @@ export default function BlogIndex() {
   );
 
   const formatDate = (d: string | null, fallback: string) =>
-    new Date(d || fallback).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+    new Date(d || fallback).toLocaleDateString(INTL_LOCALES[lang], { day: '2-digit', month: 'short', year: 'numeric' });
 
   const [featured, ...rest] = filtered;
 
