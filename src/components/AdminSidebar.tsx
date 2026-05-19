@@ -43,9 +43,6 @@ const menuCategories = [
     label: 'Vendas',
     items: [
       { title: 'Pedidos', url: '/admin/pedidos', icon: ShoppingBag },
-      { title: 'Falhas Pgto', url: '/admin/falhas-pagamento', icon: AlertTriangle },
-      { title: 'Fallbacks Gateway', url: '/admin/fallbacks-gateway', icon: Shuffle },
-      { title: 'Webhooks Logs', url: '/admin/webhooks-logs', icon: Activity },
       { title: 'Carrinho Abandonado', url: '/admin/carrinho-abandonado', icon: Mail },
       { title: 'Links de Pagamento', url: '/admin/links-pagamento', icon: LinkIcon },
       { title: 'Campanhas Relâmpago', url: '/admin/campanhas-relampago', icon: Zap },
@@ -66,6 +63,14 @@ const menuCategories = [
     items: [
       { title: 'Blog', url: '/admin/blog', icon: Newspaper },
       { title: 'Disparo de E-mails', url: '/admin/disparo-emails', icon: Send },
+    ],
+  },
+  {
+    label: 'Diagnóstico',
+    items: [
+      { title: 'Falhas Pgto', url: '/admin/falhas-pagamento', icon: AlertTriangle },
+      { title: 'Fallbacks Gateway', url: '/admin/fallbacks-gateway', icon: Shuffle },
+      { title: 'Webhooks Logs', url: '/admin/webhooks-logs', icon: Activity },
     ],
   },
   {
