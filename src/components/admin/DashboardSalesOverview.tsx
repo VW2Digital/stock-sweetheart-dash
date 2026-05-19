@@ -6,6 +6,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import type { DateRange } from 'react-day-picker';
+import { useAdminCurrency } from '@/contexts/AdminCurrencyContext';
 
 interface Bar {
   label: string;
@@ -22,11 +23,7 @@ interface Props {
   onCustomRangeChange?: (range: DateRange | undefined) => void;
 }
 
-function shortBRL(v: number): string {
-  if (v >= 1_000_000) return `R$ ${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `R$ ${(v / 1_000).toFixed(1)}k`;
-  return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
-}
+
 
 /**
  * "Sales Overview" — gráfico de barras com pico destacado e tooltip
