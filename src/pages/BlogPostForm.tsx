@@ -95,6 +95,10 @@ export default function BlogPostForm() {
       author_name: form.author_name,
       published: form.published,
       published_at: form.published ? (new Date()).toISOString() : null,
+      share_facebook_url: form.share_facebook_url.trim() || null,
+      share_twitter_url: form.share_twitter_url.trim() || null,
+      share_linkedin_url: form.share_linkedin_url.trim() || null,
+      share_whatsapp_url: form.share_whatsapp_url.trim() || null,
     };
 
     if (isEdit) {
