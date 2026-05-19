@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend, LineChart, Line } from 'recharts';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import reportsIcon from '@/assets/icon-relatorios-3d.png';
+import { useAdminCurrency } from '@/contexts/AdminCurrencyContext';
 
 interface RawOrder {
   status: string;
@@ -27,7 +28,7 @@ const CONFIRMED = ['CONFIRMED', 'RECEIVED', 'RECEIVED_IN_CASH', 'PAID'];
 const FAILED = ['REFUSED', 'OVERDUE'];
 const DONUT_COLORS = ['hsl(38 92% 50%)', 'hsl(174 60% 40%)', 'hsl(0 60% 50%)', 'hsl(217 91% 60%)', 'hsl(220 9% 46%)'];
 
-const formatCurrency = (v: number) => `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+// formatCurrency agora é dinâmico — definido dentro do componente via useAdminCurrency()
 
 const fmt = (d: Date) => d.toISOString().slice(0, 10);
 
@@ -58,6 +59,7 @@ function formatLabel(key: string, grouping: Grouping): string {
 }
 
 const ReportsPage = () => {
+  const { format: formatCurrency } = useAdminCurrency();
   const [allOrders, setAllOrders] = useState<RawOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const today = useMemo(() => new Date(), []);
