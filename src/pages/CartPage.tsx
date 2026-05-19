@@ -11,11 +11,14 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import productHeroImg from '@/assets/product-hero.png';
 import { supabase } from '@/integrations/supabase/client';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { translateValue } from '@/lib/translateValue';
 
 const APPLIED_COUPON_KEY = 'applied_coupon_code';
 
 const CartPage = () => {
   const navigate = useNavigate();
+  useLanguage();
   const { items, loading, updateQuantity, updateQuantitiesBulk, removeFromCart, totalItems, totalPrice } = useCart();
 
   // Bulk-edit mode: per-item draft quantities, kept in sync when items change
@@ -266,7 +269,7 @@ const CartPage = () => {
                         className="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-lg border border-border/50 bg-muted p-1 shrink-0"
                       />
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-foreground text-sm leading-tight">{item.product_name}</h3>
+                        <h3 className="font-bold text-foreground text-sm leading-tight">{translateValue(item.product_name)}</h3>
                         {item.dosage && !item.product_name.toLowerCase().includes(item.dosage.toLowerCase()) && (
                           <p className="text-xs text-muted-foreground">{item.dosage}</p>
                         )}
