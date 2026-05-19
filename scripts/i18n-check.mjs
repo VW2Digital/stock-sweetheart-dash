@@ -32,7 +32,19 @@ const loadLocale = (lng) => {
 };
 
 const dicts = Object.fromEntries(LOCALES.map((l) => [l, loadLocale(l)]));
-const allKeys = new Set(LOCALES.flatMap((l) => Object.keys(dicts[l])));
+
+// Sufixos de pluralização do i18next v21+ (CLDR).
+const PLURAL_SUFFIXES = ['_zero', '_one', '_two', '_few', '_many', '_other'];
+const stripPlural = (k) => {
+  for (const s of PLURAL_SUFFIXES) if (k.endsWith(s)) return k.slice(0, -s.length);
+  return k;
+};
+const hasKey = (dict, key) =>
+  key in dict || PLURAL_SUFFIXES.some((s) => `${key}${s}` in dict);
+
+const allKeys = new Set(
+  LOCALES.flatMap((l) => Object.keys(dicts[l]).map(stripPlural)),
+);
 
 // Coleta de chaves usadas no código. Aceita t('x'), t("x"), t(`x`).
 // Ignora chamadas dinâmicas como t(variavel).
@@ -66,11 +78,11 @@ const usedSet = new Set(usedKeys.keys());
 
 const missingInLocale = {}; // locale -> [keys]
 for (const lng of LOCALES) {
-  missingInLocale[lng] = [...allKeys].filter((k) => !(k in dicts[lng])).sort();
+  missingInLocale[lng] = [...allKeys].filter((k) => !hasKey(dicts[lng], k)).sort();
 }
 
 const missingInCode = [...usedSet].filter((k) => !allKeys.has(k)).sort();
-const unused = [...allKeys].filter((k) => !usedSet.has(k)).sort();
+const unused = [...allKeys].filter((k) => !usedSet.has(k) && !usedSet.has(stripPlural(k))).sort();
 
 const total = (arr) => (arr.length === 0 ? '\x1b[32m0\x1b[0m' : `\x1b[33m${arr.length}\x1b[0m`);
 
