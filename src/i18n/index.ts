@@ -60,6 +60,8 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
+    ns: ['translation'],
+    defaultNS: 'translation',
     resources: {
       'pt-PT': { translation: ptPT },
       es: { translation: es },
@@ -67,7 +69,7 @@ i18n
     },
     fallbackLng: 'pt-PT',
     supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
-    nonExplicitSupportedLngs: true, // qualquer 'pt-*' (ex.: pt-BR cacheado) cai em 'pt-PT'
+    nonExplicitSupportedLngs: false,
     load: 'currentOnly',
     interpolation: {
       escapeValue: false,
@@ -79,6 +81,7 @@ i18n
       lookupQuerystring: 'lang',
       lookupLocalStorage: 'language',
       lookupCookie: 'language',
+      convertDetectedLanguage: (lng: string) => normalizeLng(lng),
       caches: ['localStorage', 'cookie'],
       cookieMinutes: 60 * 24 * 365, // 1 ano
       cookieOptions: { path: '/', sameSite: 'lax' },
