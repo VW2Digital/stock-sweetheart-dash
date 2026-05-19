@@ -47,6 +47,7 @@ const getSessionId = (): string => {
 };
 
 const ProductRecommendations = ({ productId }: Props) => {
+  const { t } = useLanguage();
   const [items, setItems] = useState<RecProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
