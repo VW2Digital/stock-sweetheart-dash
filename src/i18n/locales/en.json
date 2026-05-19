@@ -397,5 +397,13 @@
   "edit": "Edit",
   "makeDefault": "Make Default",
   "removeAddressQuestion": "Remove address?",
-  "addressWillBeRemoved": "The address \"{{label}}\" will be permanently removed."
+  "addressWillBeRemoved": "The address \"{{label}}\" will be permanently removed.",
+  "contactPreferences": "Contact Preferences",
+  "contactPreferencesDescription": "Choose how you prefer to receive store reminders, such as notices about items left in your cart. Essential messages about your orders (payment, shipping, delivery) will still be sent even if you disable this.",
+  "marketingEmail": "Marketing email",
+  "receiveMarketingEmails": "Receive marketing emails",
+  "marketingWhatsApp": "Marketing WhatsApp",
+  "registerPhoneToReceive": "Add a phone number to receive",
+  "receiveMarketingWhatsApp": "Receive marketing WhatsApp messages",
+  "lastUsedAddress": "Last Used Address"
 }

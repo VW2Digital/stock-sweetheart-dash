@@ -397,5 +397,13 @@
   "edit": "Editar",
   "makeDefault": "Hacer Predeterminada",
   "removeAddressQuestion": "¿Eliminar dirección?",
-  "addressWillBeRemoved": "La dirección \"{{label}}\" se eliminará permanentemente."
+  "addressWillBeRemoved": "La dirección \"{{label}}\" se eliminará permanentemente.",
+  "contactPreferences": "Preferencias de Contacto",
+  "contactPreferencesDescription": "Elige cómo prefieres recibir recordatorios de la tienda, como el aviso de artículos dejados en el carrito. Los mensajes esenciales sobre tus pedidos (pago, envío, entrega) se enviarán aunque lo desactives.",
+  "marketingEmail": "Email de marketing",
+  "receiveMarketingEmails": "Recibir emails de marketing",
+  "marketingWhatsApp": "WhatsApp de marketing",
+  "registerPhoneToReceive": "Registra un teléfono para recibir",
+  "receiveMarketingWhatsApp": "Recibir WhatsApp de marketing",
+  "lastUsedAddress": "Última Dirección Usada"
 }
