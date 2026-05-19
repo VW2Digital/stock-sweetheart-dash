@@ -18,7 +18,7 @@ const APPLIED_COUPON_KEY = 'applied_coupon_code';
 
 const CartPage = () => {
   const navigate = useNavigate();
-  useLanguage();
+  const { t } = useLanguage();
   const { items, loading, updateQuantity, updateQuantitiesBulk, removeFromCart, totalItems, totalPrice } = useCart();
 
   // Bulk-edit mode: per-item draft quantities, kept in sync when items change
@@ -297,7 +297,7 @@ const CartPage = () => {
                                 </Badge>
                               ) : (
                                 <Badge variant="outline" className="text-[10px] border-primary/40 text-primary bg-primary/5 font-medium">
-                                  Atacado a partir de {sorted[0].min_quantity} un.
+                                  {t('wholesaleFrom', { qty: sorted[0].min_quantity })}
                                 </Badge>
                               )}
                               {nextTier && (
