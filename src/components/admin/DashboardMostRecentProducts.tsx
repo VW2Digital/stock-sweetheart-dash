@@ -49,6 +49,7 @@ function isInStock(p: Product): boolean {
  */
 export function DashboardMostRecentProducts({ products }: Props) {
   const navigate = useNavigate();
+  const { format: formatBRL } = useAdminCurrency();
   const list = products.slice(0, 5);
 
   return (
