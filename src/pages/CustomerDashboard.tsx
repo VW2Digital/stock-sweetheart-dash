@@ -23,6 +23,7 @@ import Footer from '@/components/Footer';
 import AddressManager from '@/components/AddressManager';
 import SupportChat from '@/components/SupportChat';
 import CustomerDownloads from '@/components/CustomerDownloads';
+import ReviewsList from '@/components/ReviewsList';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useLanguage } from '@/contexts/LanguageContext';
