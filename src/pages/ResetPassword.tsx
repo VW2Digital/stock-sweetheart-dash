@@ -115,15 +115,15 @@ const ResetPassword = () => {
     setFormError(null);
 
     if (!codeVerified) {
-      setFormError('Valide o código enviado por email antes de alterar a senha.');
+      setFormError(t('validateCodeBeforeChangingPassword'));
       return;
     }
     if (!allValid) {
-      setFormError('A senha não atende aos requisitos mínimos de segurança.');
+      setFormError(t('passwordDoesNotMeetRequirements'));
       return;
     }
     if (password !== confirmPassword) {
-      setFormError('As senhas não coincidem.');
+      setFormError(t('passwordsDoNotMatch'));
       return;
     }
 
@@ -137,14 +137,14 @@ const ResetPassword = () => {
 
       setSuccess(true);
       toast({
-        title: 'Senha redefinida com sucesso!',
-        description: 'Você será redirecionado para o login em instantes.',
+        title: t('passwordResetSuccess'),
+        description: t('redirectingToLoginSoon'),
       });
       setTimeout(() => navigate('/cliente/login'), 3000);
     } catch (err: any) {
-      const msg = err?.message || 'Não foi possível redefinir sua senha. Tente novamente.';
+      const msg = err?.message || t('couldNotResetPassword');
       setFormError(msg);
-      toast({ title: 'Erro ao redefinir senha', description: msg, variant: 'destructive' });
+      toast({ title: t('passwordResetError'), description: msg, variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -161,7 +161,7 @@ const ResetPassword = () => {
     </li>
   );
 
-  const strengthLabel = ['Muito fraca', 'Fraca', 'Média', 'Boa', 'Forte'][score];
+  const strengthLabel = [t('veryWeak'), t('weak'), t('medium'), t('good'), t('strong')][score];
   const strengthColor = ['bg-destructive', 'bg-destructive', 'bg-secondary', 'bg-primary/70', 'bg-primary'][score];
 
   return (
