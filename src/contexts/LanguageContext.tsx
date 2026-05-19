@@ -10,10 +10,9 @@ interface LanguageInfo {
 }
 
 export const languages: LanguageInfo[] = [
-  { code: 'pt', flag: 'br', short: 'BR', label: 'Português' },
+  { code: 'pt', flag: 'pt', short: 'PT', label: 'Português' },
   { code: 'es', flag: 'es', short: 'ES', label: 'Español' },
-  { code: 'en', flag: 'us', short: 'US', label: 'English' },
-  { code: 'zh', flag: 'cn', short: 'CN', label: '中文' },
+  { code: 'en', flag: 'gb', short: 'EN', label: 'English' },
 ];
 
 const translations = {
@@ -157,7 +156,7 @@ interface LanguageContextType {
 
 export const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-const SUPPORTED: Language[] = ['pt', 'es', 'en', 'zh'];
+const SUPPORTED: Language[] = ['pt', 'es', 'en'];
 
 const detectBrowserLanguage = (): Language => {
   if (typeof navigator === 'undefined') return 'pt';
@@ -170,7 +169,6 @@ const detectBrowserLanguage = (): Language => {
     if (lower.startsWith('pt')) return 'pt';
     if (lower.startsWith('es')) return 'es';
     if (lower.startsWith('en')) return 'en';
-    if (lower.startsWith('zh')) return 'zh';
   }
   return 'pt';
 };
@@ -192,7 +190,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   // Sync <html lang> + hreflang tags for SEO
   useEffect(() => {
     const htmlLangMap: Record<Language, string> = {
-      pt: 'pt-BR',
+      pt: 'pt-PT',
       es: 'es',
       en: 'en',
       zh: 'zh-CN',
@@ -205,10 +203,9 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
     const baseUrl = `${window.location.origin}${window.location.pathname}`;
     const alternates: Array<{ hreflang: string; lang: Language }> = [
-      { hreflang: 'pt-BR', lang: 'pt' },
+      { hreflang: 'pt-PT', lang: 'pt' },
       { hreflang: 'es', lang: 'es' },
       { hreflang: 'en', lang: 'en' },
-      { hreflang: 'zh-CN', lang: 'zh' },
     ];
 
     alternates.forEach(({ hreflang, lang: l }) => {
