@@ -61,15 +61,13 @@ i18n
   .use(initReactI18next)
   .init({
     resources: {
-      pt: { translation: pt },
       'pt-PT': { translation: ptPT },
       es: { translation: es },
       en: { translation: en },
     },
-    // pt-PT herda chaves em falta de pt (pt-BR), depois cai para pt.
-    fallbackLng: { 'pt-PT': ['pt-PT', 'pt'], default: ['pt'] },
+    fallbackLng: 'pt-PT',
     supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
-    nonExplicitSupportedLngs: false, // mantém 'pt-PT' distinto de 'pt'
+    nonExplicitSupportedLngs: true, // qualquer 'pt-*' (ex.: pt-BR cacheado) cai em 'pt-PT'
     load: 'currentOnly',
     interpolation: {
       escapeValue: false,
