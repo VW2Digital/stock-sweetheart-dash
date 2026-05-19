@@ -93,6 +93,7 @@ import MercadoPagoSecurity from "./components/MercadoPagoSecurity";
 import HeadScriptInjector from "./components/HeadScriptInjector";
 import MobileBottomNav from "./components/MobileBottomNav";
 import LanguageDetectionBanner from "./components/LanguageDetectionBanner";
+import LanguageUrlSync from "./components/LanguageUrlSync";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ResellerCapture from "./components/ResellerCapture";
 
@@ -113,6 +114,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <ErrorBoundary silent name="SessionGuard"><SessionGuard /></ErrorBoundary>
+        <ErrorBoundary silent name="LanguageUrlSync"><LanguageUrlSync /></ErrorBoundary>
         <ErrorBoundary silent name="ResellerCapture"><ResellerCapture /></ErrorBoundary>
         <ErrorBoundary silent name="LanguageDetectionBanner"><LanguageDetectionBanner /></ErrorBoundary>
         <ErrorBoundary silent name="HeadScriptInjector"><HeadScriptInjector /></ErrorBoundary>
