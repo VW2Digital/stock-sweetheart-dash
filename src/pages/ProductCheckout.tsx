@@ -12,6 +12,7 @@ import Footer from '@/components/Footer';
 import { useCart } from '@/contexts/CartContext';
 import Header from '@/components/Header';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { formatDate } from '@/i18n';
 import { useToast } from '@/hooks/use-toast';
 import JsonLd from '@/components/seo/JsonLd';
 import ProductRecommendations from '@/components/ProductRecommendations';
@@ -118,7 +119,7 @@ const VideoTestimonialCard = ({ thumbnail, name, videoUrl }: {thumbnail: string;
 const ProductCheckout = () => {
   const { id } = useParams<{id: string;}>();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
   const [searchParams] = useSearchParams();
@@ -180,8 +181,8 @@ const ProductCheckout = () => {
       // Block inactive products
       if ((prod as any).active === false) {
         toast({
-          title: 'Produto indisponível',
-          description: 'Este produto não está disponível no momento.',
+          title: t('productUnavailable'),
+          description: t('productUnavailableDesc'),
           variant: 'destructive',
         });
         navigate('/catalogo');
@@ -330,10 +331,10 @@ const ProductCheckout = () => {
   }, [selectedVariation, quantity, wholesaleTiers]);
 
   if (loading) {
-    return (<div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">Carregando...</p></div>);
+    return (<div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">{t('loading')}</p></div>);
   }
   if (!product) {
-    return (<div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">Nenhum produto disponível.</p></div>);
+    return (<div className="min-h-screen flex items-center justify-center bg-background"><p className="text-muted-foreground">{t('noProductAvailable')}</p></div>);
   }
 
   const variations = product.product_variations || [];
@@ -419,8 +420,8 @@ const ProductCheckout = () => {
     '@context': 'https://schema.org/',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Início', item: baseUrl || '/' },
-      { '@type': 'ListItem', position: 2, name: 'Catálogo', item: `${baseUrl}/catalogo` },
+      { '@type': 'ListItem', position: 1, name: t('homeLabel'), item: baseUrl || '/' },
+      { '@type': 'ListItem', position: 2, name: t('catalog'), item: `${baseUrl}/catalogo` },
       { '@type': 'ListItem', position: 3, name: product.name, item: canonicalUrl },
     ],
   };
@@ -568,7 +569,7 @@ const ProductCheckout = () => {
                   {/* Seletor de tiers de atacado */}
                   {hasWholesale && wholesaleTiers.length > 1 && (
                     <div className="space-y-2">
-                      <p className="text-sm font-medium text-foreground">Escolha o pacote de atacado:</p>
+                      <p className="text-sm font-medium text-foreground">{t('chooseWholesalePackage')}</p>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         {wholesaleTiers.map((tier, tIdx) => {
                           const isActive = tIdx === activeTierIdx;
@@ -584,10 +585,10 @@ const ProductCheckout = () => {
                                   : 'border-border bg-card hover:border-primary/50'
                               }`}
                             >
-                              <p className="text-xs font-bold text-foreground">{tier.min_quantity}+ unidades</p>
+                              <p className="text-xs font-bold text-foreground">{tier.min_quantity}+ {t('unitsPlural')}</p>
                               <p className="text-sm font-extrabold text-primary mt-0.5">
                                 R$ {tier.price.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
-                                <span className="text-[10px] text-muted-foreground font-normal">/un.</span>
+                                <span className="text-[10px] text-muted-foreground font-normal">{t('perUnit')}</span>
                               </p>
                               {economy > 0 && (
                                 <p className="text-[10px] text-success font-semibold mt-0.5">-{economy}%</p>
@@ -601,7 +602,7 @@ const ProductCheckout = () => {
 
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-foreground">
-                      Quantidade
+                      {t('quantity')}
                     </p>
                     <div className="flex items-center gap-0">
                       <button
@@ -635,10 +636,10 @@ const ProductCheckout = () => {
                         <span className="text-success text-lg font-bold">%</span>
                         <div>
                           <p className="text-sm font-semibold text-foreground">
-                            Você economiza: R$ {(regularTotal - total).toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                            {t('youSave', { amount: (regularTotal - total).toLocaleString('pt-BR', { minimumFractionDigits: 0 }) })}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {discountPct}% de desconto sobre o preço regular
+                            {t('discountOverRegular', { percent: discountPct })}
                           </p>
                         </div>
                       </div>
@@ -648,7 +649,7 @@ const ProductCheckout = () => {
                   <div className="border border-border/50 rounded-xl p-5 space-y-2 bg-card">
                     <div className="flex items-center justify-between">
                       <p className="text-sm text-muted-foreground font-medium">
-                        {hasDiscount ? 'Total Atacado' : t('price')}
+                        {hasDiscount ? t('totalWholesale') : t('price')}
                       </p>
                       {variation?.in_stock ?
                         <Badge className="bg-success/10 text-success border-success/20 hover:bg-success/10">{t('inStock')}</Badge> :
@@ -661,23 +662,23 @@ const ProductCheckout = () => {
                     {hasDiscount && (
                       <>
                         <p className="text-sm text-foreground">
-                          {quantity}x R$ {effectiveUnit.toLocaleString('pt-BR', { minimumFractionDigits: 0 })} (por unidade)
+                          {quantity}x R$ {effectiveUnit.toLocaleString('pt-BR', { minimumFractionDigits: 0 })} {t('perUnitParen')}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Preço regular: <span className="line-through">R$ {regularTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}</span>
+                          {t('regularPriceLabel')} <span className="line-through">R$ {regularTotal.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}</span>
                         </p>
                       </>
                     )}
                     {!hasDiscount && (
                       <p className="text-sm text-foreground">
-                        {quantity}x R$ {basePrice.toLocaleString('pt-BR', { minimumFractionDigits: 0 })} (por unidade)
+                        {quantity}x R$ {basePrice.toLocaleString('pt-BR', { minimumFractionDigits: 0 })} {t('perUnitParen')}
                       </p>
                     )}
                     <div className="pt-1 space-y-1">
                       {pixDiscountPercent > 0 && (
                         <p className="text-xs text-success font-medium flex items-center gap-1">
                           <CircleDollarSign className="w-3.5 h-3.5" />
-                          {pixDiscountPercent}% de desconto no Pix: R$ {(total * (1 - pixDiscountPercent / 100)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          {t('pixDiscountFull', { percent: pixDiscountPercent, amount: (total * (1 - pixDiscountPercent / 100)).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) })}
                         </p>
                       )}
                       <button
@@ -686,7 +687,7 @@ const ProductCheckout = () => {
                         className="text-xs text-primary flex items-center gap-1 hover:underline cursor-pointer"
                       >
                         <CreditCard className="w-3.5 h-3.5" />
-                        Ver parcelamentos
+                        {t('viewInstallments')}
                         <ChevronRight className={`w-3 h-3 transition-transform ${showInstallments ? 'rotate-90' : ''}`} />
                       </button>
                       {showInstallments && (
@@ -706,14 +707,14 @@ const ProductCheckout = () => {
                           ) : simulatedInstallments.length > 0 ? simulatedInstallments.map((opt) => (
                             <div key={opt.parcelas} className="flex justify-between text-xs text-foreground">
                               <span>
-                                {opt.parcelas}x {opt.percentualJuros === 0 ? (opt.parcelas === 1 ? 'à vista' : 'sem juros') : 'com juros'}
+                                {opt.parcelas}x {opt.percentualJuros === 0 ? (opt.parcelas === 1 ? t('atSight') : t('noInterestShort')) : t('withInterest')}
                               </span>
                               <span className="font-medium text-primary">
                                 R$ {opt.valorParcela.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                               </span>
                             </div>
                           )) : (
-                            <p className="text-xs text-muted-foreground">Parcelas indisponíveis</p>
+                            <p className="text-xs text-muted-foreground">{t('installmentsUnavailable')}</p>
                           )}
                         </div>
                       )}
@@ -727,14 +728,14 @@ const ProductCheckout = () => {
             <div className="border border-border/50 rounded-xl p-4 bg-card space-y-3">
               <div className="flex items-center gap-2">
                 <Truck className="w-4 h-4 text-primary" />
-                <p className="text-sm font-medium text-foreground">Calcular Frete</p>
+                <p className="text-sm font-medium text-foreground">{t('calculateShipping')}</p>
               </div>
               <div className="flex gap-2">
                 <input
                   type="text"
                   inputMode="numeric"
                   maxLength={9}
-                  placeholder="Digite seu CEP"
+                  placeholder={t('enterCep')}
                   value={manualCep}
                   onChange={(e) => {
                     let v = e.target.value.replace(/\D/g, '');
@@ -752,12 +753,12 @@ const ProductCheckout = () => {
                     fetchShippingByPostalCode(manualCep);
                   }}
                 >
-                  {loadingShipping ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Calcular'}
+                  {loadingShipping ? <Loader2 className="w-4 h-4 animate-spin" /> : t('calculate')}
                 </Button>
               </div>
               {userPostalCode && (
                 <p className="text-[11px] text-muted-foreground">
-                  Frete para CEP {userPostalCode.replace(/(\d{5})(\d{3})/, '$1-$2')}
+                  {t('shippingForCep', { cep: userPostalCode.replace(/(\d{5})(\d{3})/, '$1-$2') })}
                 </p>
               )}
               {loadingShipping && !shippingOptions.length ? (
@@ -777,11 +778,11 @@ const ProductCheckout = () => {
                 <div className="space-y-1.5">
                   {shippingOptions.map((opt) => (
                     <div key={opt.id} className="flex justify-between items-center text-xs">
-                      <span className="text-foreground">{opt.company} — {opt.name} {opt.delivery_time ? `(${opt.delivery_time} dias)` : ''}</span>
+                      <span className="text-foreground">{opt.company} — {opt.name} {opt.delivery_time ? `(${t('daysShort', { n: opt.delivery_time })})` : ''}</span>
                       {qualifiesForFreeShipping ? (
                         <div className="flex items-center gap-1.5">
                           <span className="text-muted-foreground line-through">R$ {opt.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                          <span className="text-primary font-bold">Grátis</span>
+                          <span className="text-primary font-bold">{t('free')}</span>
                         </div>
                       ) : (
                         <span className="font-medium text-foreground">R$ {opt.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
@@ -826,7 +827,7 @@ const ProductCheckout = () => {
                 }}>
                 
                   <ShoppingCart className="w-5 h-5 mr-2" />
-                  Adicionar ao Carrinho
+                  {t('addToCart')}
                 </Button>
               </div> :
 
@@ -886,10 +887,10 @@ const ProductCheckout = () => {
               {t('drugBulletin')}
             </AccordionTrigger>
             <AccordionContent className="text-sm text-muted-foreground space-y-3 pb-5">
-              <p><strong>Indicação:</strong> Este medicamento é indicado para o tratamento de diabetes mellitus tipo 2 em adultos como adjuvante à dieta e exercícios para melhorar o controle glicêmico.</p>
-              <p><strong>Posologia:</strong> A dose inicial recomendada é de 2,5 mg uma vez por semana. Após 4 semanas, a dose deve ser aumentada para 5 mg uma vez por semana.</p>
-              <p><strong>Contraindicações:</strong> Hipersensibilidade ao princípio ativo ou a qualquer componente da formulação. Histórico pessoal ou familiar de carcinoma medular de tireoide.</p>
-              <p><strong>Precauções:</strong> Não utilizar em pacientes com diabetes tipo 1. Monitorar sinais de pancreatite. Pode causar hipoglicemia quando usado em combinação com insulina ou secretagogos de insulina.</p>
+              <p><strong>{t('bulletinIndicationLabel')}:</strong> {t('bulletinIndicationText')}</p>
+              <p><strong>{t('bulletinDosageLabel')}:</strong> {t('bulletinDosageText')}</p>
+              <p><strong>{t('bulletinContraLabel')}:</strong> {t('bulletinContraText')}</p>
+              <p><strong>{t('bulletinPrecautionsLabel')}:</strong> {t('bulletinPrecautionsText')}</p>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
@@ -899,7 +900,7 @@ const ProductCheckout = () => {
       {/* Customer Reviews */}
       {productReviews.length > 0 && (
         <AnimatedSection className="max-w-6xl mx-auto px-4 pb-16">
-          <h2 className="text-2xl font-bold text-foreground mb-2 text-center">Avaliações de Clientes</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-2 text-center">{t('customerReviews')}</h2>
           <div className="flex items-center justify-center gap-2 mb-6">
             <div className="flex gap-0.5">
               {[1, 2, 3, 4, 5].map((s) => {
@@ -910,7 +911,7 @@ const ProductCheckout = () => {
               })}
             </div>
             <span className="text-sm text-muted-foreground">
-              ({(productReviews.reduce((a, r) => a + r.rating, 0) / productReviews.length).toFixed(1)}) · {productReviews.length} avaliação(ões)
+              {t('ratingSummary', { count: productReviews.length, avg: (productReviews.reduce((a, r) => a + r.rating, 0) / productReviews.length).toFixed(1) })}
             </span>
           </div>
           <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -925,10 +926,10 @@ const ProductCheckout = () => {
                   {rev.comment && <p className="text-sm text-foreground">"{rev.comment}"</p>}
                   <div className="flex items-center justify-between">
                     <Badge variant="secondary" className="text-[10px]">
-                      <CheckCircle2 className="w-3 h-3 mr-1" /> Cliente verificado
+                      <CheckCircle2 className="w-3 h-3 mr-1" /> {t('verifiedCustomer')}
                     </Badge>
                     <span className="text-[10px] text-muted-foreground">
-                      {new Date(rev.created_at).toLocaleDateString('pt-BR')}
+                      {formatDate(rev.created_at, 'short', lang)}
                     </span>
                   </div>
                 </div>

@@ -7,6 +7,7 @@ import { Sparkles } from 'lucide-react';
 import { AnimatedSection } from '@/components/AnimatedSection';
 import { Skeleton } from '@/components/ui/skeleton';
 import productHeroImg from '@/assets/product-hero.png';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface RecVariation {
   id: string;
@@ -46,6 +47,7 @@ const getSessionId = (): string => {
 };
 
 const ProductRecommendations = ({ productId }: Props) => {
+  const { t } = useLanguage();
   const [items, setItems] = useState<RecProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -193,7 +195,7 @@ const ProductRecommendations = ({ productId }: Props) => {
     <AnimatedSection variant="fadeUp" className="max-w-6xl mx-auto px-4 py-10">
       <div className="flex items-center gap-2 mb-5">
         <Sparkles className="w-5 h-5 text-primary" />
-        <h2 className="text-xl sm:text-2xl font-bold text-foreground">Você também pode gostar</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground">{t('youMayAlsoLike')}</h2>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {items.map((product, idx) => {
