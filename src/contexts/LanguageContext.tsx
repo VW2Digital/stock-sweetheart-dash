@@ -198,6 +198,8 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     if (cookieLang && SUPPORTED.includes(cookieLang)) return cookieLang;
     return detectBrowserLanguage();
   });
+  const [seoTick, setSeoTick] = useState(0);
+  const refreshSeoTags = useCallback(() => setSeoTick((t) => t + 1), []);
 
   const setLang = useCallback((l: Language) => {
     setLangState(l);
@@ -258,14 +260,14 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     xDefault.href = baseUrl;
     xDefault.setAttribute('data-i18n', 'hreflang');
     head.appendChild(xDefault);
-  }, [lang]);
+  }, [lang, seoTick]);
 
   const t = useCallback((key: TranslationKey): string => {
     return translations[key]?.[lang] || key;
   }, [lang]);
 
   return (
-    <LanguageContext.Provider value={{ lang, setLang, t }}>
+    <LanguageContext.Provider value={{ lang, setLang, t, refreshSeoTags }}>
       {children}
     </LanguageContext.Provider>
   );
