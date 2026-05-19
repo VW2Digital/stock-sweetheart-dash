@@ -1,27 +1,34 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useLanguage, type Language } from '@/contexts/LanguageContext';
 
 const SUPPORTED: Language[] = ['pt', 'es', 'en'];
 
 /**
- * Mantém o idioma em sincronia com o parâmetro ?lang= durante a navegação SPA
- * (sem recarregar a página). Também força a atualização das tags <html lang>
- * e <link rel="alternate" hreflang> sempre que a rota muda, para que os URLs
- * em hreflang reflitam o pathname atual.
+ * Mantém o idioma em sincronia com o parâmetro ?lang= apenas quando
+ * a URL realmente muda (navegação SPA). NÃO reage a mudanças do idioma
+ * vindas do switcher — caso contrário um ?lang= antigo na URL sobrepunha
+ * a escolha manual do utilizador.
+ *
+ * Também força a regeneração das tags <link hreflang> a cada mudança de rota
+ * para que reflitam o pathname atual.
  */
 const LanguageUrlSync = () => {
   const location = useLocation();
-  const { lang, setLang, refreshSeoTags } = useLanguage();
+  const { setLang, refreshSeoTags } = useLanguage();
+  const lastUrlKey = useRef<string>('');
 
   useEffect(() => {
+    const key = `${location.pathname}${location.search}`;
+    if (key === lastUrlKey.current) return;
+    lastUrlKey.current = key;
+
     const param = new URLSearchParams(location.search).get('lang');
-    if (param && SUPPORTED.includes(param as Language) && param !== lang) {
+    if (param && SUPPORTED.includes(param as Language)) {
       setLang(param as Language);
     }
-    // Reaplica hreflang/canonical-alternates para o novo pathname
     refreshSeoTags();
-  }, [location.pathname, location.search, lang, setLang, refreshSeoTags]);
+  }, [location.pathname, location.search, setLang, refreshSeoTags]);
 
   return null;
 };
