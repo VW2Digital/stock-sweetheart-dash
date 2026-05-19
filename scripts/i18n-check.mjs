@@ -39,11 +39,23 @@ const stripPlural = (k) => {
   for (const s of PLURAL_SUFFIXES) if (k.endsWith(s)) return k.slice(0, -s.length);
   return k;
 };
+// Achatar objetos aninhados em chaves "a.b.c"
+const flatten = (obj, prefix = '', out = {}) => {
+  for (const [k, v] of Object.entries(obj)) {
+    const key = prefix ? `${prefix}.${k}` : k;
+    if (v && typeof v === 'object' && !Array.isArray(v)) flatten(v, key, out);
+    else out[key] = v;
+  }
+  return out;
+};
+const flatDicts = Object.fromEntries(
+  LOCALES.map((l) => [l, flatten(dicts[l])]),
+);
 const hasKey = (dict, key) =>
   key in dict || PLURAL_SUFFIXES.some((s) => `${key}${s}` in dict);
 
 const allKeys = new Set(
-  LOCALES.flatMap((l) => Object.keys(dicts[l]).map(stripPlural)),
+  LOCALES.flatMap((l) => Object.keys(flatDicts[l]).map(stripPlural)),
 );
 
 // Coleta de chaves usadas no código. Aceita t('x'), t("x"), t(`x`).
@@ -78,7 +90,7 @@ const usedSet = new Set(usedKeys.keys());
 
 const missingInLocale = {}; // locale -> [keys]
 for (const lng of LOCALES) {
-  missingInLocale[lng] = [...allKeys].filter((k) => !hasKey(dicts[lng], k)).sort();
+  missingInLocale[lng] = [...allKeys].filter((k) => !hasKey(flatDicts[lng], k)).sort();
 }
 
 const missingInCode = [...usedSet].filter((k) => !allKeys.has(k)).sort();
