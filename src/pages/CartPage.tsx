@@ -282,7 +282,7 @@ const CartPage = () => {
                           R$ {item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </p>
                         {!item.in_stock && (
-                          <p className="text-xs text-destructive font-medium mt-1">Fora de estoque</p>
+                          <p className="text-xs text-destructive font-medium mt-1">{t('outOfStock')}</p>
                         )}
                         {item.wholesale_prices.length > 0 && (() => {
                           // Sort tiers ascending and find active tier (highest min_quantity ≤ current qty)
@@ -293,7 +293,7 @@ const CartPage = () => {
                             <div className="mt-1 flex flex-wrap gap-1">
                               {activeTier ? (
                                 <Badge className="text-[10px] bg-success/15 text-success border border-success/30 hover:bg-success/15 font-semibold">
-                                  Atacado {activeTier.min_quantity}+ ativo · R$ {activeTier.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/un.
+                                  {t('wholesaleActive', { qty: activeTier.min_quantity, price: activeTier.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) })}
                                 </Badge>
                               ) : (
                                 <Badge variant="outline" className="text-[10px] border-primary/40 text-primary bg-primary/5 font-medium">
@@ -302,7 +302,7 @@ const CartPage = () => {
                               )}
                               {nextTier && (
                                 <Badge variant="outline" className="text-[10px] border-muted-foreground/30 text-muted-foreground font-medium">
-                                  +{nextTier.min_quantity - item.quantity} un. → R$ {nextTier.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/un.
+                                  {t('unitsToNext', { qty: nextTier.min_quantity - item.quantity, price: nextTier.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) })}
                                 </Badge>
                               )}
                             </div>
@@ -322,7 +322,7 @@ const CartPage = () => {
                           const draftQty = drafts[item.variation_id] ?? item.quantity;
                           return (
                             <div className="flex items-center gap-2">
-                              <label className="text-xs text-muted-foreground">Qtd:</label>
+                              <label className="text-xs text-muted-foreground">{t('qtyLabel')}</label>
                                <Input
                                  type="number"
                                  min={minQty}
