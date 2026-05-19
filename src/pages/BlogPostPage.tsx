@@ -91,11 +91,11 @@ export default function BlogPostPage() {
           <article className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
             {/* Breadcrumbs */}
             <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
-              <Link to="/" className="hover:text-foreground transition-colors" aria-label="Início">
+              <Link to="/" className="hover:text-foreground transition-colors" aria-label={t('blog.home')}>
                 <Home className="h-4 w-4" />
               </Link>
               <ChevronRight className="h-4 w-4" />
-              <Link to="/blog" className="hover:text-foreground transition-colors">Blog</Link>
+              <Link to="/blog" className="hover:text-foreground transition-colors">{t('blog.blogLabel')}</Link>
               <ChevronRight className="h-4 w-4" />
               <span className="text-foreground truncate">{post.title}</span>
             </nav>
