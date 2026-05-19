@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { fetchProduct } from '@/lib/api';
@@ -13,12 +13,13 @@ import productHeroImg from '@/assets/product-hero.png';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { usePublicCurrency } from '@/lib/publicCurrency';
+import { useAITranslateBatch } from '@/hooks/useAITranslate';
 
 const Checkout = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { toast } = useToast();
   const { format: fmtPrice, isBRL } = usePublicCurrency();
   const [product, setProduct] = useState<any>(null);
@@ -106,6 +107,13 @@ const Checkout = () => {
       ? [variation.image_url]
       : [];
   const mainImage = variationImages.length > 0 ? variationImages[0] : productHeroImg;
+  const checkoutTexts = useMemo(
+    () => product ? [product.name || '', variation?.dosage || ''] : [],
+    [product, variation?.dosage],
+  );
+  const translatedCheckoutTexts = useAITranslateBatch(checkoutTexts, lang);
+  const translatedProductName = translatedCheckoutTexts[0] || product.name;
+  const translatedDosage = translatedCheckoutTexts[1] || variation?.dosage;
 
   return (
     <div className="min-h-screen bg-background">
@@ -119,13 +127,13 @@ const Checkout = () => {
             <div className="flex items-center gap-4">
               <img
                 src={mainImage}
-                alt={product.name}
+                alt={translatedProductName}
                 className="w-20 h-20 object-contain rounded-lg border border-border/50 bg-muted p-1"
               />
               <div className="flex-1">
-                <p className="font-bold text-foreground">{product.name}</p>
+                <p className="font-bold text-foreground">{translatedProductName}</p>
                 {variation?.dosage && !product.name.toLowerCase().includes(variation.dosage.toLowerCase()) && (
-                  <p className="text-sm text-muted-foreground">{variation.dosage}</p>
+                  <p className="text-sm text-muted-foreground">{translatedDosage}</p>
                 )}
                 <p className="text-sm text-muted-foreground">{t('qty')}: {quantity}</p>
               </div>
@@ -180,7 +188,7 @@ const Checkout = () => {
 
           {/* Checkout Form */}
           <CheckoutForm
-            productName={product.name}
+            productName={translatedProductName}
             productId={product.id}
             paymentDescription={(product as any).fantasy_name || undefined}
             dosage={variation?.dosage || ''}
