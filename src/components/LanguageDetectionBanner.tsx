@@ -25,18 +25,13 @@ const messages: Record<Language, { text: string; change: string }> = {
 };
 
 const LanguageDetectionBanner = () => {
+  // Banner desativado: Português (PT) é o idioma padrão forçado.
+  // O utilizador pode trocar manualmente pelo seletor no header.
+  return null;
+  // eslint-disable-next-line no-unreachable
   const { lang, setLang } = useLanguage();
   const [detected, setDetected] = useState<Language | null>(null);
   const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (sessionStorage.getItem(DISMISS_KEY)) return;
-    const browserLang = detectBrowserLanguage();
-    if (browserLang && browserLang !== lang && SUPPORTED.includes(browserLang)) {
-      setDetected(browserLang);
-      setVisible(true);
-    }
-  }, [lang]);
 
   const handleDismiss = () => {
     sessionStorage.setItem(DISMISS_KEY, '1');
