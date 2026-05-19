@@ -42,7 +42,7 @@ const Catalog = () => {
   const impressionsLogged = useRef<Set<string>>(new Set());
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const variantCfg = abConfig[ab.variant] || DEFAULT_AB_CONFIG[ab.variant];
   const ctaText = variantCfg.ctaText?.trim().toLowerCase() === 'adicionar ao carrinho'
     ? t('addToCart')
