@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchSetting } from "@/lib/api";
 import { usePublicCurrency } from "@/lib/publicCurrency";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAITranslateBatch } from "@/hooks/useAITranslate";
 
 interface OfferItem {
   id: string;
@@ -50,6 +51,7 @@ const FlashOffersWidget = () => {
   const [config, setConfig] = useState<WidgetConfig | null>(null);
   const [items, setItems] = useState<OfferItem[]>([]);
   const [closed, setClosed] = useState(false);
+  const translatedItems = useAITranslateBatch(items.map((item) => item.product_name || ''), lang);
 
   const onCatalog = location.pathname === "/" || location.pathname === "/catalogo";
 
@@ -135,7 +137,7 @@ const FlashOffersWidget = () => {
       </div>
 
       <div className="px-2 pb-2 space-y-2">
-        {items.map((item) => (
+        {items.map((item, idx) => (
           <Link
             key={item.id}
             to={`/produto/${item.product_id}?variation=${item.id}`}
@@ -143,11 +145,14 @@ const FlashOffersWidget = () => {
           >
             <img
               src={item.image_url}
-              alt={item.product_name}
+              alt={translatedItems[idx] || item.product_name}
               className="w-12 h-12 object-contain rounded-lg bg-muted/30 shrink-0"
               loading="lazy"
             />
             <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-semibold text-foreground line-clamp-1 leading-tight mb-0.5">
+                {translatedItems[idx] || item.product_name}
+              </p>
               <p className="text-[10px] text-muted-foreground line-through leading-tight">
                 {formatBRL(item.price)}
               </p>
