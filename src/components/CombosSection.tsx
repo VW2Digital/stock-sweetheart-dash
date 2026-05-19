@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Package } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ComboItem {
   quantity: number;
@@ -36,6 +37,7 @@ const pickImage = (urls: (string | null | undefined)[]): string => {
 export default function CombosSection() {
   const [combos, setCombos] = useState<ComboCard[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     (async () => {
@@ -65,8 +67,8 @@ export default function CombosSection() {
       <div className="max-w-7xl mx-auto px-[5px]">
         <div className="flex items-center gap-3 mb-6 px-2">
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground">Combos em destaque</h2>
-            <p className="text-sm text-muted-foreground">Pacotes com preço promocional fechado</p>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">{t('combosTitle')}</h2>
+            <p className="text-sm text-muted-foreground">{t('combosSubtitle')}</p>
           </div>
         </div>
 
@@ -157,7 +159,7 @@ export default function CombosSection() {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {items.length} {items.length === 1 ? 'item' : 'itens'} no combo
+                      {t('itemsInCombo', { count: items.length })}
                     </p>
                   </div>
                 </div>
