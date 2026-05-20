@@ -5,7 +5,8 @@ const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 const LANG_NAMES: Record<string, string> = {
   en: 'English',
   es: 'Spanish',
-  pt: 'Portuguese (Brazilian)',
+  pt: 'Portuguese (Portugal)',
+  'pt-PT': 'Portuguese (Portugal)',
 };
 
 Deno.serve(async (req) => {
@@ -14,7 +15,8 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json();
     const texts: string[] = Array.isArray(body?.texts) ? body.texts.filter((t: any) => typeof t === 'string') : [];
-    const target: string = typeof body?.target === 'string' ? body.target : 'en';
+    const rawTarget: string = typeof body?.target === 'string' ? body.target : 'en';
+    const target = rawTarget.toLowerCase().startsWith('pt') ? 'pt-PT' : rawTarget;
     if (texts.length === 0) {
       return new Response(JSON.stringify({ translations: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
