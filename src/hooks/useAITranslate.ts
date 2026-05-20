@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { normalizeLng } from '@/i18n';
 
 const memCache = new Map<string, string>();
 
@@ -30,11 +31,13 @@ export function useAITranslateBatch(texts: string[], target: string) {
   const [result, setResult] = useState<string[]>(texts);
 
   useEffect(() => {
-    if (!target || target === 'pt-PT' || target === 'pt' || texts.length === 0) {
+    const normalizedTarget = normalizeLng(target);
+
+    if (!normalizedTarget || texts.length === 0) {
       setResult(texts);
       return;
     }
-    const cached: (string | null)[] = texts.map((t) => loadCache(target, t));
+    const cached: (string | null)[] = texts.map((t) => loadCache(normalizedTarget, t));
     const initial = texts.map((t, i) => cached[i] ?? t);
     setResult(initial);
 
@@ -52,14 +55,14 @@ export function useAITranslateBatch(texts: string[], target: string) {
     (async () => {
       try {
         const { data, error } = await supabase.functions.invoke('translate-text', {
-          body: { texts: missingTexts, target },
+          body: { texts: missingTexts, target: normalizedTarget },
         });
         if (cancelled || error) return;
         const translations: string[] = Array.isArray((data as any)?.translations) ? (data as any).translations : missingTexts;
         const next = [...initial];
         missingIdx.forEach((origIdx, k) => {
           const value = translations[k] ?? missingTexts[k];
-          saveCache(target, missingTexts[k], value);
+          saveCache(normalizedTarget, missingTexts[k], value);
           next[origIdx] = value;
         });
         setResult(next);

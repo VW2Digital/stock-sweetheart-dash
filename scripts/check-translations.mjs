@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Verifica se todas as chaves de tradução usadas no código (via t('...') ou t("..."))
- * existem nos arquivos pt.json, en.json e es.json.
+ * existem nos arquivos pt-PT.json, en.json e es.json.
  *
  * Uso:
  *   node scripts/check-translations.mjs
@@ -17,7 +17,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
 const SRC_DIR = join(ROOT, "src");
 const LOCALES_DIR = join(SRC_DIR, "i18n", "locales");
-const LOCALES = ["pt", "en", "es"];
+const LOCALES = ["pt-PT", "en", "es"];
 const EXTS = new Set([".ts", ".tsx", ".js", ".jsx"]);
 
 // Captura t('chave'), t("chave"), t(`chave`) e também {t('chave', {...})}
@@ -95,8 +95,8 @@ function main() {
     }
   }
 
-  // Chaves órfãs: existem no pt.json mas nunca são usadas no código.
-  const orphans = Object.keys(locales.pt).filter((k) => {
+  // Chaves órfãs: existem no pt-PT.json mas nunca são usadas no código.
+  const orphans = Object.keys(locales['pt-PT']).filter((k) => {
     const base = k.replace(/_(one|other)$/, "");
     return !usedKeys.has(k) && !usedKeys.has(base);
   });
@@ -125,7 +125,7 @@ function main() {
   }
 
   if (orphans.length > 0) {
-    console.log(`\nAVISO ${orphans.length} chave(s) órfã(s) em pt.json (não referenciadas no código):`);
+    console.log(`\nAVISO ${orphans.length} chave(s) órfã(s) em pt-PT.json (não referenciadas no código):`);
     for (const k of orphans.slice(0, 20)) console.log(`   - ${k}`);
     if (orphans.length > 20) console.log(`   ... +${orphans.length - 20}`);
   }

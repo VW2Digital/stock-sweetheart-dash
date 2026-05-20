@@ -2,7 +2,7 @@
 /**
  * Verificador de traduções i18next.
  *
- * - Lê src/i18n/locales/{pt,es,en}.json
+ * - Lê src/i18n/locales/{pt-PT,es,en}.json
  * - Faz varrimento em src/ por chamadas t('chave') ou t("chave")
  * - Reporta:
  *    [missing-in-locale] chaves presentes em pelo menos 1 idioma mas em falta noutro
@@ -23,7 +23,7 @@ import path from 'node:path';
 const ROOT = process.cwd();
 const LOCALES_DIR = path.join(ROOT, 'src/i18n/locales');
 const SRC_DIR = path.join(ROOT, 'src');
-const LOCALES = ['pt', 'es', 'en'];
+const LOCALES = ['pt-PT', 'es', 'en'];
 const STRICT = process.argv.includes('--strict');
 
 const loadLocale = (lng) => {
