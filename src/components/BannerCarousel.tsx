@@ -60,8 +60,6 @@ const BannerCarousel = () => {
     setCurrent(c => (c + 1) % slides.length);
   }, [slides.length]);
 
-  if (loading) return null;
-
   const effectiveSlides = slides.length > 0 ? slides : [{
     title: `${t?.('defaultBannerHeadline') || 'Feel the Balance'} | ${t?.('defaultBannerSubheadline') || 'Curated Essentials'}`,
     subtitle: t?.('defaultBannerSubtitle') || 'An exclusive curation of pieces that blend urban sophistication with minimalist design.',
@@ -70,6 +68,23 @@ const BannerCarousel = () => {
   }];
 
   const slide = effectiveSlides[current] || effectiveSlides[0];
+
+  // Derive headline / sub from the title field. Supports "Headline | Subtitle".
+  const rawTitle: string = slide.title || '';
+  const [headlinePartRaw, subPartRaw] = rawTitle.includes('|')
+    ? rawTitle.split('|').map((s: string) => s.trim())
+    : [rawTitle, ''];
+  const ctaLabelRaw = slide.cta_text?.trim() || t?.('shopNow') || 'Shop now';
+  const subtitleRaw = slide.subtitle || '';
+
+  // IMPORTANT: hook must be called unconditionally, before any early return.
+  const [headlinePart, subPart, ctaLabel, translatedSubtitle] = useAITranslateBatch(
+    [headlinePartRaw, subPartRaw, ctaLabelRaw, subtitleRaw],
+    lang,
+  );
+
+  if (loading) return null;
+
   const linkTo = slide.product_id
     ? `/produto/${slide.product_id}`
     : slide.link_url || null;
@@ -80,19 +95,8 @@ const BannerCarousel = () => {
     exit: (dir: number) => ({ x: dir > 0 ? -40 : 40, opacity: 0 }),
   };
 
-  // Derive headline / sub from the title field. Supports "Headline | Subtitle".
-  const rawTitle: string = slide.title || '';
-  const [headlinePartRaw, subPartRaw] = rawTitle.includes('|')
-    ? rawTitle.split('|').map((s: string) => s.trim())
-    : [rawTitle, ''];
-  const ctaLabelRaw = slide.cta_text?.trim() || t?.('shopNow') || 'Shop now';
-  const subtitleRaw = slide.subtitle || '';
-
-  const [headlinePart, subPart, ctaLabel, translatedSubtitle] = useAITranslateBatch(
-    [headlinePartRaw, subPartRaw, ctaLabelRaw, subtitleRaw],
-    lang,
-  );
   const productImage = slide.product_id ? productImages[slide.product_id] : null;
+
 
   const SlideContent = (
     <div className="relative w-full h-full bg-background overflow-hidden flex items-center border-y border-border/40">
