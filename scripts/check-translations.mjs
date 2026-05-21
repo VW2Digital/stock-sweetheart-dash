@@ -95,8 +95,8 @@ function main() {
     }
   }
 
-  // Chaves órfãs: existem no pt-PT.json mas nunca são usadas no código.
-  const orphans = Object.keys(locales['pt-PT']).filter((k) => {
+  // Chaves órfãs: existem no es.json mas nunca são usadas no código.
+  const orphans = Object.keys(locales['es']).filter((k) => {
     const base = k.replace(/_(one|other)$/, "");
     return !usedKeys.has(k) && !usedKeys.has(base);
   });
@@ -125,7 +125,7 @@ function main() {
   }
 
   if (orphans.length > 0) {
-    console.log(`\nAVISO ${orphans.length} chave(s) órfã(s) em pt-PT.json (não referenciadas no código):`);
+    console.log(`\nAVISO ${orphans.length} chave(s) órfã(s) em es.json (não referenciadas no código):`);
     for (const k of orphans.slice(0, 20)) console.log(`   - ${k}`);
     if (orphans.length > 20) console.log(`   ... +${orphans.length - 20}`);
   }
