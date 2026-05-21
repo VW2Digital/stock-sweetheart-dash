@@ -1597,7 +1597,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
   if (step === 'customer') {
     return (
       <div>
-        <StepIndicator currentStep={step} />
+        <StepIndicator currentStep={step} steps={visibleSteps} />
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="text-base">Dados do Comprador</CardTitle>
@@ -1642,7 +1642,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
 
     return (
       <div>
-        <StepIndicator currentStep={step} />
+        <StepIndicator currentStep={step} steps={visibleSteps} />
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
@@ -1825,7 +1825,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
   if (step === 'shipping') {
     return (
       <div>
-        <StepIndicator currentStep={step} />
+        <StepIndicator currentStep={step} steps={visibleSteps} />
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
@@ -1937,7 +1937,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
   // ─── PAYMENT ───
   return (
     <div>
-      <StepIndicator currentStep={step} />
+      <StepIndicator currentStep={step} steps={visibleSteps} />
     {/* PagBank or MP Redirect Mode */}
     {(isPagBank || isMpRedirect) ? (
       <Card className="border-border/50">
