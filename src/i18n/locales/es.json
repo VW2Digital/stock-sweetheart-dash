@@ -552,5 +552,8 @@
     "shareTwitterPlaceholder": "https://twitter.com/...",
     "shareLinkedinPlaceholder": "https://linkedin.com/...",
     "shareWhatsappPlaceholder": "https://wa.me/..."
-  }
+  },
+  "cookieBannerText": "Utilizamos cookies para mejorar tu experiencia, analizar el tráfico y personalizar el contenido. Al continuar navegando, aceptas nuestro uso de cookies.",
+  "cookieBannerAccept": "Aceptar",
+  "cookieBannerPrivacy": "Política de Privacidad"
 }
