@@ -243,10 +243,28 @@ export const deleteBanner = async (id: string) => {
 export const fetchBannerSlides = async (activeOnly = false) => {
   let query = supabase
     .from('banner_slides' as any)
-    .select('*')
+    .select(`
+      *,
+      products:product_id(
+        id,
+        name,
+        images,
+        product_variations(id, image_url, images, created_at)
+      )
+    `)
     .order('sort_order', { ascending: true });
   if (activeOnly) query = query.eq('active', true);
   const { data, error } = await query;
+  if (error) {
+    let fallbackQuery = supabase
+      .from('banner_slides' as any)
+      .select('*')
+      .order('sort_order', { ascending: true });
+    if (activeOnly) fallbackQuery = fallbackQuery.eq('active', true);
+    const { data: fallbackData, error: fallbackError } = await fallbackQuery;
+    if (fallbackError) throw fallbackError;
+    return fallbackData as any[];
+  }
   if (error) throw error;
   return data as any[];
 };
