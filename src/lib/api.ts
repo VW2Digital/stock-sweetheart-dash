@@ -1,5 +1,27 @@
 import { supabase } from '@/integrations/supabase/client';
 
+const normalizeStorageImageUrl = (value?: unknown): string => {
+  if (typeof value !== 'string') return '';
+  const image = value.trim();
+  if (!image) return '';
+  if (/^(https?:|data:|blob:|\/)/i.test(image)) return image;
+
+  const storagePath = image.replace(/^\/+/, '');
+  const [maybeBucket, ...pathParts] = storagePath.split('/');
+  const knownBuckets = ['product-images', 'banner-images'];
+  const bucket = knownBuckets.includes(maybeBucket) ? maybeBucket : 'product-images';
+  const path = knownBuckets.includes(maybeBucket) ? pathParts.join('/') : storagePath;
+  return path ? supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl : '';
+};
+
+const getProductCoverImage = (product?: any): string => {
+  const firstImage = Array.isArray(product?.images)
+    ? product.images.find((item: unknown) => typeof item === 'string' && item.trim())
+    : product?.images;
+
+  return normalizeStorageImageUrl(firstImage);
+};
+
 // Auth helpers
 export const signIn = async (email: string, password: string) => {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -243,29 +265,40 @@ export const deleteBanner = async (id: string) => {
 export const fetchBannerSlides = async (activeOnly = false) => {
   let query = supabase
     .from('banner_slides' as any)
-    .select(`
-      *,
-      products:product_id(
-        id,
-        name,
-        images
-      )
-    `)
+    .select('*')
     .order('sort_order', { ascending: true });
   if (activeOnly) query = query.eq('active', true);
   const { data, error } = await query;
-  if (error) {
-    let fallbackQuery = supabase
-      .from('banner_slides' as any)
-      .select('*')
-      .order('sort_order', { ascending: true });
-    if (activeOnly) fallbackQuery = fallbackQuery.eq('active', true);
-    const { data: fallbackData, error: fallbackError } = await fallbackQuery;
-    if (fallbackError) throw fallbackError;
-    return fallbackData as any[];
-  }
   if (error) throw error;
-  return data as any[];
+
+  const slides = (data as any[]) || [];
+  const productIds = Array.from(new Set(slides.map((slide) => slide.product_id).filter(Boolean))) as string[];
+  if (!productIds.length) return slides;
+
+  const { data: products } = await supabase
+    .from('products')
+    .select('id, name, images')
+    .in('id', productIds);
+
+  const productsById = new Map(((products as any[]) || []).map((product) => [product.id, product]));
+
+  return slides.map((slide) => {
+    const product = slide.product_id ? productsById.get(slide.product_id) : null;
+    const productCover = getProductCoverImage(product);
+
+    if (!productCover) {
+      return { ...slide, products: product || null, product_cover_image: '' };
+    }
+
+    return {
+      ...slide,
+      products: product,
+      product_cover_image: productCover,
+      image_desktop: productCover,
+      image_tablet: productCover,
+      image_mobile: productCover,
+    };
+  });
 };
 
 export const createBannerSlide = async (slide: {
