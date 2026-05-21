@@ -112,17 +112,17 @@ const BannerCarousel = () => {
         style={{ background: 'hsl(var(--primary) / 0.04)' }}
       />
 
-      <div className="relative z-10 w-full mx-auto px-6 sm:px-12 lg:px-24 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      <div className="relative z-10 w-full mx-auto px-5 sm:px-12 lg:px-24 py-10 sm:py-14 lg:py-0 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
         {/* Left content column */}
         <div className="lg:col-span-6 flex flex-col items-center lg:items-start text-center lg:text-left">
-          <div className="flex items-center gap-4 mb-6 sm:mb-8">
-            <span className="h-px w-8 bg-primary" />
-            <span className="text-primary uppercase tracking-[0.3em] text-[10px] font-bold">
+          <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-8">
+            <span className="h-px w-6 sm:w-8 bg-primary" />
+            <span className="text-primary uppercase tracking-[0.25em] sm:tracking-[0.3em] text-[9px] sm:text-[10px] font-bold">
               {t?.('exclusiveCatalog') || 'Exclusive Catalog'}
             </span>
           </div>
 
-          <h2 className="text-foreground font-light tracking-tight leading-[1.05] mb-5 sm:mb-6 text-[clamp(2rem,6vw,4.5rem)]">
+          <h2 className="text-foreground font-light tracking-tight leading-[1.1] mb-4 sm:mb-6 text-[clamp(1.6rem,7vw,4.5rem)]">
             {headlinePart}
             {subPart && (
               <>
@@ -134,17 +134,17 @@ const BannerCarousel = () => {
           </h2>
 
           {subtitleRaw && (
-            <p className="text-muted-foreground text-base sm:text-lg max-w-md mb-8 sm:mb-10 leading-relaxed font-light">
+            <p className="text-muted-foreground text-sm sm:text-lg max-w-md mb-6 sm:mb-10 leading-relaxed font-light">
               {translatedSubtitle || subtitleRaw}
             </p>
           )}
 
           {linkTo && (
-            <span className="group inline-flex items-center gap-5 sm:gap-6 bg-primary hover:bg-primary/90 text-primary-foreground pl-8 sm:pl-10 pr-6 sm:pr-8 py-4 sm:py-5 transition-all duration-300 rounded-sm shadow-[0_15px_30px_-10px_hsl(var(--primary)/0.3)]">
-              <span className="uppercase tracking-[0.2em] text-[11px] font-bold">
+            <span className="group inline-flex items-center gap-4 sm:gap-6 bg-primary hover:bg-primary/90 text-primary-foreground pl-6 sm:pl-10 pr-4 sm:pr-8 py-3 sm:py-5 transition-all duration-300 rounded-sm shadow-[0_15px_30px_-10px_hsl(var(--primary)/0.3)]">
+              <span className="uppercase tracking-[0.2em] text-[10px] sm:text-[11px] font-bold">
                 {ctaLabel}
               </span>
-              <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 group-hover:translate-x-1" />
             </span>
           )}
         </div>
