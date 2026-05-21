@@ -149,7 +149,7 @@ const BannerCarousel = () => {
         </div>
 
         {/* Right product column */}
-        <div className="lg:col-span-6 hidden lg:flex justify-center lg:justify-end">
+        <div className="lg:col-span-6 flex justify-center lg:justify-end order-first lg:order-last">
           <div className="relative group">
             {/* Layered background frame */}
             <div className="absolute -top-4 -left-4 w-full h-full border border-primary/20 translate-x-2 translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 transition-transform duration-700" />
