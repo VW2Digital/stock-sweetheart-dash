@@ -29,12 +29,15 @@ const BannerCarousel = () => {
     (async () => {
       const { data } = await supabase
         .from('products')
-        .select('id, images')
+        .select('id, images, product_variations(images, image_url)')
         .in('id', ids as string[]);
       if (!data) return;
       const map: Record<string, string> = {};
       for (const p of data as any[]) {
-        const img = Array.isArray(p.images) ? p.images[0] : null;
+        const variationImage = p.product_variations?.find((variation: any) =>
+          (Array.isArray(variation.images) && variation.images[0]) || variation.image_url,
+        );
+        const img = variationImage?.images?.[0] || variationImage?.image_url || (Array.isArray(p.images) ? p.images[0] : null);
         if (img) map[p.id] = img;
       }
       setProductImages(map);
@@ -96,6 +99,7 @@ const BannerCarousel = () => {
   };
 
   const productImage = slide.product_id ? productImages[slide.product_id] : null;
+  const bannerImage = productImage || slide.image_desktop || slide.image_tablet || slide.image_mobile || null;
 
 
   const SlideContent = (
@@ -158,9 +162,9 @@ const BannerCarousel = () => {
             {/* Main image container */}
             <div className="relative bg-background p-4 lg:p-6 shadow-[0_50px_100px_-20px_hsl(var(--foreground)/0.1)] border border-border/40 flex items-center justify-center overflow-hidden">
               <div className="w-[320px] lg:w-[440px] aspect-[4/3] relative flex items-center justify-center">
-                {productImage ? (
+                {bannerImage ? (
                   <img
-                    src={productImage}
+                    src={bannerImage}
                     alt={headlinePart || 'Produto'}
                     className="w-full h-full object-contain"
                   />
