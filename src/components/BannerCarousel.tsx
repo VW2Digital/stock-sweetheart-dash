@@ -26,13 +26,6 @@ type ProductImageRecord = {
   images?: unknown;
   product_images?: unknown;
   image_url?: unknown;
-  product_variations?: ProductVariationImageRecord[] | null;
-};
-
-type ProductVariationImageRecord = {
-  product_id?: string | null;
-  images?: unknown;
-  image_url?: unknown;
 };
 
 const BannerCarousel = () => {
@@ -77,13 +70,7 @@ const BannerCarousel = () => {
     const embeddedMap = slides.reduce<Record<string, string>>((acc, slide) => {
       if (!slide.product_id || !slide.products) return acc;
       const product = Array.isArray(slide.products) ? slide.products[0] : slide.products;
-      const variationImage = product?.product_variations
-        ?.map((variation) => getFirstImage(variation.images) || getFirstImage(variation.image_url))
-        .find(Boolean);
-      const img = variationImage
-        || getFirstImage(product?.images)
-        || getFirstImage(product?.product_images)
-        || getFirstImage(product?.image_url);
+      const img = getFirstImage(product?.images);
       if (img) acc[slide.product_id] = img;
       return acc;
     }, {});
@@ -96,33 +83,15 @@ const BannerCarousel = () => {
     const missingIds = ids.filter((id) => !embeddedMap[id]);
     if (!missingIds.length) return;
     (async () => {
-      const [{ data: products }, { data: variations }] = await Promise.all([
-        supabase
+      const { data: products } = await supabase
         .from('products')
-        .select('*')
-        .in('id', missingIds),
-        supabase
-          .from('product_variations')
-          .select('*')
-          .in('product_id', missingIds),
-      ]);
+        .select('id, images')
+        .in('id', missingIds);
 
       if (!products) return;
-      const variationsByProduct = ((variations as ProductVariationImageRecord[]) || []).reduce<Record<string, ProductVariationImageRecord[]>>((acc, variation) => {
-        if (!variation.product_id) return acc;
-        acc[variation.product_id] = [...(acc[variation.product_id] || []), variation];
-        return acc;
-      }, {});
-
       const map: Record<string, string> = {};
       for (const p of products as ProductImageRecord[]) {
-        const variationImage = variationsByProduct[p.id]
-          ?.map((variation) => getFirstImage(variation.images) || getFirstImage(variation.image_url))
-          .find(Boolean);
-        const img = variationImage
-          || getFirstImage(p.images)
-          || getFirstImage(p.product_images)
-          || getFirstImage(p.image_url);
+        const img = getFirstImage(p.images);
         if (img) map[p.id] = img;
       }
       setProductImages((prev) => ({ ...prev, ...map }));

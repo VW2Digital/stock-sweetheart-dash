@@ -248,8 +248,7 @@ export const fetchBannerSlides = async (activeOnly = false) => {
       products:product_id(
         id,
         name,
-        images,
-        product_variations(id, image_url, images, created_at)
+        images
       )
     `)
     .order('sort_order', { ascending: true });
