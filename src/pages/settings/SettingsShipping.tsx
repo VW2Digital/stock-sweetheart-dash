@@ -178,7 +178,29 @@ const SettingsShipping = () => {
     <div className="space-y-6 w-full">
       <SettingsBackButton title="Melhor Envio & Frete" description="Integração, remetente e dimensões de embalagem" />
 
-      <PublicSiteUrlCard />
+      <Card className="border-border/50">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2"><PackageCheck className="w-5 h-5" /> Cálculo de frete no checkout</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-start justify-between gap-4 p-4 rounded-lg border border-border/60 bg-card">
+            <div className="space-y-1">
+              <p className="text-sm font-medium">
+                {shippingEnabled ? 'Frete habilitado' : 'Frete desabilitado'}
+              </p>
+              <p className="text-xs text-muted-foreground max-w-xl">
+                {shippingEnabled
+                  ? 'O cliente seleciona transportadora e valor de frete no checkout (Melhor Envio).'
+                  : 'O cliente não verá a etapa de frete. Usaremos o endereço informado no checkout/conta para emitir os códigos de rastreio manualmente.'}
+              </p>
+            </div>
+            <Switch checked={shippingEnabled} onCheckedChange={setShippingEnabled} aria-label="Habilitar frete" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {shippingEnabled && <PublicSiteUrlCard />}
+
 
       <Card className="border-border/50">
         <CardHeader>
