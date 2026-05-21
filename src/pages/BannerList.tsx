@@ -16,6 +16,8 @@ import iconBanners from '@/assets/icon-banners-3d.png';
 // ── Slide Form types ──
 interface SlideForm {
   title: string;
+  subtitle: string;
+  cta_text: string;
   image_desktop: string;
   image_tablet: string;
   image_mobile: string;
@@ -25,6 +27,8 @@ interface SlideForm {
 
 const emptyForm: SlideForm = {
   title: '',
+  subtitle: '',
+  cta_text: '',
   image_desktop: '',
   image_tablet: '',
   image_mobile: '',
