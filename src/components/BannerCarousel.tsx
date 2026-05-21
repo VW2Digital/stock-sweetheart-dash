@@ -85,6 +85,7 @@ const BannerCarousel = () => {
     ? rawTitle.split('|').map((s: string) => s.trim())
     : [rawTitle, ''];
   const ctaLabel = slide.cta_text?.trim() || t?.('shopNow') || 'Shop now';
+  const productImage = slide.product_id ? productImages[slide.product_id] : null;
 
   const SlideContent = (
     <div className="relative w-full h-full bg-background overflow-hidden grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] items-center">
