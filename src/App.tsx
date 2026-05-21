@@ -91,6 +91,7 @@ const BlogPostPage = lazy(() => import("./pages/BlogPostPage"));
 
 import PromoPopup from "./components/PromoPopup";
 import FlashOffersWidget from "./components/FlashOffersWidget";
+import CookieConsent from "./components/CookieConsent";
 import { SessionGuard } from "./components/SessionGuard";
 import ChatWidgetEmbed from "./components/ChatWidgetEmbed";
 import MercadoPagoSecurity from "./components/MercadoPagoSecurity";
@@ -124,6 +125,7 @@ const App = () => (
         <ErrorBoundary silent name="HeadScriptInjector"><HeadScriptInjector /></ErrorBoundary>
         <ErrorBoundary silent name="PromoPopup"><PromoPopup /></ErrorBoundary>
         <ErrorBoundary silent name="FlashOffersWidget"><FlashOffersWidget /></ErrorBoundary>
+        <ErrorBoundary silent name="CookieConsent"><CookieConsent /></ErrorBoundary>
         <ErrorBoundary silent name="ChatWidgetEmbed"><ChatWidgetEmbed /></ErrorBoundary>
         <ErrorBoundary silent name="MercadoPagoSecurity"><MercadoPagoSecurity /></ErrorBoundary>
         <ErrorBoundary name="Routes">
