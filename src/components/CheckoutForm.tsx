@@ -17,6 +17,7 @@ import { CreditCard, QrCode, Loader2, CheckCircle2, Copy, AlertCircle, MapPin, T
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
 import { useMercadoPago } from '@/hooks/useMercadoPago';
+import { useShippingEnabled } from '@/hooks/useShippingEnabled';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface CheckoutFormProps {
