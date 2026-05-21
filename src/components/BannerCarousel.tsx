@@ -74,18 +74,37 @@ const BannerCarousel = () => {
   }, []);
 
   useEffect(() => {
+    const embeddedMap = slides.reduce<Record<string, string>>((acc, slide) => {
+      if (!slide.product_id || !slide.products) return acc;
+      const product = Array.isArray(slide.products) ? slide.products[0] : slide.products;
+      const variationImage = product?.product_variations
+        ?.map((variation) => getFirstImage(variation.images) || getFirstImage(variation.image_url))
+        .find(Boolean);
+      const img = variationImage
+        || getFirstImage(product?.images)
+        || getFirstImage(product?.product_images)
+        || getFirstImage(product?.image_url);
+      if (img) acc[slide.product_id] = img;
+      return acc;
+    }, {});
+
+    if (Object.keys(embeddedMap).length) {
+      setProductImages((prev) => ({ ...prev, ...embeddedMap }));
+    }
+
     const ids = Array.from(new Set(slides.map((s) => s.product_id).filter(Boolean))) as string[];
-    if (!ids.length) return;
+    const missingIds = ids.filter((id) => !embeddedMap[id]);
+    if (!missingIds.length) return;
     (async () => {
       const [{ data: products }, { data: variations }] = await Promise.all([
         supabase
         .from('products')
         .select('*')
-        .in('id', ids as string[]),
+        .in('id', missingIds),
         supabase
           .from('product_variations')
           .select('*')
-          .in('product_id', ids as string[]),
+          .in('product_id', missingIds),
       ]);
 
       if (!products) return;
@@ -106,7 +125,7 @@ const BannerCarousel = () => {
           || getFirstImage(p.image_url);
         if (img) map[p.id] = img;
       }
-      setProductImages(map);
+      setProductImages((prev) => ({ ...prev, ...map }));
     })();
   }, [slides]);
 
