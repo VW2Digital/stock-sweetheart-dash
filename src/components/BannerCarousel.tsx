@@ -14,11 +14,31 @@ const BannerCarousel = () => {
   const [direction, setDirection] = useState(1);
   const [loading, setLoading] = useState(true);
 
+  const [productImages, setProductImages] = useState<Record<string, string>>({});
+
   useEffect(() => {
     fetchBannerSlides(true)
       .then(setSlides)
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    const ids = Array.from(new Set(slides.map((s: any) => s.product_id).filter(Boolean)));
+    if (!ids.length) return;
+    (async () => {
+      const { data } = await supabase
+        .from('products')
+        .select('id, images')
+        .in('id', ids as string[]);
+      if (!data) return;
+      const map: Record<string, string> = {};
+      for (const p of data as any[]) {
+        const img = Array.isArray(p.images) ? p.images[0] : null;
+        if (img) map[p.id] = img;
+      }
+      setProductImages(map);
+    })();
+  }, [slides]);
 
   useEffect(() => {
     if (slides.length <= 1) return;
