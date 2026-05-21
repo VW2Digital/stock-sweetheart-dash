@@ -15,6 +15,8 @@ interface LanguageInfo {
 export const languages: LanguageInfo[] = [
   { code: 'es', flag: 'es', short: 'ES', label: 'Español' },
   { code: 'en', flag: 'gb', short: 'EN', label: 'English' },
+  { code: 'pt', flag: 'pt', short: 'PT', label: 'Português (PT)' },
+  { code: 'pt-BR', flag: 'br', short: 'BR', label: 'Português (BR)' },
 ];
 
 const SUPPORTED: readonly Language[] = SUPPORTED_LANGUAGES;
@@ -78,6 +80,8 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     const htmlLangMap: Record<Language, string> = {
       es: 'es',
       en: 'en',
+      pt: 'pt-PT',
+      'pt-BR': 'pt-BR',
     };
     document.documentElement.lang = htmlLangMap[lang];
 
