@@ -132,6 +132,7 @@ export type Database = {
         Row: {
           active: boolean
           created_at: string
+          cta_text: string
           id: string
           image_desktop: string
           image_mobile: string
@@ -139,6 +140,7 @@ export type Database = {
           link_url: string | null
           product_id: string | null
           sort_order: number
+          subtitle: string
           title: string
           updated_at: string
           user_id: string
@@ -146,6 +148,7 @@ export type Database = {
         Insert: {
           active?: boolean
           created_at?: string
+          cta_text?: string
           id?: string
           image_desktop?: string
           image_mobile?: string
@@ -153,6 +156,7 @@ export type Database = {
           link_url?: string | null
           product_id?: string | null
           sort_order?: number
+          subtitle?: string
           title?: string
           updated_at?: string
           user_id: string
@@ -160,6 +164,7 @@ export type Database = {
         Update: {
           active?: boolean
           created_at?: string
+          cta_text?: string
           id?: string
           image_desktop?: string
           image_mobile?: string
@@ -167,6 +172,7 @@ export type Database = {
           link_url?: string | null
           product_id?: string | null
           sort_order?: number
+          subtitle?: string
           title?: string
           updated_at?: string
           user_id?: string
