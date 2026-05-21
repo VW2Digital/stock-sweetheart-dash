@@ -163,7 +163,9 @@ const SettingsShipping = () => {
         upsertSetting(`melhor_envio_client_secret_${melhorEnvioEnv}`, melhorEnvioClientSecret, uid),
         upsertSetting('melhor_envio_environment', melhorEnvioEnv, uid),
         upsertSetting('melhor_envio_sender', senderData, uid),
+        upsertSetting('shipping_enabled', shippingEnabled ? 'true' : 'false', uid),
       ]);
+      invalidateShippingEnabledCache();
       toast({ title: 'Configurações de logística salvas!' });
     } catch (err: any) {
       toast({ title: 'Erro', description: err.message, variant: 'destructive' });
