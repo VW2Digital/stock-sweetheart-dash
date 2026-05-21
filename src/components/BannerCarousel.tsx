@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchBannerSlides } from '@/lib/api';
-import { supabase } from '@/integrations/supabase/client';
 import { ChevronLeft, ChevronRight, ArrowRight, ImageIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAITranslateBatch } from '@/hooks/useAITranslate';
@@ -18,6 +16,7 @@ type BannerSlide = {
   image_desktop?: string;
   image_tablet?: string;
   image_mobile?: string;
+  product_cover_image?: string;
   products?: ProductImageRecord | ProductImageRecord[] | null;
 };
 
@@ -35,68 +34,11 @@ const BannerCarousel = () => {
   const [direction, setDirection] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  const [productImages, setProductImages] = useState<Record<string, string>>({});
-
-  const normalizeImageUrl = useCallback((value: string): string | null => {
-    const image = value.trim();
-    if (!image) return null;
-    if (/^(https?:|data:|blob:|\/)/i.test(image)) return image;
-
-    const storagePath = image.replace(/^\/+/, '');
-    const [maybeBucket, ...pathParts] = storagePath.split('/');
-    const bucket = ['product-images', 'banner-images'].includes(maybeBucket) ? maybeBucket : 'product-images';
-    const path = ['product-images', 'banner-images'].includes(maybeBucket) ? pathParts.join('/') : storagePath;
-    if (!path) return null;
-
-    return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
-  }, []);
-
-  const getFirstImage = useCallback((value: unknown): string | null => {
-    if (Array.isArray(value)) {
-      const raw = value.find((item) => typeof item === 'string' && item.trim());
-      return typeof raw === 'string' ? normalizeImageUrl(raw) : null;
-    }
-    if (typeof value === 'string') return normalizeImageUrl(value);
-    return null;
-  }, [normalizeImageUrl]);
-
   useEffect(() => {
     fetchBannerSlides(true)
       .then(setSlides)
       .finally(() => setLoading(false));
   }, []);
-
-  useEffect(() => {
-    const embeddedMap = slides.reduce<Record<string, string>>((acc, slide) => {
-      if (!slide.product_id || !slide.products) return acc;
-      const product = Array.isArray(slide.products) ? slide.products[0] : slide.products;
-      const img = getFirstImage(product?.images);
-      if (img) acc[slide.product_id] = img;
-      return acc;
-    }, {});
-
-    if (Object.keys(embeddedMap).length) {
-      setProductImages((prev) => ({ ...prev, ...embeddedMap }));
-    }
-
-    const ids = Array.from(new Set(slides.map((s) => s.product_id).filter(Boolean))) as string[];
-    const missingIds = ids.filter((id) => !embeddedMap[id]);
-    if (!missingIds.length) return;
-    (async () => {
-      const { data: products } = await supabase
-        .from('products')
-        .select('id, images')
-        .in('id', missingIds);
-
-      if (!products) return;
-      const map: Record<string, string> = {};
-      for (const p of products as ProductImageRecord[]) {
-        const img = getFirstImage(p.images);
-        if (img) map[p.id] = img;
-      }
-      setProductImages((prev) => ({ ...prev, ...map }));
-    })();
-  }, [slides, getFirstImage]);
 
   useEffect(() => {
     if (slides.length <= 1) return;
@@ -152,8 +94,7 @@ const BannerCarousel = () => {
     exit: (dir: number) => ({ x: dir > 0 ? -40 : 40, opacity: 0 }),
   };
 
-  const productImage = slide.product_id ? productImages[slide.product_id] : null;
-  const bannerImage = productImage || slide.image_desktop || slide.image_tablet || slide.image_mobile || null;
+  const bannerImage = slide.product_cover_image || slide.image_desktop || slide.image_tablet || slide.image_mobile || null;
 
 
   const SlideContent = (
