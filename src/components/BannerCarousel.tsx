@@ -231,14 +231,14 @@ const BannerCarousel = () => {
         <>
           <button
             onClick={(e) => { e.preventDefault(); prev(); }}
-            className="absolute left-4 lg:left-8 bottom-8 lg:bottom-12 w-10 h-10 border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-all z-20 bg-background/80 backdrop-blur-sm"
+            className="hidden lg:flex absolute left-4 lg:left-8 bottom-8 lg:bottom-12 w-10 h-10 border border-border items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-all z-20 bg-background/80 backdrop-blur-sm"
             aria-label="Previous"
           >
             <ChevronLeft className="w-[18px] h-[18px]" strokeWidth={1.5} />
           </button>
           <button
             onClick={(e) => { e.preventDefault(); next(); }}
-            className="absolute left-16 lg:left-20 bottom-8 lg:bottom-12 w-10 h-10 border border-border flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-all z-20 bg-background/80 backdrop-blur-sm"
+            className="hidden lg:flex absolute left-16 lg:left-20 bottom-8 lg:bottom-12 w-10 h-10 border border-border items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-all z-20 bg-background/80 backdrop-blur-sm"
             aria-label="Next"
           >
             <ChevronRight className="w-[18px] h-[18px]" strokeWidth={1.5} />
