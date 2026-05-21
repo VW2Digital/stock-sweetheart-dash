@@ -290,7 +290,7 @@ export const fetchBannerSlides = async (activeOnly = false) => {
 
   const { data: products } = await supabase
     .from('products')
-    .select('id, name, images')
+    .select('id, name, images, product_variations(id, images, image_url)')
     .in('id', productIds);
 
   const productsById = new Map(((products as any[]) || []).map((product) => [product.id, product]));
