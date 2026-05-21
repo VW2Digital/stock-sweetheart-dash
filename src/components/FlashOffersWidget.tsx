@@ -112,7 +112,7 @@ const FlashOffersWidget = () => {
           <div className="flex items-center gap-1.5">
             <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
             <h3 className="text-[13px] font-extrabold text-cyan-900 tracking-tight uppercase leading-none">
-              {lang === 'pt-PT' && config.title?.trim() ? config.title : t('flashOffers.title')}
+              {lang === 'es' && config.title?.trim() ? config.title : t('flashOffers.title')}
             </h3>
           </div>
           <button

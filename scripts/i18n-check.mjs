@@ -23,7 +23,7 @@ import path from 'node:path';
 const ROOT = process.cwd();
 const LOCALES_DIR = path.join(ROOT, 'src/i18n/locales');
 const SRC_DIR = path.join(ROOT, 'src');
-const LOCALES = ['pt-PT', 'es', 'en'];
+const LOCALES = ['es', 'en'];
 const STRICT = process.argv.includes('--strict');
 
 const loadLocale = (lng) => {

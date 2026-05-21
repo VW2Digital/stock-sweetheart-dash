@@ -2,40 +2,34 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
-import ptPT from './locales/pt-PT.json';
 import es from './locales/es.json';
 import en from './locales/en.json';
 
-export const SUPPORTED_LANGUAGES = ['pt-PT', 'es', 'en'] as const;
+export const SUPPORTED_LANGUAGES = ['es', 'en'] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
 export const normalizeLng = (lng: string | undefined): SupportedLanguage => {
-  if (!lng) return 'pt-PT';
+  if (!lng) return 'es';
   const lower = lng.toLowerCase();
-  if (lower.startsWith('pt')) return 'pt-PT';
-  if (lower.startsWith('es')) return 'es';
   if (lower.startsWith('en')) return 'en';
-  return 'pt-PT';
+  return 'es';
 };
 
 /**
  * Mapa BCP-47 usado em Intl.* (moeda, data, número).
- * Apenas Português de Portugal (pt-PT) é suportado.
  */
 export const INTL_LOCALES: Record<SupportedLanguage, string> = {
-  'pt-PT': 'pt-PT',
   es: 'es-ES',
   en: 'en-US',
 };
 
 const DEFAULT_CURRENCY: Record<SupportedLanguage, string> = {
-  'pt-PT': 'EUR',
   es: 'EUR',
   en: 'USD',
 };
 
 const intlLocale = (lng: string | undefined): string =>
-  INTL_LOCALES[normalizeLng(lng)] || INTL_LOCALES['pt-PT'];
+  INTL_LOCALES[normalizeLng(lng)] || INTL_LOCALES['es'];
 
 /**
  * i18next: motor de tradução de toda a aplicação.
@@ -63,11 +57,10 @@ i18n
     ns: ['translation'],
     defaultNS: 'translation',
     resources: {
-      'pt-PT': { translation: ptPT },
       es: { translation: es },
       en: { translation: en },
     },
-    fallbackLng: 'pt-PT',
+    fallbackLng: 'es',
     supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
     nonExplicitSupportedLngs: false,
     load: 'currentOnly',

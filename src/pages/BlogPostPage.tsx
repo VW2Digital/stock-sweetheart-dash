@@ -184,7 +184,7 @@ export default function BlogPostPage() {
               className="prose prose-neutral dark:prose-invert max-w-none prose-headings:text-foreground prose-p:text-foreground prose-a:text-primary prose-strong:text-foreground prose-li:text-foreground"
               dangerouslySetInnerHTML={{ __html: tContent || post.content }}
             />
-            {lang !== 'pt-PT' && !tContent && post.content && (
+            {lang !== 'es' && !tContent && post.content && (
               <p className="text-xs text-muted-foreground mt-3 italic">{t('blog.loading')}</p>
             )}
           </article>

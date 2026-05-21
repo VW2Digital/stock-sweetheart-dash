@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useLanguage, type Language } from '@/contexts/LanguageContext';
 import { normalizeLng } from '@/i18n';
 
-const SUPPORTED: Language[] = ['pt-PT', 'es', 'en'];
+const SUPPORTED: Language[] = ['es', 'en'];
 
 /**
  * Mantém o idioma em sincronia com o parâmetro ?lang= apenas quando
