@@ -25,11 +25,15 @@ export const normalizeLng = (lng: string | undefined): SupportedLanguage => {
 export const INTL_LOCALES: Record<SupportedLanguage, string> = {
   es: 'es-ES',
   en: 'en-US',
+  pt: 'pt-PT',
+  'pt-BR': 'pt-BR',
 };
 
 const DEFAULT_CURRENCY: Record<SupportedLanguage, string> = {
   es: 'EUR',
   en: 'USD',
+  pt: 'EUR',
+  'pt-BR': 'BRL',
 };
 
 const intlLocale = (lng: string | undefined): string =>
