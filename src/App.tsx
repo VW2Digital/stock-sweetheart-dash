@@ -53,6 +53,7 @@ const SettingsProductDetails = lazy(() => import("./pages/settings/SettingsProdu
 const SettingsTrustBar = lazy(() => import("./pages/settings/SettingsTrustBar"));
 const SettingsBackup = lazy(() => import("./pages/settings/SettingsBackup"));
 const SettingsGuides = lazy(() => import("./pages/settings/SettingsGuides"));
+const SettingsLanguages = lazy(() => import("./pages/settings/SettingsLanguages"));
 const OrdersPage = lazy(() => import("./pages/OrdersPage"));
 const OrderDetailPage = lazy(() => import("./pages/OrderDetailPage"));
 const UsersPage = lazy(() => import("./pages/UsersPage"));
