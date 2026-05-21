@@ -1,7 +1,7 @@
 import { createContext, useContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n, { SUPPORTED_LANGUAGES, normalizeLng, type SupportedLanguage } from '@/i18n';
-import { loadLanguageSettings, useLanguageSettings } from '@/hooks/useLanguageSettings';
+import { useLanguageSettings } from '@/hooks/useLanguageSettings';
 
 export type Language = SupportedLanguage;
 
