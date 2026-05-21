@@ -8,9 +8,34 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAITranslateBatch } from '@/hooks/useAITranslate';
 
+type BannerSlide = {
+  id?: string;
+  title?: string;
+  subtitle?: string;
+  cta_text?: string;
+  link_url?: string | null;
+  product_id?: string | null;
+  image_desktop?: string;
+  image_tablet?: string;
+  image_mobile?: string;
+};
+
+type ProductImageRecord = {
+  id: string;
+  images?: unknown;
+  product_images?: unknown;
+  image_url?: unknown;
+};
+
+type ProductVariationImageRecord = {
+  product_id?: string | null;
+  images?: unknown;
+  image_url?: unknown;
+};
+
 const BannerCarousel = () => {
   const { t, lang } = useLanguage();
-  const [slides, setSlides] = useState<any[]>([]);
+  const [slides, setSlides] = useState<BannerSlide[]>([]);
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -30,7 +55,7 @@ const BannerCarousel = () => {
   }, []);
 
   useEffect(() => {
-    const ids = Array.from(new Set(slides.map((s: any) => s.product_id).filter(Boolean)));
+    const ids = Array.from(new Set(slides.map((s) => s.product_id).filter(Boolean))) as string[];
     if (!ids.length) return;
     (async () => {
       const [{ data: products }, { data: variations }] = await Promise.all([
@@ -45,16 +70,16 @@ const BannerCarousel = () => {
       ]);
 
       if (!products) return;
-      const variationsByProduct = ((variations as any[]) || []).reduce<Record<string, any[]>>((acc, variation) => {
+      const variationsByProduct = ((variations as ProductVariationImageRecord[]) || []).reduce<Record<string, ProductVariationImageRecord[]>>((acc, variation) => {
         if (!variation.product_id) return acc;
         acc[variation.product_id] = [...(acc[variation.product_id] || []), variation];
         return acc;
       }, {});
 
       const map: Record<string, string> = {};
-      for (const p of products as any[]) {
+      for (const p of products as ProductImageRecord[]) {
         const variationImage = variationsByProduct[p.id]
-          ?.map((variation: any) => getFirstImage(variation.images) || getFirstImage(variation.image_url))
+          ?.map((variation) => getFirstImage(variation.images) || getFirstImage(variation.image_url))
           .find(Boolean);
         const img = variationImage
           || getFirstImage(p.images)
