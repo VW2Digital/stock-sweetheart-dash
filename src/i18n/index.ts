@@ -4,13 +4,17 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 
 import es from './locales/es.json';
 import en from './locales/en.json';
+import pt from './locales/pt-PT.json';
+import ptBR from './locales/pt-BR.json';
 
-export const SUPPORTED_LANGUAGES = ['en', 'es'] as const;
+export const SUPPORTED_LANGUAGES = ['en', 'es', 'pt', 'pt-BR'] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
 export const normalizeLng = (lng: string | undefined): SupportedLanguage => {
   if (!lng) return 'en';
   const lower = lng.toLowerCase();
+  if (lower === 'pt-br' || lower === 'pt_br' || lower.startsWith('pt-br')) return 'pt-BR';
+  if (lower.startsWith('pt')) return 'pt';
   if (lower.startsWith('es')) return 'es';
   return 'en';
 };
