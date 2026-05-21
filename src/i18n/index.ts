@@ -67,6 +67,8 @@ i18n
     resources: {
       es: { translation: es },
       en: { translation: en },
+      pt: { translation: pt },
+      'pt-BR': { translation: ptBR },
     },
     fallbackLng: 'en',
     supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
