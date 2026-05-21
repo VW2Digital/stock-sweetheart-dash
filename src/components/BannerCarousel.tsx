@@ -38,9 +38,16 @@ const BannerCarousel = () => {
     setCurrent(c => (c + 1) % slides.length);
   }, [slides.length]);
 
-  if (loading || slides.length === 0) return null;
+  if (loading) return null;
 
-  const slide = slides[current];
+  const effectiveSlides = slides.length > 0 ? slides : [{
+    title: `${t?.('defaultBannerHeadline') || 'Feel the Balance'} | ${t?.('defaultBannerSubheadline') || 'Curated Essentials'}`,
+    subtitle: t?.('defaultBannerSubtitle') || 'An exclusive curation of pieces that blend urban sophistication with minimalist design.',
+    link_url: '/catalogo',
+    product_id: null,
+  }];
+
+  const slide = effectiveSlides[current] || effectiveSlides[0];
   const linkTo = slide.product_id
     ? `/produto/${slide.product_id}`
     : slide.link_url || null;
