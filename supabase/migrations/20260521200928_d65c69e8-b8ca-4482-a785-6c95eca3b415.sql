@@ -1,0 +1,14 @@
+ALTER TABLE public.banner_slides
+  ADD COLUMN IF NOT EXISTS title text NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS subtitle text NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS cta_text text NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS image_desktop text NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS image_tablet text NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS image_mobile text NOT NULL DEFAULT '',
+  ADD COLUMN IF NOT EXISTS link_url text DEFAULT '',
+  ADD COLUMN IF NOT EXISTS product_id uuid,
+  ADD COLUMN IF NOT EXISTS sort_order integer NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS active boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS user_id uuid,
+  ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now(),
+  ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
