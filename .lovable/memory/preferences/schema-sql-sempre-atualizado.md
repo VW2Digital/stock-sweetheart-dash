@@ -11,6 +11,12 @@ A cada `supabase--migration` (nova tabela, coluna, policy, função, trigger, í
 
 ## Regras obrigatórias (não negociáveis)
 
+0. **NUNCA criar Foreign Keys referenciando `auth.users(id)`** — em nenhuma tabela (profiles, cart_items, addresses, orders, user_roles, bulk_email_campaigns, etc.). PostgreSQL valida todos os registros existentes ao criar a FK e quebra com erro `23503` se houver `user_id` órfão (usuário deletado de `auth.users`). A integridade é garantida via RLS, não via FK. Se precisar documentar a relação, use apenas comentário:
+   ```sql
+   -- FK para auth.users omitida intencionalmente (evita erro 23503)
+   ```
+   Ao gerar/atualizar `schema_supabase.sql`, remover qualquer `ALTER TABLE ... ADD CONSTRAINT ... FOREIGN KEY (...) REFERENCES auth.users(id)` e qualquer `REFERENCES auth.users` inline em `CREATE TABLE`.
+
 1. **Cabeçalho do arquivo** deve conter, antes do bloco de EXTENSIONS:
    ```sql
    SET check_function_bodies = off;
