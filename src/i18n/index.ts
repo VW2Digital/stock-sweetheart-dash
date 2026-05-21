@@ -5,14 +5,14 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import es from './locales/es.json';
 import en from './locales/en.json';
 
-export const SUPPORTED_LANGUAGES = ['es', 'en'] as const;
+export const SUPPORTED_LANGUAGES = ['en', 'es'] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
 export const normalizeLng = (lng: string | undefined): SupportedLanguage => {
-  if (!lng) return 'es';
+  if (!lng) return 'en';
   const lower = lng.toLowerCase();
-  if (lower.startsWith('en')) return 'en';
-  return 'es';
+  if (lower.startsWith('es')) return 'es';
+  return 'en';
 };
 
 /**
