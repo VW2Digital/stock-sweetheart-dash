@@ -14,10 +14,23 @@ const normalizeStorageImageUrl = (value?: unknown): string => {
   return path ? supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl : '';
 };
 
+const pickFirstImage = (images: unknown): string => {
+  if (Array.isArray(images)) {
+    const found = images.find((item) => typeof item === 'string' && item.trim());
+    return typeof found === 'string' ? found : '';
+  }
+  return typeof images === 'string' ? images : '';
+};
+
 const getProductCoverImage = (product?: any): string => {
-  const firstImage = Array.isArray(product?.images)
-    ? product.images.find((item: unknown) => typeof item === 'string' && item.trim())
-    : product?.images;
+  let firstImage = pickFirstImage(product?.images);
+
+  if (!firstImage && Array.isArray(product?.product_variations)) {
+    for (const variation of product.product_variations) {
+      firstImage = pickFirstImage(variation?.images) || (typeof variation?.image_url === 'string' ? variation.image_url : '');
+      if (firstImage) break;
+    }
+  }
 
   return normalizeStorageImageUrl(firstImage);
 };
@@ -277,7 +290,7 @@ export const fetchBannerSlides = async (activeOnly = false) => {
 
   const { data: products } = await supabase
     .from('products')
-    .select('id, name, images')
+    .select('id, name, images, product_variations(id, images, image_url)')
     .in('id', productIds);
 
   const productsById = new Map(((products as any[]) || []).map((product) => [product.id, product]));
