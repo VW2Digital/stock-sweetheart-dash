@@ -16,6 +16,8 @@ import iconBanners from '@/assets/icon-banners-3d.png';
 // ── Slide Form types ──
 interface SlideForm {
   title: string;
+  subtitle: string;
+  cta_text: string;
   image_desktop: string;
   image_tablet: string;
   image_mobile: string;
@@ -25,6 +27,8 @@ interface SlideForm {
 
 const emptyForm: SlideForm = {
   title: '',
+  subtitle: '',
+  cta_text: '',
   image_desktop: '',
   image_tablet: '',
   image_mobile: '',
@@ -124,14 +128,12 @@ const BannerList = () => {
   };
 
   const handleSaveSlide = async () => {
-    if (!form.image_desktop && !form.image_tablet && !form.image_mobile) {
-      toast({ title: 'Adicione pelo menos uma imagem', variant: 'destructive' });
-      return;
-    }
     setSavingSlide(true);
     try {
       const payload = {
         title: form.title,
+        subtitle: form.subtitle,
+        cta_text: form.cta_text,
         image_desktop: form.image_desktop,
         image_tablet: form.image_tablet,
         image_mobile: form.image_mobile,
@@ -160,6 +162,8 @@ const BannerList = () => {
     setEditId(slide.id);
     setForm({
       title: slide.title || '',
+      subtitle: slide.subtitle || '',
+      cta_text: slide.cta_text || '',
       image_desktop: slide.image_desktop || '',
       image_tablet: slide.image_tablet || '',
       image_mobile: slide.image_mobile || '',
@@ -295,14 +299,30 @@ const BannerList = () => {
                   <DialogTitle>{editId ? 'Editar Slide' : 'Novo Slide'}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-2">
-                  <div>
-                    <Label>Título (opcional)</Label>
-                    <Input value={form.title} onChange={(e) => setForm(prev => ({ ...prev, title: e.target.value }))} placeholder="Ex: Promoção de Verão" />
+                  <div className="rounded-md border border-dashed border-border/60 bg-muted/30 p-3 space-y-3">
+                    <p className="text-xs text-muted-foreground">
+                      Conteúdo de texto do slide. Use <code className="text-foreground">Título | Subtítulo</code> para quebra de linha (a parte após <code>|</code> fica em peso leve).
+                    </p>
+                    <div>
+                      <Label>Título principal</Label>
+                      <Input value={form.title} onChange={(e) => setForm(prev => ({ ...prev, title: e.target.value }))} placeholder="Ex: Siente el Equilibrio | Esenciales Seleccionados" />
+                    </div>
+                    <div>
+                      <Label>Descrição</Label>
+                      <Input value={form.subtitle} onChange={(e) => setForm(prev => ({ ...prev, subtitle: e.target.value }))} placeholder="Ex: Uma curadoria exclusiva de peças..." />
+                    </div>
+                    <div>
+                      <Label>Texto do botão (CTA)</Label>
+                      <Input value={form.cta_text} onChange={(e) => setForm(prev => ({ ...prev, cta_text: e.target.value }))} placeholder="Vazio = usa padrão do idioma (Comprar agora)" />
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <ImageUploadField label="Desktop" icon={Monitor} field="image_desktop" ratio="1920×600" />
-                    <ImageUploadField label="Tablet" icon={Tablet} field="image_tablet" ratio="768×400" />
-                    <ImageUploadField label="Smartphone" icon={Smartphone} field="image_mobile" ratio="390×300" />
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">Imagens são <strong>opcionais</strong>. Sem imagens, o slide usa o template visual atual (card abstrato).</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <ImageUploadField label="Desktop" icon={Monitor} field="image_desktop" ratio="1920×600" />
+                      <ImageUploadField label="Tablet" icon={Tablet} field="image_tablet" ratio="768×400" />
+                      <ImageUploadField label="Smartphone" icon={Smartphone} field="image_mobile" ratio="390×300" />
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
