@@ -209,7 +209,8 @@ const AppShell = () => (
                 <Route path="configuracoes/categorias" element={<SettingsCategories />} />
                 <Route path="configuracoes/detalhes-produto" element={<SettingsProductDetails />} />
                 <Route path="configuracoes/trust-bar" element={<SettingsTrustBar />} />
-                <Route path="configuracoes/backup" element={<SettingsBackup />} />
+               <Route path="configuracoes/backup" element={<SettingsBackup />} />
+               <Route path="configuracoes/idiomas" element={<SettingsLanguages />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
