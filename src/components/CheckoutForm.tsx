@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchSetting } from '@/lib/api';
 import { gtagEvent } from '@/lib/gtag';
