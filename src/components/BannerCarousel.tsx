@@ -18,6 +18,7 @@ type BannerSlide = {
   image_desktop?: string;
   image_tablet?: string;
   image_mobile?: string;
+  products?: ProductImageRecord | ProductImageRecord[] | null;
 };
 
 type ProductImageRecord = {
@@ -25,6 +26,7 @@ type ProductImageRecord = {
   images?: unknown;
   product_images?: unknown;
   image_url?: unknown;
+  product_variations?: ProductVariationImageRecord[] | null;
 };
 
 type ProductVariationImageRecord = {
@@ -42,9 +44,26 @@ const BannerCarousel = () => {
 
   const [productImages, setProductImages] = useState<Record<string, string>>({});
 
+  const normalizeImageUrl = (value: string): string | null => {
+    const image = value.trim();
+    if (!image) return null;
+    if (/^(https?:|data:|blob:|\/)/i.test(image)) return image;
+
+    const storagePath = image.replace(/^\/+/, '');
+    const [maybeBucket, ...pathParts] = storagePath.split('/');
+    const bucket = ['product-images', 'banner-images'].includes(maybeBucket) ? maybeBucket : 'product-images';
+    const path = ['product-images', 'banner-images'].includes(maybeBucket) ? pathParts.join('/') : storagePath;
+    if (!path) return null;
+
+    return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+  };
+
   const getFirstImage = (value: unknown): string | null => {
-    if (Array.isArray(value)) return value.find((item) => typeof item === 'string' && item.trim()) || null;
-    if (typeof value === 'string') return value.trim() || null;
+    if (Array.isArray(value)) {
+      const raw = value.find((item) => typeof item === 'string' && item.trim());
+      return typeof raw === 'string' ? normalizeImageUrl(raw) : null;
+    }
+    if (typeof value === 'string') return normalizeImageUrl(value);
     return null;
   };
 
@@ -55,18 +74,37 @@ const BannerCarousel = () => {
   }, []);
 
   useEffect(() => {
+    const embeddedMap = slides.reduce<Record<string, string>>((acc, slide) => {
+      if (!slide.product_id || !slide.products) return acc;
+      const product = Array.isArray(slide.products) ? slide.products[0] : slide.products;
+      const variationImage = product?.product_variations
+        ?.map((variation) => getFirstImage(variation.images) || getFirstImage(variation.image_url))
+        .find(Boolean);
+      const img = variationImage
+        || getFirstImage(product?.images)
+        || getFirstImage(product?.product_images)
+        || getFirstImage(product?.image_url);
+      if (img) acc[slide.product_id] = img;
+      return acc;
+    }, {});
+
+    if (Object.keys(embeddedMap).length) {
+      setProductImages((prev) => ({ ...prev, ...embeddedMap }));
+    }
+
     const ids = Array.from(new Set(slides.map((s) => s.product_id).filter(Boolean))) as string[];
-    if (!ids.length) return;
+    const missingIds = ids.filter((id) => !embeddedMap[id]);
+    if (!missingIds.length) return;
     (async () => {
       const [{ data: products }, { data: variations }] = await Promise.all([
         supabase
         .from('products')
         .select('*')
-        .in('id', ids as string[]),
+        .in('id', missingIds),
         supabase
           .from('product_variations')
           .select('*')
-          .in('product_id', ids as string[]),
+          .in('product_id', missingIds),
       ]);
 
       if (!products) return;
@@ -87,7 +125,7 @@ const BannerCarousel = () => {
           || getFirstImage(p.image_url);
         if (img) map[p.id] = img;
       }
-      setProductImages(map);
+      setProductImages((prev) => ({ ...prev, ...map }));
     })();
   }, [slides]);
 
