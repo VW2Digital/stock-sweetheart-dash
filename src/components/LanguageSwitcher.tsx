@@ -29,7 +29,7 @@ const LanguageSwitcher = () => {
         <span className="font-medium">{current.short}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[180px]">
-        {languages.map((l) => (
+        {list.map((l) => (
           <DropdownMenuItem
             key={l.code}
             onClick={() => setLang(l.code)}
