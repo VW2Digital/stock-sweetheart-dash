@@ -17,8 +17,10 @@ const FlagIcon = ({ code, className = '' }: { code: string; className?: string }
 );
 
 const LanguageSwitcher = () => {
-  const { lang, setLang } = useLanguage();
-  const current = languages.find((l) => l.code === lang) || languages[0];
+  const { lang, setLang, availableLanguages } = useLanguage();
+  const list = availableLanguages.length > 0 ? availableLanguages : [];
+  if (list.length <= 1) return null;
+  const current = list.find((l) => l.code === lang) || list[0];
 
   return (
     <DropdownMenu>
