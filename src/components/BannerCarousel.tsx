@@ -37,7 +37,7 @@ const BannerCarousel = () => {
 
   const [productImages, setProductImages] = useState<Record<string, string>>({});
 
-  const normalizeImageUrl = (value: string): string | null => {
+  const normalizeImageUrl = useCallback((value: string): string | null => {
     const image = value.trim();
     if (!image) return null;
     if (/^(https?:|data:|blob:|\/)/i.test(image)) return image;
@@ -49,16 +49,16 @@ const BannerCarousel = () => {
     if (!path) return null;
 
     return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
-  };
+  }, []);
 
-  const getFirstImage = (value: unknown): string | null => {
+  const getFirstImage = useCallback((value: unknown): string | null => {
     if (Array.isArray(value)) {
       const raw = value.find((item) => typeof item === 'string' && item.trim());
       return typeof raw === 'string' ? normalizeImageUrl(raw) : null;
     }
     if (typeof value === 'string') return normalizeImageUrl(value);
     return null;
-  };
+  }, [normalizeImageUrl]);
 
   useEffect(() => {
     fetchBannerSlides(true)
@@ -96,7 +96,7 @@ const BannerCarousel = () => {
       }
       setProductImages((prev) => ({ ...prev, ...map }));
     })();
-  }, [slides]);
+  }, [slides, getFirstImage]);
 
   useEffect(() => {
     if (slides.length <= 1) return;
