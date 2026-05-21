@@ -110,10 +110,8 @@ const AdminFallback = () => (
   </div>
 );
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-    <CartProvider>
+const AppShell = () => (
+  <CartProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -129,97 +127,103 @@ const App = () => (
         <ErrorBoundary silent name="ChatWidgetEmbed"><ChatWidgetEmbed /></ErrorBoundary>
         <ErrorBoundary silent name="MercadoPagoSecurity"><MercadoPagoSecurity /></ErrorBoundary>
         <ErrorBoundary name="Routes">
-        <Suspense fallback={<AdminFallback />}>
-        <Routes>
-          <Route path="/" element={<Catalog />} />
-          <Route path="/catalogo" element={<Catalog />} />
-          <Route path="/retatrutide" element={<RetatrutideRedirect />} />
-          <Route path="/produto/:id" element={<ProductCheckout />} />
-          <Route path="/checkout/:id" element={<Checkout />} />
-          <Route path="/carrinho" element={<CartPage />} />
-          <Route path="/checkout-carrinho" element={<CartCheckout />} />
-          <Route path="/cliente/login" element={<CustomerLogin />} />
-          <Route path="/minha-conta" element={<CustomerDashboard />} />
-          <Route path="/redefinir-senha" element={<ResetPassword />} />
-          <Route path="/recuperar-senha" element={<ForgotPassword />} />
-          <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
-          <Route path="/termos-de-uso" element={<TermsOfUse />} />
-          <Route path="/contato" element={<ContactPage />} />
-          <Route path="/pagar/:slug" element={<PaymentLinkCheckout />} />
-          <Route path="/combo/:slug" element={<ComboCheckout />} />
-          <Route path="/relampago/:slug" element={<FlashCampaignPage />} />
-          <Route path="/relampago/:slug/obrigado" element={<FlashCampaignThankYouPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/blog" element={<BlogIndex />} />
-          <Route path="/blog/:slug" element={<BlogPostPage />} />
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="produtos" element={<ProductList />} />
-            <Route path="produtos/novo" element={<ProductForm />} />
-            <Route path="produtos/importar" element={<ProductImportCSV />} />
-            <Route path="produtos/:id" element={<ProductForm />} />
-            <Route path="atacado" element={<WholesalePricingPage />} />
-            <Route path="upsells" element={<UpsellManagerPage />} />
-            <Route path="combos" element={<CombosManagerPage />} />
-            <Route path="combos/:id" element={<CombosManagerPage />} />
-            <Route path="metricas-recomendacoes" element={<RecommendationMetricsPage />} />
-            <Route path="banners" element={<BannerList />} />
-            <Route path="popups" element={<PopupList />} />
-            <Route path="blog" element={<BlogPostsList />} />
-            <Route path="blog/:id" element={<BlogPostForm />} />
-            <Route path="pedidos" element={<OrdersPage />} />
-            <Route path="pedidos/:id" element={<OrderDetailPage />} />
-            <Route path="usuarios" element={<UsersPage />} />
-            <Route path="usuarios/:id" element={<UserDetailPage />} />
-            <Route path="avaliacoes" element={<AdminReviewsPage />} />
-            <Route path="suporte" element={<AdminSupportPage />} />
-            <Route path="falhas-pagamento" element={<PaymentLogsPage />} />
-            <Route path="fallbacks-gateway" element={<GatewayFallbackLogsPage />} />
-            <Route path="webhooks-logs" element={<WebhookLogsPage />} />
-            <Route path="carrinho-abandonado" element={<CartAbandonmentLogsPage />} />
-            <Route path="links-pagamento" element={<PaymentLinksPage />} />
-            <Route path="cupons" element={<CouponsPage />} />
-            <Route path="revendedores" element={<ResellersPage />} />
-            <Route path="revendedores/:id" element={<ResellerDetailPage />} />
-            <Route path="relatorios" element={<ReportsPage />} />
-            <Route path="ab-test" element={<AbTestPage />} />
-            <Route path="campanhas-relampago" element={<FlashCampaignsPage />} />
-            <Route path="campanhas-relampago/nova" element={<FlashCampaignFormPage />} />
-            <Route path="campanhas-relampago/:id" element={<FlashCampaignFormPage />} />
-            <Route path="campanhas-relampago/:id/leads" element={<FlashCampaignLeadsPage />} />
-            <Route path="templates-email" element={<EmailTemplatesPage />} />
-            <Route path="logs-email" element={<EmailLogsPage />} />
-            <Route path="eventos-email" element={<EmailEventsPage />} />
-            <Route path="disparo-emails" element={<BulkEmailPage />} />
-            <Route path="configuracoes" element={<SettingsIndex />} />
-            <Route path="configuracoes/guias" element={<SettingsGuides />} />
-            <Route path="configuracoes/design" element={<SettingsDesign />} />
-            <Route path="configuracoes/cores" element={<SettingsColors />} />
-            <Route path="configuracoes/fontes" element={<SettingsFonts />} />
-            <Route path="configuracoes/css" element={<SettingsCSS />} />
-            <Route path="configuracoes/pagina-inicial" element={<SettingsHomePage />} />
-            <Route path="configuracoes/widget-ofertas" element={<SettingsFlashOffersWidget />} />
-            <Route path="configuracoes/pagamento" element={<SettingsPayment />} />
-            <Route path="configuracoes/pagamento/auditoria" element={<GatewayAuditLog />} />
-            <Route path="configuracoes/pagamento/:gateway" element={<GatewaySettingsPage />} />
-            <Route path="configuracoes/logistica" element={<SettingsShipping />} />
-            <Route path="configuracoes/comunicacao" element={<SettingsCommunication />} />
-            <Route path="configuracoes/rodape" element={<SettingsFooter />} />
-            <Route path="configuracoes/avancado" element={<SettingsAdvanced />} />
-            <Route path="configuracoes/api" element={<SettingsAPI />} />
-            <Route path="configuracoes/categorias" element={<SettingsCategories />} />
-            <Route path="configuracoes/detalhes-produto" element={<SettingsProductDetails />} />
-            <Route path="configuracoes/trust-bar" element={<SettingsTrustBar />} />
-            <Route path="configuracoes/backup" element={<SettingsBackup />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        </Suspense>
+          <Suspense fallback={<AdminFallback />}>
+            <Routes>
+              <Route path="/" element={<Catalog />} />
+              <Route path="/catalogo" element={<Catalog />} />
+              <Route path="/retatrutide" element={<RetatrutideRedirect />} />
+              <Route path="/produto/:id" element={<ProductCheckout />} />
+              <Route path="/checkout/:id" element={<Checkout />} />
+              <Route path="/carrinho" element={<CartPage />} />
+              <Route path="/checkout-carrinho" element={<CartCheckout />} />
+              <Route path="/cliente/login" element={<CustomerLogin />} />
+              <Route path="/minha-conta" element={<CustomerDashboard />} />
+              <Route path="/redefinir-senha" element={<ResetPassword />} />
+              <Route path="/recuperar-senha" element={<ForgotPassword />} />
+              <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
+              <Route path="/termos-de-uso" element={<TermsOfUse />} />
+              <Route path="/contato" element={<ContactPage />} />
+              <Route path="/pagar/:slug" element={<PaymentLinkCheckout />} />
+              <Route path="/combo/:slug" element={<ComboCheckout />} />
+              <Route path="/relampago/:slug" element={<FlashCampaignPage />} />
+              <Route path="/relampago/:slug/obrigado" element={<FlashCampaignThankYouPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/blog" element={<BlogIndex />} />
+              <Route path="/blog/:slug" element={<BlogPostPage />} />
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="produtos" element={<ProductList />} />
+                <Route path="produtos/novo" element={<ProductForm />} />
+                <Route path="produtos/importar" element={<ProductImportCSV />} />
+                <Route path="produtos/:id" element={<ProductForm />} />
+                <Route path="atacado" element={<WholesalePricingPage />} />
+                <Route path="upsells" element={<UpsellManagerPage />} />
+                <Route path="combos" element={<CombosManagerPage />} />
+                <Route path="combos/:id" element={<CombosManagerPage />} />
+                <Route path="metricas-recomendacoes" element={<RecommendationMetricsPage />} />
+                <Route path="banners" element={<BannerList />} />
+                <Route path="popups" element={<PopupList />} />
+                <Route path="blog" element={<BlogPostsList />} />
+                <Route path="blog/:id" element={<BlogPostForm />} />
+                <Route path="pedidos" element={<OrdersPage />} />
+                <Route path="pedidos/:id" element={<OrderDetailPage />} />
+                <Route path="usuarios" element={<UsersPage />} />
+                <Route path="usuarios/:id" element={<UserDetailPage />} />
+                <Route path="avaliacoes" element={<AdminReviewsPage />} />
+                <Route path="suporte" element={<AdminSupportPage />} />
+                <Route path="falhas-pagamento" element={<PaymentLogsPage />} />
+                <Route path="fallbacks-gateway" element={<GatewayFallbackLogsPage />} />
+                <Route path="webhooks-logs" element={<WebhookLogsPage />} />
+                <Route path="carrinho-abandonado" element={<CartAbandonmentLogsPage />} />
+                <Route path="links-pagamento" element={<PaymentLinksPage />} />
+                <Route path="cupons" element={<CouponsPage />} />
+                <Route path="revendedores" element={<ResellersPage />} />
+                <Route path="revendedores/:id" element={<ResellerDetailPage />} />
+                <Route path="relatorios" element={<ReportsPage />} />
+                <Route path="ab-test" element={<AbTestPage />} />
+                <Route path="campanhas-relampago" element={<FlashCampaignsPage />} />
+                <Route path="campanhas-relampago/nova" element={<FlashCampaignFormPage />} />
+                <Route path="campanhas-relampago/:id" element={<FlashCampaignFormPage />} />
+                <Route path="campanhas-relampago/:id/leads" element={<FlashCampaignLeadsPage />} />
+                <Route path="templates-email" element={<EmailTemplatesPage />} />
+                <Route path="logs-email" element={<EmailLogsPage />} />
+                <Route path="eventos-email" element={<EmailEventsPage />} />
+                <Route path="disparo-emails" element={<BulkEmailPage />} />
+                <Route path="configuracoes" element={<SettingsIndex />} />
+                <Route path="configuracoes/guias" element={<SettingsGuides />} />
+                <Route path="configuracoes/design" element={<SettingsDesign />} />
+                <Route path="configuracoes/cores" element={<SettingsColors />} />
+                <Route path="configuracoes/fontes" element={<SettingsFonts />} />
+                <Route path="configuracoes/css" element={<SettingsCSS />} />
+                <Route path="configuracoes/pagina-inicial" element={<SettingsHomePage />} />
+                <Route path="configuracoes/widget-ofertas" element={<SettingsFlashOffersWidget />} />
+                <Route path="configuracoes/pagamento" element={<SettingsPayment />} />
+                <Route path="configuracoes/pagamento/auditoria" element={<GatewayAuditLog />} />
+                <Route path="configuracoes/pagamento/:gateway" element={<GatewaySettingsPage />} />
+                <Route path="configuracoes/logistica" element={<SettingsShipping />} />
+                <Route path="configuracoes/comunicacao" element={<SettingsCommunication />} />
+                <Route path="configuracoes/rodape" element={<SettingsFooter />} />
+                <Route path="configuracoes/avancado" element={<SettingsAdvanced />} />
+                <Route path="configuracoes/api" element={<SettingsAPI />} />
+                <Route path="configuracoes/categorias" element={<SettingsCategories />} />
+                <Route path="configuracoes/detalhes-produto" element={<SettingsProductDetails />} />
+                <Route path="configuracoes/trust-bar" element={<SettingsTrustBar />} />
+                <Route path="configuracoes/backup" element={<SettingsBackup />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </ErrorBoundary>
         <MobileBottomNav />
       </BrowserRouter>
     </TooltipProvider>
-    </CartProvider>
+  </CartProvider>
+);
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <LanguageProvider>
+      <AppShell />
     </LanguageProvider>
   </QueryClientProvider>
 );
