@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchBannerSlides } from '@/lib/api';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,14 +8,45 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAITranslateBatch } from '@/hooks/useAITranslate';
 
+type BannerSlide = {
+  id?: string;
+  title?: string;
+  subtitle?: string;
+  cta_text?: string;
+  link_url?: string | null;
+  product_id?: string | null;
+  image_desktop?: string;
+  image_tablet?: string;
+  image_mobile?: string;
+};
+
+type ProductImageRecord = {
+  id: string;
+  images?: unknown;
+  product_images?: unknown;
+  image_url?: unknown;
+};
+
+type ProductVariationImageRecord = {
+  product_id?: string | null;
+  images?: unknown;
+  image_url?: unknown;
+};
+
 const BannerCarousel = () => {
   const { t, lang } = useLanguage();
-  const [slides, setSlides] = useState<any[]>([]);
+  const [slides, setSlides] = useState<BannerSlide[]>([]);
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
   const [loading, setLoading] = useState(true);
 
   const [productImages, setProductImages] = useState<Record<string, string>>({});
+
+  const getFirstImage = (value: unknown): string | null => {
+    if (Array.isArray(value)) return value.find((item) => typeof item === 'string' && item.trim()) || null;
+    if (typeof value === 'string') return value.trim() || null;
+    return null;
+  };
 
   useEffect(() => {
     fetchBannerSlides(true)
@@ -24,20 +55,36 @@ const BannerCarousel = () => {
   }, []);
 
   useEffect(() => {
-    const ids = Array.from(new Set(slides.map((s: any) => s.product_id).filter(Boolean)));
+    const ids = Array.from(new Set(slides.map((s) => s.product_id).filter(Boolean))) as string[];
     if (!ids.length) return;
     (async () => {
-      const { data } = await supabase
+      const [{ data: products }, { data: variations }] = await Promise.all([
+        supabase
         .from('products')
-        .select('id, images, product_variations(images, image_url)')
-        .in('id', ids as string[]);
-      if (!data) return;
+        .select('*')
+        .in('id', ids as string[]),
+        supabase
+          .from('product_variations')
+          .select('*')
+          .in('product_id', ids as string[]),
+      ]);
+
+      if (!products) return;
+      const variationsByProduct = ((variations as ProductVariationImageRecord[]) || []).reduce<Record<string, ProductVariationImageRecord[]>>((acc, variation) => {
+        if (!variation.product_id) return acc;
+        acc[variation.product_id] = [...(acc[variation.product_id] || []), variation];
+        return acc;
+      }, {});
+
       const map: Record<string, string> = {};
-      for (const p of data as any[]) {
-        const variationImage = p.product_variations?.find((variation: any) =>
-          (Array.isArray(variation.images) && variation.images[0]) || variation.image_url,
-        );
-        const img = variationImage?.images?.[0] || variationImage?.image_url || (Array.isArray(p.images) ? p.images[0] : null);
+      for (const p of products as ProductImageRecord[]) {
+        const variationImage = variationsByProduct[p.id]
+          ?.map((variation) => getFirstImage(variation.images) || getFirstImage(variation.image_url))
+          .find(Boolean);
+        const img = variationImage
+          || getFirstImage(p.images)
+          || getFirstImage(p.product_images)
+          || getFirstImage(p.image_url);
         if (img) map[p.id] = img;
       }
       setProductImages(map);
