@@ -18,6 +18,7 @@ type BannerSlide = {
   image_desktop?: string;
   image_tablet?: string;
   image_mobile?: string;
+  products?: ProductImageRecord | ProductImageRecord[] | null;
 };
 
 type ProductImageRecord = {
@@ -25,6 +26,7 @@ type ProductImageRecord = {
   images?: unknown;
   product_images?: unknown;
   image_url?: unknown;
+  product_variations?: ProductVariationImageRecord[] | null;
 };
 
 type ProductVariationImageRecord = {
@@ -42,9 +44,26 @@ const BannerCarousel = () => {
 
   const [productImages, setProductImages] = useState<Record<string, string>>({});
 
+  const normalizeImageUrl = (value: string): string | null => {
+    const image = value.trim();
+    if (!image) return null;
+    if (/^(https?:|data:|blob:|\/)/i.test(image)) return image;
+
+    const storagePath = image.replace(/^\/+/, '');
+    const [maybeBucket, ...pathParts] = storagePath.split('/');
+    const bucket = ['product-images', 'banner-images'].includes(maybeBucket) ? maybeBucket : 'product-images';
+    const path = ['product-images', 'banner-images'].includes(maybeBucket) ? pathParts.join('/') : storagePath;
+    if (!path) return null;
+
+    return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+  };
+
   const getFirstImage = (value: unknown): string | null => {
-    if (Array.isArray(value)) return value.find((item) => typeof item === 'string' && item.trim()) || null;
-    if (typeof value === 'string') return value.trim() || null;
+    if (Array.isArray(value)) {
+      const raw = value.find((item) => typeof item === 'string' && item.trim());
+      return typeof raw === 'string' ? normalizeImageUrl(raw) : null;
+    }
+    if (typeof value === 'string') return normalizeImageUrl(value);
     return null;
   };
 
