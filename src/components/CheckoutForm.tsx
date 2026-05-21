@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchSetting } from '@/lib/api';
 import { gtagEvent } from '@/lib/gtag';
@@ -17,6 +17,7 @@ import { CreditCard, QrCode, Loader2, CheckCircle2, Copy, AlertCircle, MapPin, T
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
 import { useMercadoPago } from '@/hooks/useMercadoPago';
+import { useShippingEnabled } from '@/hooks/useShippingEnabled';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface CheckoutFormProps {
@@ -94,8 +95,11 @@ const STEPS = [
   { key: 'payment', labelKey: 'stepPayment', icon: CreditCard },
 ] as const;
 
-const StepIndicator = ({ currentStep }: { currentStep: CheckoutStep }) => {
+type StepDef = typeof STEPS[number];
+
+const StepIndicator = ({ currentStep, steps }: { currentStep: CheckoutStep; steps: readonly StepDef[] }) => {
   const { t } = useLanguage();
+  const STEPS = steps;
   const currentIndex = STEPS.findIndex(s => s.key === currentStep);
 
   return (
@@ -180,6 +184,11 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
   const isPagBank = activeGateway === 'pagbank';
   const isPagarMe = activeGateway === 'pagarme';
   const isMpRedirect = isMercadoPago && checkoutMode === 'redirect';
+  const { enabled: shippingEnabled } = useShippingEnabled();
+  const visibleSteps = useMemo(
+    () => (shippingEnabled ? STEPS : STEPS.filter((s) => s.key !== 'shipping')),
+    [shippingEnabled],
+  );
   const safeUnitPrice = Number(unitPrice) || 0;
   const safeQuantity = Number(quantity) || 1;
   const baseProductTotal = safeUnitPrice * safeQuantity;
@@ -785,14 +794,24 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
     setHolderPostalCode(addrPostalCode);
     setHolderAddressNumber(addrNumber);
 
-    // Always fetch shipping options so customer can choose the carrier
-    setLoadingShipping(true);
     // Google Ads: add_shipping_info
     gtagEvent('add_shipping_info', {
       currency: 'BRL',
       value: totalValue,
       items: [{ item_id: productId || '', item_name: productName, price: unitPrice, quantity }],
     });
+
+    // Frete desabilitado pelo admin — pula seleção e vai direto ao pagamento.
+    // O rastreio será emitido manualmente usando o endereço do cliente.
+    if (!shippingEnabled) {
+      setShippingOptions([]);
+      setSelectedShipping(null);
+      setStep('payment');
+      return;
+    }
+
+    // Always fetch shipping options so customer can choose the carrier
+    setLoadingShipping(true);
     setStep('shipping');
 
     // Fetch shipping options
@@ -1588,7 +1607,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
   if (step === 'customer') {
     return (
       <div>
-        <StepIndicator currentStep={step} />
+        <StepIndicator currentStep={step} steps={visibleSteps} />
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="text-base">Dados do Comprador</CardTitle>
@@ -1633,7 +1652,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
 
     return (
       <div>
-        <StepIndicator currentStep={step} />
+        <StepIndicator currentStep={step} steps={visibleSteps} />
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
@@ -1816,7 +1835,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
   if (step === 'shipping') {
     return (
       <div>
-        <StepIndicator currentStep={step} />
+        <StepIndicator currentStep={step} steps={visibleSteps} />
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
@@ -1928,7 +1947,7 @@ const CheckoutForm = ({ productName, productId, cartProductIds, paymentDescripti
   // ─── PAYMENT ───
   return (
     <div>
-      <StepIndicator currentStep={step} />
+      <StepIndicator currentStep={step} steps={visibleSteps} />
     {/* PagBank or MP Redirect Mode */}
     {(isPagBank || isMpRedirect) ? (
       <Card className="border-border/50">
