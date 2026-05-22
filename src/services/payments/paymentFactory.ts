@@ -1,6 +1,6 @@
 import { fetchSetting } from '@/lib/api';
 
-export type CheckoutGateway = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax';
+export type CheckoutGateway = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax' | 'paypal';
 
 /**
  * Returns the active payment gateway from site_settings.
