@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEffect, useState } from 'react';
 import { fetchSetting } from '@/lib/api';
+import { supabase } from '@/integrations/supabase/client';
 import logoImg from '@/assets/liberty-header-logo.png';
 import paymentMethodsImg from '@/assets/payment-methods.png';
 import seloSiteProtegido from '@/assets/selo-site-protegido.png';
@@ -10,7 +11,16 @@ import logoSedex from '@/assets/logo-sedex.png';
 import logoPac from '@/assets/logo-pac.png';
 import logoJadlog from '@/assets/logo-jadlog.png';
 import logoJtExpress from '@/assets/logo-jt-express.png';
-import { Shield, ShieldCheck } from 'lucide-react';
+
+type Category = 'payment' | 'security' | 'shipping';
+interface FooterLogo {
+  id: string;
+  category: Category;
+  label: string;
+  image_url: string;
+  link_url: string | null;
+  sort_order: number;
+}
 
 const Footer = () => {
   const { t } = useLanguage();
@@ -18,6 +28,7 @@ const Footer = () => {
   const [footerEmail, setFooterEmail] = useState('');
   const [footerPhone, setFooterPhone] = useState('');
   const [footerMission, setFooterMission] = useState('Nossa missão é democratizar o acesso a insumos de última geração que auxiliam no controle metabólico, no manejo do diabetes tipo 2 e na perda de peso, oferecendo soluções avançadas com eficácia comprovada e qualidade farmacêutica para todos.');
+  const [logos, setLogos] = useState<FooterLogo[]>([]);
 
   useEffect(() => {
     Promise.all([
@@ -31,7 +42,32 @@ const Footer = () => {
       setFooterPhone(phone || '');
       if (mission) setFooterMission(mission);
     });
+    supabase
+      .from('footer_logos')
+      .select('id, category, label, image_url, link_url, sort_order')
+      .eq('active', true)
+      .order('sort_order', { ascending: true })
+      .then(({ data }) => {
+        if (data) setLogos(data as FooterLogo[]);
+      });
   }, []);
+
+  const byCategory = (c: Category) => logos.filter((l) => l.category === c);
+
+  const renderLogo = (logo: FooterLogo, heightCls = 'max-h-10') => {
+    const img = (
+      <img src={logo.image_url} alt={logo.label || ''} className={`${heightCls} w-auto object-contain`} />
+    );
+    return logo.link_url ? (
+      <a key={logo.id} href={logo.link_url} target="_blank" rel="noreferrer" className="inline-flex items-center">{img}</a>
+    ) : (
+      <span key={logo.id} className="inline-flex items-center">{img}</span>
+    );
+  };
+
+  const payment = byCategory('payment');
+  const security = byCategory('security');
+  const shipping = byCategory('shipping');
 
   return (
     <footer className="border-t border-border/50 bg-card mt-12">
@@ -60,35 +96,61 @@ const Footer = () => {
           {/* Column 2 - Payment Methods */}
           <div className="space-y-3">
             <h4 className="font-semibold text-primary md:text-foreground">{t('paymentMethodsTitle')}</h4>
-            <img src={paymentMethodsImg} alt="Formas de pagamento: Visa, Mastercard, Maestro, Elo, Alelo, Amex, Banco do Brasil, Hipercard, Diners, Pix" className="w-[calc(100%-20px)] object-contain object-left my-[20px] mr-[20px] ml-0" />
+            {payment.length > 0 ? (
+              <div className="flex flex-wrap items-center gap-3">
+                {payment.map((l) => renderLogo(l, 'max-h-8'))}
+              </div>
+            ) : (
+              <img src={paymentMethodsImg} alt="Formas de pagamento: Visa, Mastercard, Maestro, Elo, Alelo, Amex, Banco do Brasil, Hipercard, Diners, Pix" className="w-[calc(100%-20px)] object-contain object-left my-[20px] mr-[20px] ml-0" />
+            )}
           </div>
 
           {/* Column 3 - Security Seals */}
           <div className="space-y-3">
             <h4 className="font-semibold text-primary md:text-foreground">{t('securitySealsTitle')}</h4>
-            <div className="grid grid-cols-2 items-center gap-3">
-              <img src={seloSiteProtegido} alt="Compra Segura - Site Protegido - Certificado SSL" className="h-12 w-auto max-w-full object-contain object-left" />
-              <img src={seloSafeBrowsing} alt="Safe Browsing Google" className="h-12 w-auto max-w-full object-contain object-left" />
-            </div>
+            {security.length > 0 ? (
+              <div className="grid grid-cols-2 items-center gap-3">
+                {security.map((l) => (
+                  <div key={l.id} className="flex items-center h-12">
+                    {renderLogo(l, 'max-h-12')}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 items-center gap-3">
+                <img src={seloSiteProtegido} alt="Compra Segura - Site Protegido - Certificado SSL" className="h-12 w-auto max-w-full object-contain object-left" />
+                <img src={seloSafeBrowsing} alt="Safe Browsing Google" className="h-12 w-auto max-w-full object-contain object-left" />
+              </div>
+            )}
           </div>
 
           {/* Column 4 - Shipping Methods */}
           <div className="space-y-3">
             <h4 className="font-semibold text-primary md:text-foreground">{t('shippingMethodsTitle')}</h4>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-2 flex items-center justify-start h-12">
-                <img src={logoSedex} alt="SEDEX" className="max-h-10 w-auto object-contain" />
+            {shipping.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3">
+                {shipping.map((l) => (
+                  <div key={l.id} className="p-2 flex items-center justify-start h-12">
+                    {renderLogo(l, 'max-h-10')}
+                  </div>
+                ))}
               </div>
-              <div className="p-2 flex items-center justify-start h-12">
-                <img src={logoPac} alt="PAC" className="max-h-10 w-auto object-contain" />
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-2 flex items-center justify-start h-12">
+                  <img src={logoSedex} alt="SEDEX" className="max-h-10 w-auto object-contain" />
+                </div>
+                <div className="p-2 flex items-center justify-start h-12">
+                  <img src={logoPac} alt="PAC" className="max-h-10 w-auto object-contain" />
+                </div>
+                <div className="p-2 flex items-center justify-start h-12">
+                  <img src={logoJadlog} alt="Jadlog" className="max-h-10 w-auto object-contain" />
+                </div>
+                <div className="p-2 flex items-center justify-start h-12">
+                  <img src={logoJtExpress} alt="J&T Express" className="max-h-10 w-auto object-contain" />
+                </div>
               </div>
-              <div className="p-2 flex items-center justify-start h-12">
-                <img src={logoJadlog} alt="Jadlog" className="max-h-10 w-auto object-contain" />
-              </div>
-              <div className="p-2 flex items-center justify-start h-12">
-                <img src={logoJtExpress} alt="J&T Express" className="max-h-10 w-auto object-contain" />
-              </div>
-            </div>
+            )}
           </div>
         </div>
 

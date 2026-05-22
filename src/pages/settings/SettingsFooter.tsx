@@ -10,6 +10,7 @@ import { FileText, Shield, ScrollText } from 'lucide-react';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import SettingsBackButton from './SettingsBackButton';
 import SettingsSkeleton from '@/components/admin/settings/SettingsSkeleton';
+import FooterLogosManager from '@/components/admin/FooterLogosManager';
 
 const SettingsFooter = () => {
   const { toast } = useToast();
@@ -109,6 +110,8 @@ const SettingsFooter = () => {
           </div>
         </CardContent>
       </Card>
+      <FooterLogosManager />
+
 
       <Card className="border-border/50">
         <CardHeader>
