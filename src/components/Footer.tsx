@@ -90,8 +90,8 @@ const Footer = () => {
           {payment.length > 0 && (
             <div className="space-y-3">
               <h4 className="font-semibold text-primary md:text-foreground">{t('paymentMethodsTitle')}</h4>
-              <div className="flex flex-wrap items-center gap-3">
-                {payment.map((l) => renderLogo(l, 'max-h-8'))}
+              <div className="flex flex-wrap items-center gap-4">
+                {payment.map((l) => renderLogo(l, 'max-h-16'))}
               </div>
             </div>
           )}
