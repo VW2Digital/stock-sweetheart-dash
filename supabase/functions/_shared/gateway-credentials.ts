@@ -84,6 +84,13 @@ async function legacyCredentials(supabase: any, gateway: GatewayKey): Promise<Re
     const environment = (await readSetting(supabase, 'appmax_environment')) || 'sandbox';
     return { accountId: null, environment, credentials: { access_token } };
   }
+  if (gateway === 'paypal') {
+    const client_id = await readSetting(supabase, 'paypal_client_id');
+    const client_secret = await readSetting(supabase, 'paypal_client_secret');
+    const webhook_id = await readSetting(supabase, 'paypal_webhook_id');
+    const environment = (await readSetting(supabase, 'paypal_environment')) || 'sandbox';
+    return { accountId: null, environment, credentials: { client_id, client_secret, webhook_id } };
+  }
   // pagarme
   const environment = (await readSetting(supabase, 'pagarme_environment')) || 'sandbox';
   const secret_key =
