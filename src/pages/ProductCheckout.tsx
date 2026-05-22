@@ -821,10 +821,10 @@ const ProductCheckout = () => {
                       )}
                     </div>
                   ))}
-            </div>
-            )}
+                </div>
               ) : null}
             </div>
+            )}
 
             {/* Buy Buttons */}
             {variation?.in_stock ?
