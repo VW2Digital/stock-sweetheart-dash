@@ -1475,7 +1475,14 @@ async function createGateway(supabaseUrl: string, supabaseKey: string, gatewayOv
     console.log(`[PaymentFactory] Using Appmax gateway (env: ${resolved.environment}, account: ${resolved.accountId ?? 'legacy'})`);
     return { gateway: new AppmaxGateway(accessToken, resolved.environment), gatewayName, accountId: resolved.accountId };
   }
-
+  if (gatewayName === 'paypal') {
+    const resolved = await resolveGatewayCredentials(supabase, 'paypal');
+    const clientId = resolved.credentials.client_id;
+    const clientSecret = resolved.credentials.client_secret;
+    if (!clientId || !clientSecret) throw new Error('PayPal: Client ID e Client Secret não configurados');
+    console.log(`[PaymentFactory] Using PayPal gateway (env: ${resolved.environment}, account: ${resolved.accountId ?? 'legacy'})`);
+    return { gateway: new PayPalGateway(clientId, clientSecret, resolved.environment), gatewayName, accountId: resolved.accountId };
+  }
 
   // Default: Asaas
   const resolved = await resolveGatewayCredentials(supabase, 'asaas');
