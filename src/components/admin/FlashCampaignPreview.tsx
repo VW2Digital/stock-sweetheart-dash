@@ -118,7 +118,7 @@ export function FlashCampaignPreview(p: Props) {
             </div>
 
             <h1
-              className="text-white text-2xl md:text-3xl lg:text-4xl font-extrabold leading-[0.9] mb-4 tracking-tighter break-words"
+              className="text-white text-lg md:text-xl lg:text-2xl font-extrabold leading-[0.9] mb-4 tracking-tighter break-words"
               style={{ fontFamily: 'Sora, sans-serif' }}
             >
               {headlineParts.first}
