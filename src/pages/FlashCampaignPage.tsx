@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Zap, Clock, Flame, ShieldCheck, Send } from 'lucide-react';
+import { ShieldCheck, Send, Flame, Lock } from 'lucide-react';
 import { FlashCampaignBlocksRenderer } from '@/components/FlashCampaignBlocksRenderer';
 import type { CampaignBlock } from '@/components/admin/FlashCampaignBlocksEditor';
 
@@ -37,6 +36,15 @@ const getSessionId = () => {
   return s;
 };
 
+// Split headline into 2 parts for the noir style: first word / rest
+const splitHeadline = (h: string) => {
+  const trimmed = (h || '').trim();
+  if (!trimmed) return { first: 'OFERTA', rest: 'RELÂMPAGO' };
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) return { first: parts[0], rest: '' };
+  return { first: parts[0], rest: parts.slice(1).join(' ') };
+};
+
 export default function FlashCampaignPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -46,7 +54,6 @@ export default function FlashCampaignPage() {
   const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(Date.now());
 
-  // Lead form state
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [leadName, setLeadName] = useState('');
   const [leadEmail, setLeadEmail] = useState('');
@@ -160,170 +167,250 @@ export default function FlashCampaignPage() {
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-black text-white">Carregando...</div>;
+    return <div className="min-h-screen flex items-center justify-center bg-[#050505] text-white" style={{ fontFamily: 'Manrope, sans-serif' }}>Carregando...</div>;
   }
   if (!campaign) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-white p-6 text-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#050505] text-white p-6 text-center" style={{ fontFamily: 'Manrope, sans-serif' }}>
         <div>
-          <h1 className="text-2xl font-bold mb-2">Campanha não encontrada</h1>
-          <p className="text-white/70">Esta oferta pode ter expirado ou foi desativada.</p>
+          <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: 'Sora, sans-serif' }}>Campanha não encontrada</h1>
+          <p className="text-white/60">Esta oferta pode ter expirado ou foi desativada.</p>
         </div>
       </div>
     );
   }
 
-  const accent = campaign.accent_color || '#ef4444';
-  const bg = campaign.bg_color || '#0a0000';
+  const accent = campaign.accent_color || '#c9a84c';
+  const accentLight = '#f0d78c';
+  const bg = campaign.bg_color || '#0d0d0d';
   const expired = !remaining;
   const scheduled = !!notStartedYet;
+  const timer = scheduled ? notStartedYet! : remaining;
+  const headlineParts = splitHeadline(campaign.headline);
 
   return (
     <div
-      className="min-h-screen text-white relative overflow-hidden"
-      style={{
-        background: campaign.background_image
-          ? `linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.85)), url(${campaign.background_image}) center/cover`
-          : `radial-gradient(ellipse at top, ${accent}33, transparent 60%), ${bg}`,
-      }}
+      className="min-h-screen w-full bg-[#050505] text-white"
+      style={{ fontFamily: 'Manrope, sans-serif' }}
     >
-      <div className="w-full py-2 text-center text-xs font-bold tracking-wider animate-pulse" style={{ background: accent }}>
-        <Flame className="w-4 h-4 inline mr-1" /> {isLeadOnly ? 'INSCRIÇÕES ABERTAS' : 'OFERTA RELÂMPAGO ATIVA'}
-      </div>
-
-      <div className="max-w-3xl mx-auto px-6 py-12 md:py-20 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-6"
-             style={{ background: `${accent}33`, color: accent, border: `1px solid ${accent}` }}>
-          <Zap className="w-3.5 h-3.5" /> {campaign.title}
-        </div>
-
-        <h1 className="text-4xl md:text-6xl font-black uppercase leading-tight mb-4 drop-shadow-lg"
-            style={{ textShadow: `0 0 30px ${accent}80` }}>
-          {campaign.headline}
-        </h1>
-        <p className="text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto">
-          {campaign.subheadline}
-        </p>
-
-        {scheduled ? (
-          <div className="mb-8">
-            <div className="flex items-center justify-center gap-2 mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: accent }}>
-              <Clock className="w-4 h-4 animate-pulse" /> Começa em
-            </div>
-            <div className="flex justify-center gap-2 md:gap-4">
-              {[
-                { v: notStartedYet!.days, l: 'dias' },
-                { v: notStartedYet!.hours, l: 'horas' },
-                { v: notStartedYet!.minutes, l: 'min' },
-                { v: notStartedYet!.seconds, l: 'seg' },
-              ].map((u, i) => (
-                <div key={i} className="rounded-xl px-4 py-3 md:px-6 md:py-4 min-w-[70px] md:min-w-[90px] backdrop-blur-sm border"
-                     style={{ background: `${accent}1f`, borderColor: `${accent}66` }}>
-                  <div className="text-3xl md:text-5xl font-black font-mono leading-none" style={{ color: accent }}>
-                    {String(u.v).padStart(2, '0')}
-                  </div>
-                  <div className="text-[10px] md:text-xs uppercase mt-1 text-white/60">{u.l}</div>
-                </div>
-              ))}
+      <div className="flex items-start justify-center p-3 md:p-8 pb-24">
+        <div
+          className="max-w-6xl w-full overflow-hidden flex flex-col md:flex-row shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-white/5 relative"
+          style={{ background: bg }}
+        >
+          {/* Status Bar */}
+          <div className="absolute top-0 left-0 w-full z-20">
+            <div className="py-1.5 text-center" style={{ background: accent, color: '#0d0d0d' }}>
+              <p className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase" style={{ fontFamily: 'Sora, sans-serif' }}>
+                {isLeadOnly ? 'Inscrições Abertas' : 'Oferta Relâmpago Ativa'}
+              </p>
             </div>
           </div>
-        ) : expired ? (
-          <div className="mb-8 p-6 rounded-2xl border border-white/20 bg-white/5">
-            <p className="text-2xl font-bold text-white/70">Esta {isLeadOnly ? 'inscrição' : 'oferta'} expirou.</p>
-          </div>
-        ) : (
-          <div className="mb-8">
-            <div className="flex items-center justify-center gap-2 mb-3 text-sm font-bold uppercase tracking-widest" style={{ color: accent }}>
-              <Clock className="w-4 h-4 animate-pulse" /> Termina em
-            </div>
-            <div className="flex justify-center gap-2 md:gap-4">
-              {[
-                { v: remaining!.days, l: 'dias' },
-                { v: remaining!.hours, l: 'horas' },
-                { v: remaining!.minutes, l: 'min' },
-                { v: remaining!.seconds, l: 'seg' },
-              ].map((u, i) => (
-                <div key={i} className="rounded-xl px-4 py-3 md:px-6 md:py-4 min-w-[70px] md:min-w-[90px] backdrop-blur-sm border"
-                     style={{ background: `${accent}1f`, borderColor: `${accent}66` }}>
-                  <div className="text-3xl md:text-5xl font-black font-mono leading-none" style={{ color: accent }}>
-                    {String(u.v).padStart(2, '0')}
-                  </div>
-                  <div className="text-[10px] md:text-xs uppercase mt-1 text-white/60">{u.l}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
-        {!isLeadOnly && link && (
-          <div className="mb-6">
-            <div className="text-sm text-white/60 uppercase tracking-wider mb-1">Por apenas</div>
-            <div className="text-5xl md:text-7xl font-black mb-6" style={{ color: accent }}>
-              {Number(link.amount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-            </div>
-          </div>
-        )}
-
-        {!showLeadForm && (
-          <Button
-            size="lg"
-            disabled={expired || scheduled || (!isLeadOnly && !link)}
-            onClick={onCta}
-            className="text-base md:text-xl font-black uppercase px-8 md:px-14 py-6 md:py-8 rounded-xl shadow-2xl hover:scale-105 transition-transform animate-pulse"
-            style={{ background: accent, color: '#000', boxShadow: `0 10px 40px ${accent}80` }}
+          {/* Left visual */}
+          <div
+            className="md:w-1/2 relative min-h-[280px] md:min-h-[700px] overflow-hidden"
+            style={{
+              background: campaign.background_image
+                ? `url(${campaign.background_image}) center/cover`
+                : `radial-gradient(ellipse at 30% 30%, ${accent}22, transparent 60%), #1a1a1a`,
+            }}
           >
-            <Flame className="w-5 h-5 md:w-6 md:h-6 mr-2" />
-            {campaign.cta_text}
-          </Button>
-        )}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0d0d0d] via-transparent to-[#0d0d0d]/40 z-[1]" />
+            {!campaign.background_image && (
+              <div className="absolute inset-0 flex items-center justify-center z-[1] pointer-events-none">
+                <div className="text-center">
+                  <Flame className="w-16 h-16 mx-auto mb-4" style={{ color: accent, opacity: 0.4 }} />
+                  <div className="h-px w-12 mx-auto mb-3" style={{ background: accent }} />
+                  <p className="text-[10px] tracking-[0.3em] uppercase" style={{ color: accentLight, opacity: 0.6 }}>
+                    {campaign.title}
+                  </p>
+                </div>
+              </div>
+            )}
+            <div className="absolute bottom-8 md:bottom-12 left-8 md:left-12 z-[2]">
+              <div className="h-px w-16 mb-4" style={{ background: accent }} />
+              <p className="text-white/60 text-[10px] tracking-[0.2em] uppercase">
+                Exclusive Series
+              </p>
+            </div>
+          </div>
 
-        {showLeadForm && !expired && !scheduled && (
-          <form id="lead-form" onSubmit={submitLead}
-                className="max-w-md mx-auto rounded-2xl border backdrop-blur-md p-6 md:p-8 space-y-4 text-left"
-                style={{ background: 'rgba(255,255,255,0.06)', borderColor: `${accent}66` }}>
-            <div className="text-center">
-              <h3 className="text-2xl font-bold mb-1">{campaign.lead_form_title || 'Garanta sua vaga'}</h3>
-              <p className="text-sm text-white/70">{campaign.lead_form_subtitle || 'Preencha seus dados para continuar'}</p>
+          {/* Right offer */}
+          <div className="md:w-1/2 p-8 md:p-16 lg:p-20 flex flex-col justify-center relative pt-12 md:pt-20">
+            {/* Campaign badge */}
+            <div className="mb-6 md:mb-8">
+              <span
+                className="px-4 py-1.5 border text-[10px] font-semibold tracking-[0.2em] uppercase rounded-sm inline-block"
+                style={{ borderColor: `${accent}66`, color: accentLight, fontFamily: 'Sora, sans-serif' }}
+              >
+                {campaign.title}
+              </span>
             </div>
-            <div>
-              <Label className="text-white/80">Nome completo</Label>
-              <Input value={leadName} onChange={e => setLeadName(e.target.value)}
-                     className="bg-white/10 border-white/20 text-white placeholder:text-white/40" placeholder="Seu nome" required />
-            </div>
-            <div>
-              <Label className="text-white/80">Email</Label>
-              <Input type="email" value={leadEmail} onChange={e => setLeadEmail(e.target.value)}
-                     className="bg-white/10 border-white/20 text-white placeholder:text-white/40" placeholder="voce@email.com" required />
-            </div>
-            <div>
-              <Label className="text-white/80">WhatsApp</Label>
-              <Input value={leadPhone} onChange={e => setLeadPhone(formatPhone(e.target.value))}
-                     inputMode="tel" maxLength={15}
-                     className="bg-white/10 border-white/20 text-white placeholder:text-white/40" placeholder="(11) 99999-9999" required />
-            </div>
-            <Button type="submit" size="lg" disabled={submittingLead}
-                    className="w-full text-base font-black uppercase rounded-xl"
-                    style={{ background: accent, color: '#000' }}>
-              <Send className="w-4 h-4 mr-2" />
-              {submittingLead ? 'Enviando...' : (campaign.lead_cta_text || (isLeadOnly ? 'QUERO ME INSCREVER' : 'CONTINUAR'))}
-            </Button>
-          </form>
-        )}
 
-        <div className="mt-8 flex items-center justify-center gap-4 text-xs text-white/50">
-          <span className="flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5" /> {isLeadOnly ? 'Seus dados estão seguros' : 'Pagamento seguro'}</span>
-          {!isLeadOnly && <><span>·</span><span>Estoque limitado</span></>}
+            {/* Headline */}
+            <h1
+              className="text-white text-4xl md:text-6xl lg:text-7xl font-extrabold leading-[0.9] mb-6 tracking-tighter"
+              style={{ fontFamily: 'Sora, sans-serif' }}
+            >
+              {headlineParts.first}
+              {headlineParts.rest && (
+                <>
+                  <br />
+                  <span style={{ color: accent }}>{headlineParts.rest}</span>
+                </>
+              )}
+            </h1>
+
+            {/* Subheadline */}
+            {campaign.subheadline && (
+              <p className="text-white/60 text-base md:text-lg font-light mb-10 md:mb-12 max-w-md leading-relaxed">
+                {campaign.subheadline}
+              </p>
+            )}
+
+            {/* Timer */}
+            {scheduled || (!expired && timer) ? (
+              <div className="mb-10 md:mb-12">
+                <p className="text-[10px] font-bold tracking-[0.3em] uppercase mb-3" style={{ color: accent, fontFamily: 'Sora, sans-serif' }}>
+                  {scheduled ? 'Começa em' : 'Termina em'}
+                </p>
+                <div className="grid grid-cols-4 gap-2 md:gap-3">
+                  {[
+                    { v: timer!.days, l: 'Dias' },
+                    { v: timer!.hours, l: 'Horas' },
+                    { v: timer!.minutes, l: 'Minutos' },
+                    { v: timer!.seconds, l: 'Segundos' },
+                  ].map((u, i) => (
+                    <div key={i} className="flex flex-col items-center">
+                      <div className="w-full aspect-square flex items-center justify-center rounded-sm" style={{ background: accent }}>
+                        <span className="text-2xl md:text-3xl font-bold" style={{ color: '#0d0d0d', fontFamily: 'Sora, sans-serif' }}>
+                          {String(u.v).padStart(2, '0')}
+                        </span>
+                      </div>
+                      <span className="text-[8px] md:text-[9px] text-white/40 uppercase tracking-widest mt-2">{u.l}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : expired ? (
+              <div className="mb-10 p-5 border border-white/10 bg-white/5 rounded-sm">
+                <p className="text-lg font-bold text-white/70" style={{ fontFamily: 'Sora, sans-serif' }}>
+                  Esta {isLeadOnly ? 'inscrição' : 'oferta'} expirou.
+                </p>
+              </div>
+            ) : null}
+
+            {/* Price + CTA */}
+            <div className="space-y-5">
+              {!isLeadOnly && link && (
+                <div className="flex items-baseline gap-4">
+                  <span className="font-bold text-3xl md:text-4xl" style={{ color: accentLight, fontFamily: 'Sora, sans-serif' }}>
+                    {Number(link.amount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </span>
+                </div>
+              )}
+
+              {!showLeadForm && (
+                <button
+                  type="button"
+                  disabled={expired || scheduled || (!isLeadOnly && !link)}
+                  onClick={onCta}
+                  className="w-full py-5 hover:brightness-110 transition-all duration-300 font-bold text-sm uppercase tracking-[0.25em] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed rounded-sm"
+                  style={{
+                    background: accent,
+                    color: '#0d0d0d',
+                    fontFamily: 'Sora, sans-serif',
+                    boxShadow: `0 15px 30px ${accent}1f`,
+                  }}
+                >
+                  {campaign.cta_text}
+                </button>
+              )}
+
+              {/* Trust */}
+              <div className="flex justify-between items-center px-1 pt-1">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-3 h-3" style={{ color: accent }} />
+                  <span className="text-[9px] text-white/40 uppercase tracking-widest">
+                    {isLeadOnly ? 'Dados Seguros' : 'Pagamento Seguro'}
+                  </span>
+                </div>
+                {!isLeadOnly && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-800 animate-pulse" />
+                    <span className="text-[9px] text-white/40 uppercase tracking-widest">Estoque Crítico</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Lead form */}
+            {showLeadForm && !expired && !scheduled && (
+              <form
+                id="lead-form"
+                onSubmit={submitLead}
+                className="mt-8 border border-white/10 bg-white/5 p-6 space-y-4 rounded-sm"
+              >
+                <div>
+                  <h3 className="text-xl font-bold mb-1 text-white" style={{ fontFamily: 'Sora, sans-serif' }}>
+                    {campaign.lead_form_title || 'Garanta sua vaga'}
+                  </h3>
+                  <p className="text-xs text-white/60">
+                    {campaign.lead_form_subtitle || 'Preencha seus dados para continuar'}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-[10px] text-white/60 uppercase tracking-widest">Nome completo</Label>
+                  <Input value={leadName} onChange={e => setLeadName(e.target.value)}
+                    className="bg-black/40 border-white/10 text-white placeholder:text-white/30 rounded-sm mt-1"
+                    placeholder="Seu nome" required />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-white/60 uppercase tracking-widest">Email</Label>
+                  <Input type="email" value={leadEmail} onChange={e => setLeadEmail(e.target.value)}
+                    className="bg-black/40 border-white/10 text-white placeholder:text-white/30 rounded-sm mt-1"
+                    placeholder="voce@email.com" required />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-white/60 uppercase tracking-widest">WhatsApp</Label>
+                  <Input value={leadPhone} onChange={e => setLeadPhone(formatPhone(e.target.value))}
+                    inputMode="tel" maxLength={15}
+                    className="bg-black/40 border-white/10 text-white placeholder:text-white/30 rounded-sm mt-1"
+                    placeholder="(11) 99999-9999" required />
+                </div>
+                <button type="submit" disabled={submittingLead}
+                  className="w-full py-4 font-bold text-sm uppercase tracking-[0.25em] rounded-sm hover:brightness-110 transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2"
+                  style={{ background: accent, color: '#0d0d0d', fontFamily: 'Sora, sans-serif' }}>
+                  <Send className="w-3.5 h-3.5" />
+                  {submittingLead ? 'Enviando...' : (campaign.lead_cta_text || (isLeadOnly ? 'Quero me inscrever' : 'Continuar'))}
+                </button>
+                <div className="flex items-center justify-center gap-2 text-[9px] text-white/40 uppercase tracking-widest pt-1">
+                  <Lock className="w-3 h-3" />
+                  Dados protegidos
+                </div>
+              </form>
+            )}
+          </div>
         </div>
       </div>
 
-      <FlashCampaignBlocksRenderer blocks={(campaign.blocks || []) as CampaignBlock[]} accent={accent} />
+      {/* Extra blocks (video, benefits, FAQ etc) */}
+      <div className="max-w-6xl mx-auto px-3 md:px-8">
+        <FlashCampaignBlocksRenderer blocks={(campaign.blocks || []) as CampaignBlock[]} accent={accent} />
+      </div>
 
+      {/* Floating CTA */}
       {campaign.floating_cta_enabled && !expired && !scheduled && (
-        <div className="fixed bottom-0 inset-x-0 z-50 p-3 backdrop-blur-md border-t"
-             style={{ background: 'rgba(0,0,0,0.85)', borderColor: `${accent}66` }}>
-          <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
-            <div className="hidden sm:block text-sm">
-              <div className="font-bold text-white">{campaign.title}</div>
+        <div
+          className="fixed bottom-0 inset-x-0 z-50 px-4 py-3 backdrop-blur-md border-t"
+          style={{ background: 'rgba(13,13,13,0.92)', borderColor: `${accent}33` }}
+        >
+          <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
+            <div className="hidden sm:block">
+              <div className="text-[10px] uppercase tracking-[0.25em] font-bold" style={{ color: accent, fontFamily: 'Sora, sans-serif' }}>
+                {campaign.title}
+              </div>
               {remaining && (
                 <div className="text-xs text-white/70 font-mono">
                   Termina em {String(remaining.hours + remaining.days * 24).padStart(2, '0')}:
@@ -332,14 +419,14 @@ export default function FlashCampaignPage() {
                 </div>
               )}
             </div>
-            <Button
+            <button
+              type="button"
               onClick={onCta}
-              className="flex-1 sm:flex-initial font-black uppercase rounded-xl px-6 py-5"
-              style={{ background: accent, color: '#000' }}
+              className="flex-1 sm:flex-initial font-bold uppercase tracking-[0.2em] text-xs px-6 py-3.5 rounded-sm hover:brightness-110 transition-all active:scale-[0.98]"
+              style={{ background: accent, color: '#0d0d0d', fontFamily: 'Sora, sans-serif' }}
             >
-              <Flame className="w-4 h-4 mr-2" />
               {campaign.floating_cta_text || campaign.cta_text}
-            </Button>
+            </button>
           </div>
         </div>
       )}
