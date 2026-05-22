@@ -2,7 +2,7 @@
 // `pick_next_gateway_account`. Falls back to legacy `site_settings` keys when
 // no account exists for the requested gateway (back-compat).
 
-export type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax';
+export type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax' | 'paypal';
 
 export interface ResolvedGatewayCredentials {
   accountId: string | null;
