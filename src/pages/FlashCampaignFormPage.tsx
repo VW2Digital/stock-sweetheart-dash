@@ -474,17 +474,31 @@ export default function FlashCampaignFormPage() {
       <AdminSection title="Conteúdo da página">
         <div className="grid gap-4">
           <div>
-            <Label>Headline (chamada principal)</Label>
+            <Label>{mode === 'banner' ? 'Título' : 'Headline (chamada principal)'}</Label>
             <Input value={headline} onChange={e => setHeadline(e.target.value)} />
           </div>
           <div>
-            <Label>Subheadline</Label>
+            <Label>{mode === 'banner' ? 'Subtítulo' : 'Subheadline'}</Label>
             <Textarea value={subheadline} onChange={e => setSubheadline(e.target.value)} rows={2} />
           </div>
           <div>
-            <Label>Texto do botão</Label>
+            <Label>Texto do botão (CTA)</Label>
             <Input value={ctaText} onChange={e => setCtaText(e.target.value)} />
           </div>
+          {mode === 'banner' && (
+            <>
+              <div>
+                <Label>URL de destino do botão *</Label>
+                <Input value={ctaUrl} onChange={e => setCtaUrl(e.target.value)} placeholder="https://..." />
+                <p className="text-xs text-muted-foreground mt-1">Para onde o visitante será levado ao clicar no CTA.</p>
+              </div>
+              <div>
+                <Label>Logo (URL)</Label>
+                <Input value={bannerLogoUrl} onChange={e => setBannerLogoUrl(e.target.value)} placeholder="https://..." />
+                <p className="text-xs text-muted-foreground mt-1">Exibida no topo do banner. Opcional.</p>
+              </div>
+            </>
+          )}
         </div>
       </AdminSection>
 
