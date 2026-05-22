@@ -12,6 +12,7 @@ import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminSection } from '@/components/admin/AdminSection';
 import { Zap, ArrowLeft, Save, Plus, Trash2, GripVertical, Download, Link2, ExternalLink, Mail, Phone, Gift, Star, Heart, Send, CheckCircle2, MessageSquare } from 'lucide-react';
 import { FaWhatsapp, FaTelegram, FaInstagram, FaFacebook, FaYoutube, FaTiktok } from 'react-icons/fa';
+import { FlashCampaignBlocksEditor, type CampaignBlock } from '@/components/admin/FlashCampaignBlocksEditor';
 
 interface PaymentLinkOpt { id: string; title: string; slug: string; }
 interface ProductOpt {
@@ -107,6 +108,11 @@ export default function FlashCampaignFormPage() {
   const [thankYouAccentColor, setThankYouAccentColor] = useState('#22c55e');
   const [thankYouButtons, setThankYouButtons] = useState<ThankYouButton[]>([]);
 
+  // Page builder
+  const [blocks, setBlocks] = useState<CampaignBlock[]>([]);
+  const [floatingCtaEnabled, setFloatingCtaEnabled] = useState(false);
+  const [floatingCtaText, setFloatingCtaText] = useState('');
+
   useEffect(() => {
     (async () => {
       const { data: pls } = await supabase
@@ -166,6 +172,9 @@ export default function FlashCampaignFormPage() {
         if (camp.thank_you_bg_color) setThankYouBgColor(camp.thank_you_bg_color);
         if (camp.thank_you_accent_color) setThankYouAccentColor(camp.thank_you_accent_color);
         if (Array.isArray(camp.thank_you_buttons)) setThankYouButtons(camp.thank_you_buttons);
+        if (Array.isArray(camp.blocks)) setBlocks(camp.blocks);
+        setFloatingCtaEnabled(!!camp.floating_cta_enabled);
+        if (camp.floating_cta_text) setFloatingCtaText(camp.floating_cta_text);
         setLoading(false);
       }
     })();
@@ -257,6 +266,9 @@ export default function FlashCampaignFormPage() {
       thank_you_bg_color: thankYouBgColor,
       thank_you_accent_color: thankYouAccentColor,
       thank_you_buttons: thankYouButtons,
+      blocks,
+      floating_cta_enabled: floatingCtaEnabled,
+      floating_cta_text: floatingCtaText.trim() || null,
     };
     let error;
     if (isEdit) {
