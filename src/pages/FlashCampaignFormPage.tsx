@@ -114,6 +114,10 @@ export default function FlashCampaignFormPage() {
   const [floatingCtaEnabled, setFloatingCtaEnabled] = useState(false);
   const [floatingCtaText, setFloatingCtaText] = useState('');
 
+  // Banner simples mode
+  const [bannerLogoUrl, setBannerLogoUrl] = useState('');
+  const [ctaUrl, setCtaUrl] = useState('');
+
   useEffect(() => {
     (async () => {
       const { data: pls } = await supabase
