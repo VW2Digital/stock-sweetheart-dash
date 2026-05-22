@@ -780,12 +780,15 @@ export type Database = {
           auto_link_id: string | null
           background_image: string | null
           bg_color: string | null
+          blocks: Json
           capture_lead: boolean
           created_at: string
           cta_text: string
           discount_mode: string
           discount_value: number
           expires_at: string
+          floating_cta_enabled: boolean
+          floating_cta_text: string | null
           headline: string
           id: string
           lead_cta_text: string | null
@@ -818,12 +821,15 @@ export type Database = {
           auto_link_id?: string | null
           background_image?: string | null
           bg_color?: string | null
+          blocks?: Json
           capture_lead?: boolean
           created_at?: string
           cta_text?: string
           discount_mode?: string
           discount_value?: number
           expires_at: string
+          floating_cta_enabled?: boolean
+          floating_cta_text?: string | null
           headline?: string
           id?: string
           lead_cta_text?: string | null
@@ -856,12 +862,15 @@ export type Database = {
           auto_link_id?: string | null
           background_image?: string | null
           bg_color?: string | null
+          blocks?: Json
           capture_lead?: boolean
           created_at?: string
           cta_text?: string
           discount_mode?: string
           discount_value?: number
           expires_at?: string
+          floating_cta_enabled?: boolean
+          floating_cta_text?: string | null
           headline?: string
           id?: string
           lead_cta_text?: string | null
