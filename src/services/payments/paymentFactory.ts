@@ -11,6 +11,7 @@ export async function getActiveGateway(): Promise<CheckoutGateway> {
   if (gateway === 'pagbank') return 'pagbank';
   if (gateway === 'pagarme') return 'pagarme';
   if (gateway === 'appmax') return 'appmax';
+  if (gateway === 'paypal') return 'paypal';
   return 'asaas';
 }
 
