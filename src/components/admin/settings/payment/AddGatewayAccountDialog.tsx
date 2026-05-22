@@ -23,6 +23,7 @@ const GATEWAY_NAMES: Record<GatewayKey, string> = {
   pagbank: 'PagBank',
   pagarme: 'Pagar.me',
   appmax: 'Appmax',
+  paypal: 'PayPal',
 };
 
 const AddGatewayAccountDialog = ({ open, onOpenChange, gateway, account, onSaved }: Props) => {
