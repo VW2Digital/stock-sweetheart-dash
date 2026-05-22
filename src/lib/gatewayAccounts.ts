@@ -50,7 +50,12 @@ export const GATEWAY_FIELDS: Record<GatewayKey, GatewayFieldSpec[]> = {
     { key: 'access_token', label: 'Access Token (API Key)', type: 'password', placeholder: 'Token gerado no painel Appmax', required: true },
     { key: 'webhook_secret', label: 'Webhook Secret (opcional)', type: 'password', helpText: 'Se configurado no painel Appmax, valida a assinatura HMAC do webhook.' },
   ],
-};
+  paypal: [
+    { key: 'client_id', label: 'Client ID', type: 'text', placeholder: 'Client ID do app PayPal (Live)', required: true, helpText: 'Encontre em developer.paypal.com → My Apps & Credentials → Live.' },
+    { key: 'client_secret', label: 'Client Secret', type: 'password', placeholder: 'Secret do app PayPal (Live)', required: true },
+    { key: 'webhook_id', label: 'Webhook ID (opcional)', type: 'text', placeholder: 'ID do webhook cadastrado no PayPal', helpText: 'Usado para validar a assinatura dos webhooks recebidos.' },
+  ],
+];
 
 export async function listGatewayAccounts(gateway?: GatewayKey): Promise<GatewayAccount[]> {
   let query = supabase.from('gateway_accounts' as never).select('*').order('sort_order').order('created_at');
