@@ -56,22 +56,38 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   // Aplica idioma padrão / habilitado das configurações administrativas.
   useEffect(() => {
     if (settings.loading) return;
-    const hasUrlLang = new URLSearchParams(window.location.search).has('lang');
-    const stored = typeof window !== 'undefined' ? window.localStorage.getItem('language') : null;
+    const urlLang = new URLSearchParams(window.location.search).get('lang');
+    const explicit = typeof window !== 'undefined' ? window.localStorage.getItem('language_user_set') : null;
     const current = normalize(i18nInstance.language);
-    // Se o idioma atual não está habilitado, força para o padrão.
-    if (!settings.enabled.includes(current)) {
-      i18nInstance.changeLanguage(settings.defaultLang);
+
+    // 1) Se a URL define o idioma, respeita-a e marca como escolha explícita.
+    if (urlLang) {
+      const target = normalize(urlLang);
+      if (settings.enabled.includes(target)) {
+        try { window.localStorage.setItem('language_user_set', '1'); } catch {}
+        if (current !== target) i18nInstance.changeLanguage(target);
+      }
       return;
     }
-    // Se nunca houve escolha (sem ?lang= e sem localStorage), aplica padrão.
-    if (!hasUrlLang && !stored && current !== settings.defaultLang) {
+
+    // 2) Se o utilizador nunca escolheu explicitamente, força o padrão administrativo
+    //    (mesmo que o detector tenha guardado outro valor em localStorage/cookie).
+    if (!explicit) {
+      if (current !== settings.defaultLang) {
+        i18nInstance.changeLanguage(settings.defaultLang);
+      }
+      return;
+    }
+
+    // 3) Caso o idioma atual não esteja habilitado, recai para o padrão.
+    if (!settings.enabled.includes(current)) {
       i18nInstance.changeLanguage(settings.defaultLang);
     }
   }, [settings.loading, settings.enabled, settings.defaultLang, i18nInstance]);
 
   const setLang = useCallback((l: Language) => {
     if (!SUPPORTED.includes(l)) return;
+    try { window.localStorage.setItem('language_user_set', '1'); } catch {}
     i18nInstance.changeLanguage(l);
   }, [i18nInstance]);
 
