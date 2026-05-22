@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Zap, Clock, Flame, ShieldCheck, Send } from 'lucide-react';
+import { FlashCampaignBlocksRenderer } from '@/components/FlashCampaignBlocksRenderer';
+import type { CampaignBlock } from '@/components/admin/FlashCampaignBlocksEditor';
 
 const formatPhone = (v: string) => {
   const digits = v.replace(/\D/g, '').slice(0, 11);
@@ -22,6 +24,9 @@ interface Campaign {
   background_image: string | null; bg_color: string | null; accent_color: string | null; active: boolean;
   mode: string; capture_lead: boolean;
   lead_form_title: string | null; lead_form_subtitle: string | null; lead_cta_text: string | null;
+  blocks: CampaignBlock[] | null;
+  floating_cta_enabled: boolean | null;
+  floating_cta_text: string | null;
 }
 interface PaymentLink { id: string; slug: string; amount: number; title: string; }
 
@@ -310,6 +315,34 @@ export default function FlashCampaignPage() {
           {!isLeadOnly && <><span>·</span><span>Estoque limitado</span></>}
         </div>
       </div>
+
+      <FlashCampaignBlocksRenderer blocks={(campaign.blocks || []) as CampaignBlock[]} accent={accent} />
+
+      {campaign.floating_cta_enabled && !expired && !scheduled && (
+        <div className="fixed bottom-0 inset-x-0 z-50 p-3 backdrop-blur-md border-t"
+             style={{ background: 'rgba(0,0,0,0.85)', borderColor: `${accent}66` }}>
+          <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
+            <div className="hidden sm:block text-sm">
+              <div className="font-bold text-white">{campaign.title}</div>
+              {remaining && (
+                <div className="text-xs text-white/70 font-mono">
+                  Termina em {String(remaining.hours + remaining.days * 24).padStart(2, '0')}:
+                  {String(remaining.minutes).padStart(2, '0')}:
+                  {String(remaining.seconds).padStart(2, '0')}
+                </div>
+              )}
+            </div>
+            <Button
+              onClick={onCta}
+              className="flex-1 sm:flex-initial font-black uppercase rounded-xl px-6 py-5"
+              style={{ background: accent, color: '#000' }}
+            >
+              <Flame className="w-4 h-4 mr-2" />
+              {campaign.floating_cta_text || campaign.cta_text}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
