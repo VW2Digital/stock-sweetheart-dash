@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 
-export type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax';
+export type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax' | 'paypal';
 
 export interface GatewayAccount {
   id: string;
