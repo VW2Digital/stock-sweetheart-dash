@@ -928,6 +928,42 @@ export type Database = {
           },
         ]
       }
+      footer_logos: {
+        Row: {
+          active: boolean
+          category: string
+          created_at: string
+          id: string
+          image_url: string
+          label: string
+          link_url: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category: string
+          created_at?: string
+          id?: string
+          image_url: string
+          label?: string
+          link_url?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          label?: string
+          link_url?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       gateway_accounts: {
         Row: {
           active: boolean
