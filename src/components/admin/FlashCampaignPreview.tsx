@@ -13,11 +13,13 @@ interface Props {
   bgImage: string;
   expiresAt: string;
   startsAt: string;
-  mode: 'sale' | 'lead';
+  mode: 'sale' | 'lead' | 'banner';
   totalAmount: number;
   blocks: CampaignBlock[];
   floatingCtaEnabled: boolean;
   floatingCtaText: string;
+  bannerLogoUrl?: string;
+  ctaUrl?: string;
 }
 
 const splitHeadline = (h: string) => {
@@ -39,6 +41,52 @@ export function FlashCampaignPreview(p: Props) {
   const accentLight = '#f0d78c';
   const bg = p.bgColor || '#0d0d0d';
   const isLeadOnly = p.mode === 'lead';
+  const isBanner = p.mode === 'banner';
+
+  if (isBanner) {
+    return (
+      <div
+        className="min-h-full w-full text-white relative overflow-hidden"
+        style={{
+          background: p.bgImage
+            ? `linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.75)), url(${p.bgImage}) center/cover`
+            : bg,
+          fontFamily: 'Manrope, sans-serif',
+        }}
+      >
+        <div className="min-h-[420px] flex flex-col items-center justify-center text-center px-6 py-16 gap-6">
+          {p.bannerLogoUrl && (
+            <img src={p.bannerLogoUrl} alt="" className="max-h-20 w-auto object-contain" />
+          )}
+          <h1
+            className="text-3xl md:text-4xl font-extrabold leading-tight tracking-tight max-w-2xl"
+            style={{ fontFamily: 'Sora, sans-serif' }}
+          >
+            {p.headline || 'Título do banner'}
+          </h1>
+          {p.subheadline && (
+            <p className="text-white/70 text-base md:text-lg max-w-xl leading-relaxed">
+              {p.subheadline}
+            </p>
+          )}
+          <button
+            type="button"
+            disabled
+            className="mt-2 px-8 py-4 font-bold text-sm uppercase tracking-[0.25em] rounded-sm"
+            style={{
+              background: accent,
+              color: '#0d0d0d',
+              fontFamily: 'Sora, sans-serif',
+              boxShadow: `0 15px 30px ${accent}33`,
+            }}
+          >
+            {p.ctaText || 'Saiba mais'}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
 
   const remaining = useMemo(() => {
     if (!p.expiresAt) return null;

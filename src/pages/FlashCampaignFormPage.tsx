@@ -24,7 +24,7 @@ interface ProductOpt {
 
 type Source = 'existing' | 'product';
 type DiscountMode = 'fixed' | 'percent';
-type CampaignMode = 'sale' | 'lead';
+type CampaignMode = 'sale' | 'lead' | 'banner';
 
 interface ThankYouButton {
   label: string;
@@ -114,6 +114,10 @@ export default function FlashCampaignFormPage() {
   const [floatingCtaEnabled, setFloatingCtaEnabled] = useState(false);
   const [floatingCtaText, setFloatingCtaText] = useState('');
 
+  // Banner simples mode
+  const [bannerLogoUrl, setBannerLogoUrl] = useState('');
+  const [ctaUrl, setCtaUrl] = useState('');
+
   useEffect(() => {
     (async () => {
       const { data: pls } = await supabase
@@ -176,6 +180,8 @@ export default function FlashCampaignFormPage() {
         if (Array.isArray(camp.blocks)) setBlocks(camp.blocks);
         setFloatingCtaEnabled(!!camp.floating_cta_enabled);
         if (camp.floating_cta_text) setFloatingCtaText(camp.floating_cta_text);
+        if (camp.banner_logo_url) setBannerLogoUrl(camp.banner_logo_url);
+        if (camp.cta_url) setCtaUrl(camp.cta_url);
         setLoading(false);
       }
     })();
@@ -195,8 +201,12 @@ export default function FlashCampaignFormPage() {
   const discountPct = basePrice > 0 ? Math.round((1 - finalUnit / basePrice) * 100) : 0;
 
   const save = async () => {
-    if (!title.trim() || !expiresAt) {
-      toast({ title: 'Campos obrigatórios', description: 'Preencha título e validade.', variant: 'destructive' });
+    if (!title.trim()) {
+      toast({ title: 'Campos obrigatórios', description: 'Preencha o título.', variant: 'destructive' });
+      return;
+    }
+    if (mode !== 'banner' && !expiresAt) {
+      toast({ title: 'Campos obrigatórios', description: 'Preencha a validade.', variant: 'destructive' });
       return;
     }
     if (mode === 'sale' && source === 'existing' && !paymentLinkId) {
@@ -205,6 +215,10 @@ export default function FlashCampaignFormPage() {
     }
     if (mode === 'sale' && source === 'product' && (!productId || !variationId || finalUnit <= 0)) {
       toast({ title: 'Selecione produto, variação e preço promocional válido', variant: 'destructive' });
+      return;
+    }
+    if (mode === 'banner' && !ctaUrl.trim()) {
+      toast({ title: 'Informe a URL de destino do botão', variant: 'destructive' });
       return;
     }
     setSaving(true);
@@ -243,11 +257,14 @@ export default function FlashCampaignFormPage() {
     const payload: any = {
       title: title.trim(), slug: finalSlug, headline: headline.trim(), subheadline: subheadline.trim(),
       cta_text: ctaText.trim() || 'GARANTIR AGORA',
-      payment_link_id: mode === 'lead' ? null : resolvedLinkId,
-      expires_at: new Date(expiresAt).toISOString(), background_image: bgImage.trim() || null,
+      payment_link_id: mode !== 'sale' ? null : resolvedLinkId,
+      expires_at: expiresAt ? new Date(expiresAt).toISOString() : new Date(Date.now() + 1000 * 60 * 60 * 24 * 365 * 10).toISOString(),
+      background_image: bgImage.trim() || null,
       starts_at: startsAt ? new Date(startsAt).toISOString() : null,
       bg_color: bgColor, accent_color: accentColor, active,
       source,
+      banner_logo_url: mode === 'banner' ? (bannerLogoUrl.trim() || null) : null,
+      cta_url: mode === 'banner' ? (ctaUrl.trim() || null) : null,
       product_id: mode === 'sale' && source === 'product' ? productId || null : null,
       variation_id: mode === 'sale' && source === 'product' ? variationId || null : null,
       quantity: Number(quantity) || 1,
@@ -312,6 +329,7 @@ export default function FlashCampaignFormPage() {
               <SelectContent>
                 <SelectItem value="sale">Venda (com checkout)</SelectItem>
                 <SelectItem value="lead">Somente captura de lead (sem pagamento)</SelectItem>
+                <SelectItem value="banner">Banner simples (logo + imagem + título + CTA)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -456,17 +474,31 @@ export default function FlashCampaignFormPage() {
       <AdminSection title="Conteúdo da página">
         <div className="grid gap-4">
           <div>
-            <Label>Headline (chamada principal)</Label>
+            <Label>{mode === 'banner' ? 'Título' : 'Headline (chamada principal)'}</Label>
             <Input value={headline} onChange={e => setHeadline(e.target.value)} />
           </div>
           <div>
-            <Label>Subheadline</Label>
+            <Label>{mode === 'banner' ? 'Subtítulo' : 'Subheadline'}</Label>
             <Textarea value={subheadline} onChange={e => setSubheadline(e.target.value)} rows={2} />
           </div>
           <div>
-            <Label>Texto do botão</Label>
+            <Label>Texto do botão (CTA)</Label>
             <Input value={ctaText} onChange={e => setCtaText(e.target.value)} />
           </div>
+          {mode === 'banner' && (
+            <>
+              <div>
+                <Label>URL de destino do botão *</Label>
+                <Input value={ctaUrl} onChange={e => setCtaUrl(e.target.value)} placeholder="https://..." />
+                <p className="text-xs text-muted-foreground mt-1">Para onde o visitante será levado ao clicar no CTA.</p>
+              </div>
+              <div>
+                <Label>Logo (URL)</Label>
+                <Input value={bannerLogoUrl} onChange={e => setBannerLogoUrl(e.target.value)} placeholder="https://..." />
+                <p className="text-xs text-muted-foreground mt-1">Exibida no topo do banner. Opcional.</p>
+              </div>
+            </>
+          )}
         </div>
       </AdminSection>
 
@@ -670,6 +702,8 @@ export default function FlashCampaignFormPage() {
                   blocks={blocks}
                   floatingCtaEnabled={floatingCtaEnabled}
                   floatingCtaText={floatingCtaText}
+                  bannerLogoUrl={bannerLogoUrl}
+                  ctaUrl={ctaUrl}
                 />
               </div>
             </div>

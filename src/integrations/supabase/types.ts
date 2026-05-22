@@ -779,11 +779,13 @@ export type Database = {
           active: boolean
           auto_link_id: string | null
           background_image: string | null
+          banner_logo_url: string | null
           bg_color: string | null
           blocks: Json
           capture_lead: boolean
           created_at: string
           cta_text: string
+          cta_url: string | null
           discount_mode: string
           discount_value: number
           expires_at: string
@@ -820,11 +822,13 @@ export type Database = {
           active?: boolean
           auto_link_id?: string | null
           background_image?: string | null
+          banner_logo_url?: string | null
           bg_color?: string | null
           blocks?: Json
           capture_lead?: boolean
           created_at?: string
           cta_text?: string
+          cta_url?: string | null
           discount_mode?: string
           discount_value?: number
           expires_at: string
@@ -861,11 +865,13 @@ export type Database = {
           active?: boolean
           auto_link_id?: string | null
           background_image?: string | null
+          banner_logo_url?: string | null
           bg_color?: string | null
           blocks?: Json
           capture_lead?: boolean
           created_at?: string
           cta_text?: string
+          cta_url?: string | null
           discount_mode?: string
           discount_value?: number
           expires_at?: string

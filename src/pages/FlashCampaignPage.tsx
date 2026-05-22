@@ -26,6 +26,8 @@ interface Campaign {
   blocks: CampaignBlock[] | null;
   floating_cta_enabled: boolean | null;
   floating_cta_text: string | null;
+  banner_logo_url: string | null;
+  cta_url: string | null;
 }
 interface PaymentLink { id: string; slug: string; amount: number; title: string; }
 
@@ -187,6 +189,62 @@ export default function FlashCampaignPage() {
   const scheduled = !!notStartedYet;
   const timer = scheduled ? notStartedYet! : remaining;
   const headlineParts = splitHeadline(campaign.headline);
+
+  // Banner simples (logo + bg + título + subtítulo + CTA)
+  if (campaign.mode === 'banner') {
+    const handleBannerCta = async () => {
+      await supabase.from('flash_campaign_events' as any).insert({
+        campaign_id: campaign.id, event_type: 'click', session_id: getSessionId(),
+      });
+      const url = campaign.cta_url || '#';
+      if (/^https?:\/\//i.test(url)) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } else {
+        navigate(url);
+      }
+    };
+    return (
+      <div
+        className="min-h-screen w-full text-white relative overflow-hidden"
+        style={{
+          background: campaign.background_image
+            ? `linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.75)), url(${campaign.background_image}) center/cover`
+            : bg,
+          fontFamily: 'Manrope, sans-serif',
+        }}
+      >
+        <div className="min-h-screen flex flex-col items-center justify-center text-center px-6 py-16 gap-7 max-w-3xl mx-auto">
+          {campaign.banner_logo_url && (
+            <img src={campaign.banner_logo_url} alt={campaign.title} className="max-h-24 md:max-h-28 w-auto object-contain" />
+          )}
+          <h1
+            className="text-4xl md:text-6xl font-extrabold leading-tight tracking-tight"
+            style={{ fontFamily: 'Sora, sans-serif' }}
+          >
+            {campaign.headline}
+          </h1>
+          {campaign.subheadline && (
+            <p className="text-white/75 text-lg md:text-xl max-w-2xl leading-relaxed">
+              {campaign.subheadline}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={handleBannerCta}
+            className="mt-2 px-10 py-5 font-bold text-sm md:text-base uppercase tracking-[0.25em] rounded-sm hover:brightness-110 transition-all active:scale-[0.98]"
+            style={{
+              background: accent,
+              color: '#0d0d0d',
+              fontFamily: 'Sora, sans-serif',
+              boxShadow: `0 20px 40px ${accent}40`,
+            }}
+          >
+            {campaign.cta_text || 'Saiba mais'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
