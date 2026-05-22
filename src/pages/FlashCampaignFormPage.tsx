@@ -201,8 +201,12 @@ export default function FlashCampaignFormPage() {
   const discountPct = basePrice > 0 ? Math.round((1 - finalUnit / basePrice) * 100) : 0;
 
   const save = async () => {
-    if (!title.trim() || !expiresAt) {
-      toast({ title: 'Campos obrigatórios', description: 'Preencha título e validade.', variant: 'destructive' });
+    if (!title.trim()) {
+      toast({ title: 'Campos obrigatórios', description: 'Preencha o título.', variant: 'destructive' });
+      return;
+    }
+    if (mode !== 'banner' && !expiresAt) {
+      toast({ title: 'Campos obrigatórios', description: 'Preencha a validade.', variant: 'destructive' });
       return;
     }
     if (mode === 'sale' && source === 'existing' && !paymentLinkId) {
@@ -211,6 +215,10 @@ export default function FlashCampaignFormPage() {
     }
     if (mode === 'sale' && source === 'product' && (!productId || !variationId || finalUnit <= 0)) {
       toast({ title: 'Selecione produto, variação e preço promocional válido', variant: 'destructive' });
+      return;
+    }
+    if (mode === 'banner' && !ctaUrl.trim()) {
+      toast({ title: 'Informe a URL de destino do botão', variant: 'destructive' });
       return;
     }
     setSaving(true);
