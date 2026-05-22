@@ -258,7 +258,7 @@ export default function FlashCampaignFormPage() {
       title: title.trim(), slug: finalSlug, headline: headline.trim(), subheadline: subheadline.trim(),
       cta_text: ctaText.trim() || 'GARANTIR AGORA',
       payment_link_id: mode !== 'sale' ? null : resolvedLinkId,
-      expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
+      expires_at: expiresAt ? new Date(expiresAt).toISOString() : new Date(Date.now() + 1000 * 60 * 60 * 24 * 365 * 10).toISOString(),
       background_image: bgImage.trim() || null,
       starts_at: startsAt ? new Date(startsAt).toISOString() : null,
       bg_color: bgColor, accent_color: accentColor, active,
