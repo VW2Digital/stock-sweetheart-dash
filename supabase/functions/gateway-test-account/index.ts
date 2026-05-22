@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme';
+type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax';
 
 interface TestResult {
   ok: boolean;
@@ -105,6 +105,31 @@ async function testPagarMe(creds: Record<string, string>): Promise<TestResult> {
   };
 }
 
+async function testAppmax(creds: Record<string, string>, environment: string): Promise<TestResult> {
+  const token = creds.access_token;
+  if (!token) return { ok: false, message: 'access_token ausente', details: { hint: 'Cadastre o campo access_token na conta.' } };
+  const baseUrl = environment === 'sandbox'
+    ? 'https://homolog.sandboxappmax.com.br/api/v3'
+    : 'https://admin.appmax.com.br/api/v3';
+  const r = await probe(`${baseUrl}/customer/list`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ 'access-token': token, page: 1, per_page: 1 }),
+  });
+  if (r.status === 401 || r.status === 403) {
+    return { ok: false, message: `Appmax ${r.status}: token rejeitado`, details: { request: { url: r.url, method: r.method }, response: r.body, status: r.status } };
+  }
+  if (r.ok || r.status === 404 || r.status === 422) {
+    return { ok: true, message: `Conectado (${environment}). Token aceito.`, details: { request: { url: r.url, method: r.method }, status: r.status } };
+  }
+  const b: any = r.body;
+  return {
+    ok: false,
+    message: `Appmax ${r.status}: ${b?.text || b?.message || 'erro desconhecido'}`,
+    details: { request: { url: r.url, method: r.method }, response: r.body, status: r.status, raw: r.raw.slice(0, 2000) },
+  };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
@@ -146,6 +171,7 @@ Deno.serve(async (req) => {
         case 'mercadopago': result = await testMercadoPago(creds); break;
         case 'pagbank': result = await testPagBank(creds, env); break;
         case 'pagarme': result = await testPagarMe(creds); break;
+        case 'appmax': result = await testAppmax(creds, env); break;
         default: result = { ok: false, message: `Gateway ${gateway} não suportado` };
       }
     } catch (e) {

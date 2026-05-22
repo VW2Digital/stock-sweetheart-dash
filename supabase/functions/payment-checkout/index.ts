@@ -1133,6 +1133,197 @@ class PagarMeGateway implements PaymentGateway {
 }
 
 // ────────────────────────────────────────────────────────
+// APPMAX GATEWAY (v3 transparent)
+// ────────────────────────────────────────────────────────
+
+class AppmaxGateway implements PaymentGateway {
+  public accessToken: string;
+  public baseUrl: string;
+
+  constructor(accessToken: string, environment: string) {
+    this.accessToken = accessToken;
+    // Appmax only has a production base URL for public partners; sandbox is
+    // arranged per-account. We default to production and allow an alternate host.
+    this.baseUrl = environment === 'sandbox'
+      ? 'https://homolog.sandboxappmax.com.br/api/v3'
+      : 'https://admin.appmax.com.br/api/v3';
+  }
+
+  private async call(path: string, method: string, body: any = {}) {
+    const payload = { 'access-token': this.accessToken, ...body };
+    const res = await fetch(`${this.baseUrl}${path}`, {
+      method,
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const raw = await res.text();
+    let data: any = {};
+    if (raw) { try { data = JSON.parse(raw); } catch { data = { message: raw }; } }
+    if (!res.ok || (data && data.success === false)) {
+      const msg = data?.text || data?.message || (Array.isArray(data?.data) ? JSON.stringify(data.data) : `Appmax error [${res.status}]`);
+      console.error(`[Appmax] ${method} ${path} -> ${res.status}: ${raw.slice(0, 600)}`);
+      throw new Error(msg);
+    }
+    return data;
+  }
+
+  async createCustomer(dto: CustomerDTO) {
+    const phoneDigits = sanitizePhone(dto.phone) || '';
+    const nameParts = (dto.name || 'Cliente').trim().split(' ');
+    const firstname = nameParts[0] || 'Cliente';
+    const lastname = nameParts.slice(1).join(' ') || firstname;
+    const body: any = {
+      firstname,
+      lastname,
+      email: dto.email,
+      telephone: phoneDigits,
+      document_number: dto.cpfCnpj,
+      ip: '127.0.0.1',
+    };
+    const result = await this.call('/customer', 'POST', body);
+    const id = result?.data?.id || result?.data?.customer_id;
+    if (!id) throw new Error('Appmax não retornou ID do cliente');
+    return { id: String(id) };
+  }
+
+  private async createOrder(dto: CheckoutDTO, customerId: string, amount: number) {
+    const sku = (dto.orderId || 'item').slice(0, 60);
+    const body: any = {
+      total: toCurrencyNumber(amount),
+      customer_id: Number(customerId),
+      products: [{
+        sku,
+        name: sanitizeDescription(dto.description),
+        qty: 1,
+        price: toCurrencyNumber(amount),
+        digital_product: 0,
+      }],
+    };
+    const result = await this.call('/order', 'POST', body);
+    const id = result?.data?.id;
+    if (!id) throw new Error('Appmax não retornou ID do pedido');
+    return String(id);
+  }
+
+  async createPixPayment(dto: CheckoutDTO): Promise<PaymentResponse> {
+    const amount = toCurrencyNumber(dto.value);
+    const orderId = await this.createOrder(dto, dto.customer, amount);
+    const body: any = {
+      'cart-order-id': Number(orderId),
+      'customer-id': Number(dto.customer),
+      payment: {
+        pix: {
+          document_number: (dto.creditCardHolderInfo?.cpfCnpj || '').replace(/\D/g, ''),
+        },
+      },
+    };
+    const result = await this.call('/payment/pix', 'POST', body);
+    const data = result?.data || {};
+    return {
+      id: String(orderId),
+      status: 'PENDING',
+      pixQrCode: {
+        encodedImage: data.pix_qrcode || data.pix_emv_qrcode || '',
+        payload: data.pix_emv || data.pix_qr_code || '',
+        expirationDate: data.pix_expiration_date,
+      },
+    };
+  }
+
+  async createCardPayment(dto: CheckoutDTO): Promise<PaymentResponse> {
+    const parsedCount = Number(dto.installmentCount) || 1;
+    const amount = toCurrencyNumber(dto.value);
+    const orderId = await this.createOrder(dto, dto.customer, amount);
+    const card = dto.creditCard || {};
+    const holder = dto.creditCardHolderInfo || {};
+    const body: any = {
+      'cart-order-id': Number(orderId),
+      'customer-id': Number(dto.customer),
+      payment: {
+        CreditCard: {
+          number: (card as any).number || '',
+          cvv: (card as any).ccv || (card as any).cvv || '',
+          month: Number((card as any).expiryMonth || (card as any).month),
+          year: Number((card as any).expiryYear || (card as any).year),
+          name: (card as any).holderName || (card as any).name || holder.name || '',
+          document_number: (holder.cpfCnpj || '').replace(/\D/g, ''),
+          installments: parsedCount,
+          soft_descriptor: 'LOJA',
+        },
+      },
+    };
+    const result = await this.call('/payment/credit-card', 'POST', body);
+    const data = result?.data || {};
+    const statusRaw = String(data.status || data.payment_status || 'pending').toLowerCase();
+    return {
+      id: String(orderId),
+      status: this.mapStatus(statusRaw),
+    };
+  }
+
+  async getPaymentStatus(paymentId: string) {
+    const result = await this.call(`/order/view`, 'POST', { id: Number(paymentId) });
+    const data = result?.data || {};
+    const status = String(data.status || 'pending').toLowerCase();
+    return { id: String(paymentId), status: this.mapStatus(status) };
+  }
+
+  async simulateInstallments(value: number, maxInstallments?: number) {
+    const max = Math.min(maxInstallments || 12, 12);
+    const installments = [];
+    for (let i = 1; i <= max; i++) {
+      const pct = DEFAULT_INTEREST_TABLE[i] ?? 0;
+      const total = toCurrencyNumber(value * (1 + pct));
+      installments.push({
+        installmentCount: i,
+        installmentValue: toCurrencyNumber(total / i),
+        totalValue: total,
+      });
+    }
+    return { creditCard: { installments } };
+  }
+
+  async testConnection() {
+    // Light validation: call /customer/list with a minimal probe. Appmax
+    // returns 401 when the token is invalid.
+    const res = await fetch(`${this.baseUrl}/customer/list`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 'access-token': this.accessToken, page: 1, per_page: 1 }),
+    });
+    if (res.status === 401 || res.status === 403) throw new Error('Token Appmax inválido');
+    return { success: true, status: res.status };
+  }
+
+  async refund(paymentId: string) {
+    await this.call('/refund', 'POST', { 'order-id': Number(paymentId) });
+  }
+
+  private mapStatus(s: string): string {
+    const map: Record<string, string> = {
+      aprovado: 'CONFIRMED',
+      approved: 'CONFIRMED',
+      paid: 'CONFIRMED',
+      pago: 'CONFIRMED',
+      pendente: 'PENDING',
+      pending: 'PENDING',
+      'aguardando pagamento': 'PENDING',
+      autorizado: 'PENDING',
+      cancelado: 'CANCELLED',
+      cancelled: 'CANCELLED',
+      canceled: 'CANCELLED',
+      estornado: 'REFUNDED',
+      refunded: 'REFUNDED',
+      reprovado: 'DECLINED',
+      rejected: 'DECLINED',
+      declined: 'DECLINED',
+      'nao autorizado': 'DECLINED',
+    };
+    return map[s] || 'PENDING';
+  }
+}
+
+// ────────────────────────────────────────────────────────
 // PAYMENT FACTORY
 // ────────────────────────────────────────────────────────
 
@@ -1142,7 +1333,7 @@ async function createGateway(supabaseUrl: string, supabaseKey: string, gatewayOv
   let gatewayName: string;
   // Allow callers (e.g. card-rejection fallback flow) to force a specific gateway
   // instead of the globally configured `payment_gateway`. Whitelist for safety.
-  const ALLOWED_OVERRIDES = new Set(['mercadopago', 'pagarme', 'asaas', 'pagbank']);
+  const ALLOWED_OVERRIDES = new Set(['mercadopago', 'pagarme', 'asaas', 'pagbank', 'appmax']);
   if (gatewayOverride && ALLOWED_OVERRIDES.has(gatewayOverride)) {
     gatewayName = gatewayOverride;
     console.log(`[PaymentFactory] Gateway OVERRIDE requested: ${gatewayName}`);
@@ -1211,6 +1402,15 @@ async function createGateway(supabaseUrl: string, supabaseKey: string, gatewayOv
     console.log(`[PaymentFactory] Using MercadoPago gateway (env: ${resolved.environment}, account: ${resolved.accountId ?? 'legacy'})`);
     return { gateway: new MercadoPagoGateway(accessToken, notificationUrl), gatewayName, accountId: resolved.accountId };
   }
+
+  if (gatewayName === 'appmax') {
+    const resolved = await resolveGatewayCredentials(supabase, 'appmax');
+    const accessToken = resolved.credentials.access_token;
+    if (!accessToken) throw new Error('Access Token da Appmax não configurado');
+    console.log(`[PaymentFactory] Using Appmax gateway (env: ${resolved.environment}, account: ${resolved.accountId ?? 'legacy'})`);
+    return { gateway: new AppmaxGateway(accessToken, resolved.environment), gatewayName, accountId: resolved.accountId };
+  }
+
 
   // Default: Asaas
   const resolved = await resolveGatewayCredentials(supabase, 'asaas');

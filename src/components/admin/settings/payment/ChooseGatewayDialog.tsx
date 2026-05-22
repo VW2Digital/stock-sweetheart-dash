@@ -13,11 +13,12 @@ interface Props {
   onAdded?: () => void;
 }
 
-const OPTIONS: { key: GatewayKey; name: string; logo: string }[] = [
+const OPTIONS: { key: GatewayKey; name: string; logo?: string }[] = [
   { key: 'asaas', name: 'Asaas', logo: asaasLogo },
   { key: 'mercadopago', name: 'Mercado Pago', logo: mercadoPagoLogo },
   { key: 'pagbank', name: 'PagBank', logo: pagBankLogo },
   { key: 'pagarme', name: 'Pagar.me', logo: pagarMeLogo },
+  { key: 'appmax', name: 'Appmax' },
 ];
 
 const ChooseGatewayDialog = ({ open, onOpenChange, onAdded }: Props) => {
@@ -41,7 +42,11 @@ const ChooseGatewayDialog = ({ open, onOpenChange, onAdded }: Props) => {
                 onClick={() => setSelected(o.key)}
                 className="group aspect-square rounded-xl bg-card border border-border/60 shadow-sm hover:shadow-lg hover:-translate-y-0.5 hover:border-primary transition-all duration-200 overflow-hidden flex flex-col items-center justify-center gap-3 p-6"
               >
-                <img src={o.logo} alt={o.name} className="w-[55%] h-[55%] object-contain group-hover:scale-105 transition-transform" />
+                {o.logo ? (
+                  <img src={o.logo} alt={o.name} className="w-[55%] h-[55%] object-contain group-hover:scale-105 transition-transform" />
+                ) : (
+                  <div className="w-[55%] h-[55%] flex items-center justify-center text-2xl font-bold tracking-tight text-primary">{o.name}</div>
+                )}
                 <span className="text-sm font-medium">{o.name}</span>
               </button>
             ))}

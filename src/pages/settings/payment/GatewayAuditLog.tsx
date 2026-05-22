@@ -41,6 +41,7 @@ const GATEWAY_LABEL: Record<string, string> = {
   mercadopago: 'Mercado Pago',
   pagbank: 'PagBank',
   pagarme: 'Pagar.me',
+  appmax: 'Appmax',
   order: 'Ordem de fallback',
 };
 
@@ -51,7 +52,7 @@ const SETTING_LABEL: Record<string, string> = {
 };
 
 const PAGE_SIZE = 25;
-const GATEWAY_OPTIONS = ['asaas', 'mercadopago', 'pagbank', 'pagarme', 'order'] as const;
+const GATEWAY_OPTIONS = ['asaas', 'mercadopago', 'pagbank', 'pagarme', 'appmax', 'order'] as const;
 const SETTING_OPTIONS = ['enabled', 'fallback_enabled', 'fallback_order'] as const;
 
 const GatewayAuditLog = () => {
