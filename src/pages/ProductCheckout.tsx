@@ -19,6 +19,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import ProductRecommendations from '@/components/ProductRecommendations';
 import usePublicBaseUrl from '@/hooks/usePublicBaseUrl';
 import { useAITranslateBatch } from '@/hooks/useAITranslate';
+import { useShippingEnabled } from '@/hooks/useShippingEnabled';
 import productHeroImg from '@/assets/product-hero.png';
 import testimonial1 from '@/assets/testimonial-1.jpg';
 import testimonial2 from '@/assets/testimonial-2.jpg';
