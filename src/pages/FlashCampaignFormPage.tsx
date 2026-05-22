@@ -24,7 +24,7 @@ interface ProductOpt {
 
 type Source = 'existing' | 'product';
 type DiscountMode = 'fixed' | 'percent';
-type CampaignMode = 'sale' | 'lead';
+type CampaignMode = 'sale' | 'lead' | 'banner';
 
 interface ThankYouButton {
   label: string;
