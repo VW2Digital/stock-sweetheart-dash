@@ -152,6 +152,7 @@ const ProductCheckout = () => {
   const installmentReqIdRef = useRef(0);
   const shippingReqIdRef = useRef(0);
   const [currentUserId, setCurrentUserId] = useState<string>('anon');
+  const { enabled: shippingEnabled } = useShippingEnabled();
   const productVariations = product?.product_variations || [];
   const productTexts = useMemo(() => {
     if (!product) return [];
