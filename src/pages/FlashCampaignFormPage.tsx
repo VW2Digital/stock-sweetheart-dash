@@ -91,8 +91,8 @@ export default function FlashCampaignFormPage() {
   const [expiresAt, setExpiresAt] = useState('');
   const [startsAt, setStartsAt] = useState('');
   const [bgImage, setBgImage] = useState('');
-  const [bgColor, setBgColor] = useState('#0a0000');
-  const [accentColor, setAccentColor] = useState('#ef4444');
+  const [bgColor, setBgColor] = useState('#0d0d0d');
+  const [accentColor, setAccentColor] = useState('#c9a84c');
   const [active, setActive] = useState(true);
 
   // Mode + lead capture
