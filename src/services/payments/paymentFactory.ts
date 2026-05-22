@@ -131,6 +131,7 @@ const GATEWAY_LABELS: Record<CheckoutGateway, string> = {
   asaas: 'Asaas',
   pagbank: 'PagBank',
   appmax: 'Appmax',
+  paypal: 'PayPal',
 };
 
 /**
