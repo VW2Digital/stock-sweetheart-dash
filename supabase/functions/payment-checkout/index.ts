@@ -1403,6 +1403,15 @@ async function createGateway(supabaseUrl: string, supabaseKey: string, gatewayOv
     return { gateway: new MercadoPagoGateway(accessToken, notificationUrl), gatewayName, accountId: resolved.accountId };
   }
 
+  if (gatewayName === 'appmax') {
+    const resolved = await resolveGatewayCredentials(supabase, 'appmax');
+    const accessToken = resolved.credentials.access_token;
+    if (!accessToken) throw new Error('Access Token da Appmax não configurado');
+    console.log(`[PaymentFactory] Using Appmax gateway (env: ${resolved.environment}, account: ${resolved.accountId ?? 'legacy'})`);
+    return { gateway: new AppmaxGateway(accessToken, resolved.environment), gatewayName, accountId: resolved.accountId };
+  }
+
+
   // Default: Asaas
   const resolved = await resolveGatewayCredentials(supabase, 'asaas');
   const apiKey = resolved.credentials.api_key;
