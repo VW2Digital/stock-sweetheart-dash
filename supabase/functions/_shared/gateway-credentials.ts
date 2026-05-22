@@ -2,7 +2,7 @@
 // `pick_next_gateway_account`. Falls back to legacy `site_settings` keys when
 // no account exists for the requested gateway (back-compat).
 
-export type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme';
+export type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax';
 
 export interface ResolvedGatewayCredentials {
   accountId: string | null;
@@ -20,6 +20,7 @@ const REQUIRED_FIELD: Record<GatewayKey, string> = {
   mercadopago: 'access_token',
   pagbank: 'token',
   pagarme: 'secret_key',
+  appmax: 'access_token',
 };
 
 function hasRequiredCreds(gateway: GatewayKey, creds: Record<string, string>): boolean {
