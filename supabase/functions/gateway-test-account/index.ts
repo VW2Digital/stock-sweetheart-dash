@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax';
+type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax' | 'paypal';
 
 interface TestResult {
   ok: boolean;
