@@ -484,6 +484,28 @@ export default function FlashCampaignFormPage() {
         </div>
       </AdminSection>
 
+      <AdminSection
+        title="Construtor de página"
+        description="Adicione blocos (vídeo, benefícios, bônus, depoimentos, FAQ...) e arraste para reordenar. Eles aparecem entre a headline e o final da página."
+      >
+        <FlashCampaignBlocksEditor blocks={blocks} onChange={setBlocks} />
+      </AdminSection>
+
+      <AdminSection title="CTA flutuante" description="Barra fixa no rodapé que acompanha o usuário durante a rolagem.">
+        <div className="grid gap-4">
+          <div className="flex items-center gap-2">
+            <Switch checked={floatingCtaEnabled} onCheckedChange={setFloatingCtaEnabled} />
+            <Label>Mostrar barra de CTA fixa no rodapé</Label>
+          </div>
+          {floatingCtaEnabled && (
+            <div>
+              <Label>Texto do botão (opcional — usa o CTA principal se vazio)</Label>
+              <Input value={floatingCtaText} onChange={e => setFloatingCtaText(e.target.value)} placeholder="QUERO GARANTIR" />
+            </div>
+          )}
+        </div>
+      </AdminSection>
+
       <AdminSection title="Captura de lead">
         <div className="grid gap-4">
           {mode === 'sale' && (
