@@ -206,6 +206,7 @@ Deno.serve(async (req) => {
         case 'pagbank': result = await testPagBank(creds, env); break;
         case 'pagarme': result = await testPagarMe(creds); break;
         case 'appmax': result = await testAppmax(creds, env); break;
+        case 'paypal': result = await testPayPal(creds, env); break;
         default: result = { ok: false, message: `Gateway ${gateway} não suportado` };
       }
     } catch (e) {
