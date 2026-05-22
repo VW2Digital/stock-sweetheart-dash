@@ -60,11 +60,12 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     const explicit = typeof window !== 'undefined' ? window.localStorage.getItem('language_user_set') : null;
     const current = normalize(i18nInstance.language);
 
-    // 1) Se a URL define o idioma, respeita-a.
+    // 1) Se a URL define o idioma, respeita-a e marca como escolha explícita.
     if (urlLang) {
       const target = normalize(urlLang);
-      if (settings.enabled.includes(target) && current !== target) {
-        i18nInstance.changeLanguage(target);
+      if (settings.enabled.includes(target)) {
+        try { window.localStorage.setItem('language_user_set', '1'); } catch {}
+        if (current !== target) i18nInstance.changeLanguage(target);
       }
       return;
     }
