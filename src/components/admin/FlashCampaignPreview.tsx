@@ -13,11 +13,13 @@ interface Props {
   bgImage: string;
   expiresAt: string;
   startsAt: string;
-  mode: 'sale' | 'lead';
+  mode: 'sale' | 'lead' | 'banner';
   totalAmount: number;
   blocks: CampaignBlock[];
   floatingCtaEnabled: boolean;
   floatingCtaText: string;
+  bannerLogoUrl?: string;
+  ctaUrl?: string;
 }
 
 const splitHeadline = (h: string) => {
