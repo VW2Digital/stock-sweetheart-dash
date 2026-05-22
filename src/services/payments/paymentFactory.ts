@@ -35,6 +35,10 @@ export async function getGatewayEnvironment(gateway: CheckoutGateway): Promise<'
     const env = await fetchSetting('appmax_environment');
     return env === 'production' ? 'production' : 'sandbox';
   }
+  if (gateway === 'paypal') {
+    const env = await fetchSetting('paypal_environment');
+    return env === 'production' ? 'production' : 'sandbox';
+  }
   const env = await fetchSetting('asaas_environment');
   return env === 'production' ? 'production' : 'sandbox';
 }
