@@ -52,10 +52,15 @@ const GATEWAYS: Record<GatewayKey, {
     description: 'Transparente • PIX e cartão (Brasil)',
     brandClass: 'text-violet-600',
   },
+  paypal: {
+    name: 'PayPal',
+    description: 'Smart Buttons • multi-moeda (BRL/USD)',
+    brandClass: 'text-blue-700',
+  },
 };
 
 const isGatewayKey = (v: string | undefined): v is GatewayKey =>
-  !!v && ['asaas', 'mercadopago', 'pagbank', 'pagarme', 'appmax'].includes(v);
+  !!v && ['asaas', 'mercadopago', 'pagbank', 'pagarme', 'appmax', 'paypal'].includes(v);
 
 const GatewaySettingsPage = () => {
   const { gateway } = useParams<{ gateway?: string }>();
