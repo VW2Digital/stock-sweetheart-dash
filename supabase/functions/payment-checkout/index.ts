@@ -1333,7 +1333,7 @@ async function createGateway(supabaseUrl: string, supabaseKey: string, gatewayOv
   let gatewayName: string;
   // Allow callers (e.g. card-rejection fallback flow) to force a specific gateway
   // instead of the globally configured `payment_gateway`. Whitelist for safety.
-  const ALLOWED_OVERRIDES = new Set(['mercadopago', 'pagarme', 'asaas', 'pagbank']);
+  const ALLOWED_OVERRIDES = new Set(['mercadopago', 'pagarme', 'asaas', 'pagbank', 'appmax']);
   if (gatewayOverride && ALLOWED_OVERRIDES.has(gatewayOverride)) {
     gatewayName = gatewayOverride;
     console.log(`[PaymentFactory] Gateway OVERRIDE requested: ${gatewayName}`);
