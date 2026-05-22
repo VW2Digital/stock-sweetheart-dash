@@ -26,6 +26,8 @@ interface Campaign {
   blocks: CampaignBlock[] | null;
   floating_cta_enabled: boolean | null;
   floating_cta_text: string | null;
+  banner_logo_url: string | null;
+  cta_url: string | null;
 }
 interface PaymentLink { id: string; slug: string; amount: number; title: string; }
 
