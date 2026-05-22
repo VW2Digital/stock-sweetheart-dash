@@ -821,7 +821,8 @@ const ProductCheckout = () => {
                       )}
                     </div>
                   ))}
-                </div>
+            </div>
+            )}
               ) : null}
             </div>
 
