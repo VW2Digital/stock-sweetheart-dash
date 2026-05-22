@@ -78,6 +78,11 @@ async function legacyCredentials(supabase: any, gateway: GatewayKey): Promise<Re
     const email = await readSetting(supabase, 'pagbank_email');
     return { accountId: null, environment, credentials: { token, email } };
   }
+  if (gateway === 'appmax') {
+    const access_token = await readSetting(supabase, 'appmax_access_token');
+    const environment = (await readSetting(supabase, 'appmax_environment')) || 'sandbox';
+    return { accountId: null, environment, credentials: { access_token } };
+  }
   // pagarme
   const environment = (await readSetting(supabase, 'pagarme_environment')) || 'sandbox';
   const secret_key =
