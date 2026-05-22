@@ -19,6 +19,7 @@ const OPTIONS: { key: GatewayKey; name: string; logo?: string }[] = [
   { key: 'pagbank', name: 'PagBank', logo: pagBankLogo },
   { key: 'pagarme', name: 'Pagar.me', logo: pagarMeLogo },
   { key: 'appmax', name: 'Appmax' },
+  { key: 'paypal', name: 'PayPal' },
 ];
 
 const ChooseGatewayDialog = ({ open, onOpenChange, onAdded }: Props) => {

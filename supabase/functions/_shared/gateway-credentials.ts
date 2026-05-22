@@ -2,7 +2,7 @@
 // `pick_next_gateway_account`. Falls back to legacy `site_settings` keys when
 // no account exists for the requested gateway (back-compat).
 
-export type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax';
+export type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax' | 'paypal';
 
 export interface ResolvedGatewayCredentials {
   accountId: string | null;
@@ -21,6 +21,7 @@ const REQUIRED_FIELD: Record<GatewayKey, string> = {
   pagbank: 'token',
   pagarme: 'secret_key',
   appmax: 'access_token',
+  paypal: 'client_id',
 };
 
 function hasRequiredCreds(gateway: GatewayKey, creds: Record<string, string>): boolean {
@@ -82,6 +83,13 @@ async function legacyCredentials(supabase: any, gateway: GatewayKey): Promise<Re
     const access_token = await readSetting(supabase, 'appmax_access_token');
     const environment = (await readSetting(supabase, 'appmax_environment')) || 'sandbox';
     return { accountId: null, environment, credentials: { access_token } };
+  }
+  if (gateway === 'paypal') {
+    const client_id = await readSetting(supabase, 'paypal_client_id');
+    const client_secret = await readSetting(supabase, 'paypal_client_secret');
+    const webhook_id = await readSetting(supabase, 'paypal_webhook_id');
+    const environment = (await readSetting(supabase, 'paypal_environment')) || 'sandbox';
+    return { accountId: null, environment, credentials: { client_id, client_secret, webhook_id } };
   }
   // pagarme
   const environment = (await readSetting(supabase, 'pagarme_environment')) || 'sandbox';

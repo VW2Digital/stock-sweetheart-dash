@@ -1,6 +1,6 @@
 import { fetchSetting } from '@/lib/api';
 
-export type CheckoutGateway = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax';
+export type CheckoutGateway = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax' | 'paypal';
 
 /**
  * Returns the active payment gateway from site_settings.
@@ -11,6 +11,7 @@ export async function getActiveGateway(): Promise<CheckoutGateway> {
   if (gateway === 'pagbank') return 'pagbank';
   if (gateway === 'pagarme') return 'pagarme';
   if (gateway === 'appmax') return 'appmax';
+  if (gateway === 'paypal') return 'paypal';
   return 'asaas';
 }
 
@@ -32,6 +33,10 @@ export async function getGatewayEnvironment(gateway: CheckoutGateway): Promise<'
   }
   if (gateway === 'appmax') {
     const env = await fetchSetting('appmax_environment');
+    return env === 'production' ? 'production' : 'sandbox';
+  }
+  if (gateway === 'paypal') {
+    const env = await fetchSetting('paypal_environment');
     return env === 'production' ? 'production' : 'sandbox';
   }
   const env = await fetchSetting('asaas_environment');
@@ -126,6 +131,7 @@ const GATEWAY_LABELS: Record<CheckoutGateway, string> = {
   asaas: 'Asaas',
   pagbank: 'PagBank',
   appmax: 'Appmax',
+  paypal: 'PayPal',
 };
 
 /**

@@ -1324,6 +1324,71 @@ class AppmaxGateway implements PaymentGateway {
 }
 
 // ────────────────────────────────────────────────────────
+// PAYPAL — Smart Buttons (test_connection only via factory).
+// The actual checkout flow runs through dedicated edge functions
+// (paypal-create-order, paypal-capture-order, paypal-webhook).
+// ────────────────────────────────────────────────────────
+
+class PayPalGateway implements PaymentGateway {
+  private clientId: string;
+  private clientSecret: string;
+  private baseUrl: string;
+
+  constructor(clientId: string, clientSecret: string, environment: string) {
+    this.clientId = clientId;
+    this.clientSecret = clientSecret;
+    this.baseUrl = environment === 'production'
+      ? 'https://api-m.paypal.com'
+      : 'https://api-m.sandbox.paypal.com';
+  }
+
+  private async getAccessToken(): Promise<string> {
+    const auth = btoa(`${this.clientId}:${this.clientSecret}`);
+    const res = await fetch(`${this.baseUrl}/v1/oauth2/token`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Basic ${auth}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Accept: 'application/json',
+      },
+      body: 'grant_type=client_credentials',
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data?.access_token) {
+      throw new Error(data?.error_description || data?.error || `PayPal OAuth ${res.status}`);
+    }
+    return data.access_token as string;
+  }
+
+  async testConnection() {
+    const token = await this.getAccessToken();
+    return { success: true, token_prefix: token.slice(0, 12) + '…' };
+  }
+
+  async createCustomer() { throw new Error('PayPal: use Smart Buttons no checkout.'); }
+  async createPixPayment() { throw new Error('PayPal não suporta PIX.'); }
+  async createCardPayment() { throw new Error('PayPal: pagamento via Smart Buttons (paypal-create-order).'); }
+  async getPaymentStatus(paymentId: string) {
+    const token = await this.getAccessToken();
+    const res = await fetch(`${this.baseUrl}/v2/checkout/orders/${paymentId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return await res.json();
+  }
+  async simulateInstallments(value: number) {
+    return { creditCard: { installments: [{ installmentCount: 1, installmentValue: toCurrencyNumber(value), totalValue: toCurrencyNumber(value) }] } };
+  }
+  async refund(paymentId: string) {
+    const token = await this.getAccessToken();
+    await fetch(`${this.baseUrl}/v2/payments/captures/${paymentId}/refund`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: '{}',
+    });
+  }
+}
+
+// ────────────────────────────────────────────────────────
 // PAYMENT FACTORY
 // ────────────────────────────────────────────────────────
 
@@ -1410,7 +1475,14 @@ async function createGateway(supabaseUrl: string, supabaseKey: string, gatewayOv
     console.log(`[PaymentFactory] Using Appmax gateway (env: ${resolved.environment}, account: ${resolved.accountId ?? 'legacy'})`);
     return { gateway: new AppmaxGateway(accessToken, resolved.environment), gatewayName, accountId: resolved.accountId };
   }
-
+  if (gatewayName === 'paypal') {
+    const resolved = await resolveGatewayCredentials(supabase, 'paypal');
+    const clientId = resolved.credentials.client_id;
+    const clientSecret = resolved.credentials.client_secret;
+    if (!clientId || !clientSecret) throw new Error('PayPal: Client ID e Client Secret não configurados');
+    console.log(`[PaymentFactory] Using PayPal gateway (env: ${resolved.environment}, account: ${resolved.accountId ?? 'legacy'})`);
+    return { gateway: new PayPalGateway(clientId, clientSecret, resolved.environment), gatewayName, accountId: resolved.accountId };
+  }
 
   // Default: Asaas
   const resolved = await resolveGatewayCredentials(supabase, 'asaas');
