@@ -702,6 +702,8 @@ export default function FlashCampaignFormPage() {
                   blocks={blocks}
                   floatingCtaEnabled={floatingCtaEnabled}
                   floatingCtaText={floatingCtaText}
+                  bannerLogoUrl={bannerLogoUrl}
+                  ctaUrl={ctaUrl}
                 />
               </div>
             </div>
