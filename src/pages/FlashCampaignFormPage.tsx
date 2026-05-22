@@ -329,6 +329,7 @@ export default function FlashCampaignFormPage() {
               <SelectContent>
                 <SelectItem value="sale">Venda (com checkout)</SelectItem>
                 <SelectItem value="lead">Somente captura de lead (sem pagamento)</SelectItem>
+                <SelectItem value="banner">Banner simples (logo + imagem + título + CTA)</SelectItem>
               </SelectContent>
             </Select>
           </div>
