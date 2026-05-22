@@ -755,6 +755,8 @@ const ProductCheckout = () => {
             })()}
 
             {/* Shipping Preview — always visible */}
+            {/* Shipping Preview — only when shipping is enabled */}
+            {shippingEnabled && (
             <div className="border border-border/50 rounded-xl p-4 bg-card space-y-3">
               <div className="flex items-center gap-2">
                 <Truck className="w-4 h-4 text-primary" />
