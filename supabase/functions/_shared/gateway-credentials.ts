@@ -21,6 +21,7 @@ const REQUIRED_FIELD: Record<GatewayKey, string> = {
   pagbank: 'token',
   pagarme: 'secret_key',
   appmax: 'access_token',
+  paypal: 'client_id',
 };
 
 function hasRequiredCreds(gateway: GatewayKey, creds: Record<string, string>): boolean {
