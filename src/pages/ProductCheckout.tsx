@@ -19,6 +19,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import ProductRecommendations from '@/components/ProductRecommendations';
 import usePublicBaseUrl from '@/hooks/usePublicBaseUrl';
 import { useAITranslateBatch } from '@/hooks/useAITranslate';
+import { useShippingEnabled } from '@/hooks/useShippingEnabled';
 import productHeroImg from '@/assets/product-hero.png';
 import testimonial1 from '@/assets/testimonial-1.jpg';
 import testimonial2 from '@/assets/testimonial-2.jpg';
@@ -151,6 +152,7 @@ const ProductCheckout = () => {
   const installmentReqIdRef = useRef(0);
   const shippingReqIdRef = useRef(0);
   const [currentUserId, setCurrentUserId] = useState<string>('anon');
+  const { enabled: shippingEnabled } = useShippingEnabled();
   const productVariations = product?.product_variations || [];
   const productTexts = useMemo(() => {
     if (!product) return [];
@@ -753,6 +755,8 @@ const ProductCheckout = () => {
             })()}
 
             {/* Shipping Preview — always visible */}
+            {/* Shipping Preview — only when shipping is enabled */}
+            {shippingEnabled && (
             <div className="border border-border/50 rounded-xl p-4 bg-card space-y-3">
               <div className="flex items-center gap-2">
                 <Truck className="w-4 h-4 text-primary" />
@@ -820,6 +824,7 @@ const ProductCheckout = () => {
                 </div>
               ) : null}
             </div>
+            )}
 
             {/* Buy Buttons */}
             {variation?.in_stock ?
