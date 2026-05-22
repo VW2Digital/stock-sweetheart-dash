@@ -87,21 +87,19 @@ const Footer = () => {
           </div>
 
           {/* Column 2 - Payment Methods */}
-          <div className="space-y-3">
-            <h4 className="font-semibold text-primary md:text-foreground">{t('paymentMethodsTitle')}</h4>
-            {payment.length > 0 ? (
+          {payment.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="font-semibold text-primary md:text-foreground">{t('paymentMethodsTitle')}</h4>
               <div className="flex flex-wrap items-center gap-3">
                 {payment.map((l) => renderLogo(l, 'max-h-8'))}
               </div>
-            ) : (
-              <img src={paymentMethodsImg} alt="Formas de pagamento: Visa, Mastercard, Maestro, Elo, Alelo, Amex, Banco do Brasil, Hipercard, Diners, Pix" className="w-[calc(100%-20px)] object-contain object-left my-[20px] mr-[20px] ml-0" />
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Column 3 - Security Seals */}
-          <div className="space-y-3">
-            <h4 className="font-semibold text-primary md:text-foreground">{t('securitySealsTitle')}</h4>
-            {security.length > 0 ? (
+          {security.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="font-semibold text-primary md:text-foreground">{t('securitySealsTitle')}</h4>
               <div className="grid grid-cols-2 items-center gap-3">
                 {security.map((l) => (
                   <div key={l.id} className="flex items-center h-12">
@@ -109,18 +107,13 @@ const Footer = () => {
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className="grid grid-cols-2 items-center gap-3">
-                <img src={seloSiteProtegido} alt="Compra Segura - Site Protegido - Certificado SSL" className="h-12 w-auto max-w-full object-contain object-left" />
-                <img src={seloSafeBrowsing} alt="Safe Browsing Google" className="h-12 w-auto max-w-full object-contain object-left" />
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Column 4 - Shipping Methods */}
-          <div className="space-y-3">
-            <h4 className="font-semibold text-primary md:text-foreground">{t('shippingMethodsTitle')}</h4>
-            {shipping.length > 0 ? (
+          {shipping.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="font-semibold text-primary md:text-foreground">{t('shippingMethodsTitle')}</h4>
               <div className="grid grid-cols-2 gap-3">
                 {shipping.map((l) => (
                   <div key={l.id} className="p-2 flex items-center justify-start h-12">
@@ -128,23 +121,8 @@ const Footer = () => {
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-2 flex items-center justify-start h-12">
-                  <img src={logoSedex} alt="SEDEX" className="max-h-10 w-auto object-contain" />
-                </div>
-                <div className="p-2 flex items-center justify-start h-12">
-                  <img src={logoPac} alt="PAC" className="max-h-10 w-auto object-contain" />
-                </div>
-                <div className="p-2 flex items-center justify-start h-12">
-                  <img src={logoJadlog} alt="Jadlog" className="max-h-10 w-auto object-contain" />
-                </div>
-                <div className="p-2 flex items-center justify-start h-12">
-                  <img src={logoJtExpress} alt="J&T Express" className="max-h-10 w-auto object-contain" />
-                </div>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Bottom bar */}
