@@ -299,8 +299,8 @@ export default function FlashCampaignFormPage() {
         }
       />
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <div className="space-y-6 min-w-0">
+      <div className="grid gap-6 xl:grid-cols-2 xl:h-[calc(100vh-10rem)]">
+        <div className="space-y-6 min-w-0 xl:h-full xl:overflow-y-auto xl:pr-2">
 
 
       <AdminSection title="Informações básicas">
