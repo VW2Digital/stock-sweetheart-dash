@@ -13,6 +13,7 @@ import { AdminSection } from '@/components/admin/AdminSection';
 import { Zap, ArrowLeft, Save, Plus, Trash2, GripVertical, Download, Link2, ExternalLink, Mail, Phone, Gift, Star, Heart, Send, CheckCircle2, MessageSquare } from 'lucide-react';
 import { FaWhatsapp, FaTelegram, FaInstagram, FaFacebook, FaYoutube, FaTiktok } from 'react-icons/fa';
 import { FlashCampaignBlocksEditor, type CampaignBlock } from '@/components/admin/FlashCampaignBlocksEditor';
+import { FlashCampaignPreview } from '@/components/admin/FlashCampaignPreview';
 
 interface PaymentLinkOpt { id: string; title: string; slug: string; }
 interface ProductOpt {
@@ -297,6 +298,10 @@ export default function FlashCampaignFormPage() {
           </Button>
         }
       />
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        <div className="space-y-6 min-w-0">
+
 
       <AdminSection title="Informações básicas">
         <div className="grid gap-4">
@@ -639,6 +644,37 @@ export default function FlashCampaignFormPage() {
         <Button onClick={save} disabled={saving}>
           <Save className="w-4 h-4 mr-2" />{saving ? 'Salvando...' : 'Salvar campanha'}
         </Button>
+      </div>
+        </div>
+
+        <div className="min-w-0">
+          <div className="xl:sticky xl:top-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Pré-visualização ao vivo</Label>
+              <span className="text-[10px] text-muted-foreground">Atualiza automaticamente</span>
+            </div>
+            <div className="rounded-xl border border-border overflow-hidden bg-black shadow-lg">
+              <div className="h-[calc(100vh-10rem)] overflow-y-auto">
+                <FlashCampaignPreview
+                  title={title}
+                  headline={headline}
+                  subheadline={subheadline}
+                  ctaText={ctaText}
+                  bgColor={bgColor}
+                  accentColor={accentColor}
+                  bgImage={bgImage}
+                  expiresAt={expiresAt}
+                  startsAt={startsAt}
+                  mode={mode}
+                  totalAmount={mode === 'sale' ? totalAmount : 0}
+                  blocks={blocks}
+                  floatingCtaEnabled={floatingCtaEnabled}
+                  floatingCtaText={floatingCtaText}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
