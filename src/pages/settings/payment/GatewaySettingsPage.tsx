@@ -8,12 +8,13 @@ import AsaasSettings from './AsaasSettings';
 import MercadoPagoSettings from './MercadoPagoSettings';
 import PagBankSettings from './PagBankSettings';
 import PagarMeSettings from './PagarMeSettings';
+import AppmaxSettings from './AppmaxSettings';
 import asaasLogo from '@/assets/gateway-asaas.png';
 import mercadoPagoLogo from '@/assets/gateway-mercadopago.png';
 import pagarMeLogo from '@/assets/gateway-pagarme.png';
 import pagBankLogo from '@/assets/gateway-pagbank.png';
 
-type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme';
+type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax';
 
 const GATEWAYS: Record<GatewayKey, {
   name: string;
@@ -45,10 +46,15 @@ const GATEWAYS: Record<GatewayKey, {
     brandClass: 'text-emerald-600',
     logo: pagarMeLogo,
   },
+  appmax: {
+    name: 'Appmax',
+    description: 'Transparente • PIX e cartão (Brasil)',
+    brandClass: 'text-violet-600',
+  },
 };
 
 const isGatewayKey = (v: string | undefined): v is GatewayKey =>
-  !!v && ['asaas', 'mercadopago', 'pagbank', 'pagarme'].includes(v);
+  !!v && ['asaas', 'mercadopago', 'pagbank', 'pagarme', 'appmax'].includes(v);
 
 const GatewaySettingsPage = () => {
   const { gateway } = useParams<{ gateway?: string }>();
@@ -83,6 +89,7 @@ const GatewaySettingsPage = () => {
       case 'mercadopago': return <MercadoPagoSettings {...props} />;
       case 'pagbank': return <PagBankSettings {...props} />;
       case 'pagarme': return <PagarMeSettings {...props} />;
+      case 'appmax': return <AppmaxSettings {...props} />;
     }
   };
 
