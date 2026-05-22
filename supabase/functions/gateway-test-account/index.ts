@@ -130,6 +130,40 @@ async function testAppmax(creds: Record<string, string>, environment: string): P
   };
 }
 
+async function testPayPal(creds: Record<string, string>, environment: string): Promise<TestResult> {
+  const clientId = creds.client_id;
+  const clientSecret = creds.client_secret;
+  if (!clientId || !clientSecret) {
+    return { ok: false, message: 'client_id e client_secret são obrigatórios', details: { hint: 'Cadastre Client ID e Secret do app PayPal.' } };
+  }
+  const baseUrl = environment === 'production'
+    ? 'https://api-m.paypal.com'
+    : 'https://api-m.sandbox.paypal.com';
+  const auth = btoa(`${clientId}:${clientSecret}`);
+  const r = await probe(`${baseUrl}/v1/oauth2/token`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${auth}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Accept: 'application/json',
+    },
+    body: 'grant_type=client_credentials',
+  });
+  const b: any = r.body;
+  if (r.ok && b?.access_token) {
+    return {
+      ok: true,
+      message: `Conectado (${environment}). Token OAuth obtido.`,
+      details: { request: { url: r.url, method: r.method }, response: { app_id: b?.app_id, scope: b?.scope?.slice(0, 100), expires_in: b?.expires_in }, status: r.status },
+    };
+  }
+  return {
+    ok: false,
+    message: `PayPal ${r.status}: ${b?.error_description || b?.error || 'credenciais inválidas'}`,
+    details: { request: { url: r.url, method: r.method }, response: r.body, status: r.status, raw: r.raw.slice(0, 2000) },
+  };
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
