@@ -250,7 +250,7 @@ export default function FlashCampaignPage() {
 
             {/* Headline */}
             <h1
-              className="text-white text-4xl md:text-6xl lg:text-7xl font-extrabold leading-[0.9] mb-6 tracking-tighter"
+              className="text-white text-3xl md:text-4xl lg:text-5xl font-extrabold leading-[0.9] mb-6 tracking-tighter"
               style={{ fontFamily: 'Sora, sans-serif' }}
             >
               {headlineParts.first}
