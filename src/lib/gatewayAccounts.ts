@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 
-export type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme';
+export type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax';
 
 export interface GatewayAccount {
   id: string;
@@ -45,6 +45,10 @@ export const GATEWAY_FIELDS: Record<GatewayKey, GatewayFieldSpec[]> = {
     { key: 'secret_key', label: 'Secret Key', type: 'password', placeholder: 'sk_test_... ou sk_live_...', required: true },
     { key: 'public_key', label: 'Public Key', type: 'text', placeholder: 'pk_test_... ou pk_live_...' },
     { key: 'webhook_secret', label: 'Webhook Secret (HMAC-SHA1)', type: 'password' },
+  ],
+  appmax: [
+    { key: 'access_token', label: 'Access Token (API Key)', type: 'password', placeholder: 'Token gerado no painel Appmax', required: true },
+    { key: 'webhook_secret', label: 'Webhook Secret (opcional)', type: 'password', helpText: 'Se configurado no painel Appmax, valida a assinatura HMAC do webhook.' },
   ],
 };
 

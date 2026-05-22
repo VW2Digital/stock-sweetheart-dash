@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Power, Shuffle, Radio } from 'lucide-react';
 
-export type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme';
+export type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax';
 
 interface Props {
   gateway: GatewayKey;
