@@ -180,6 +180,8 @@ export default function FlashCampaignFormPage() {
         if (Array.isArray(camp.blocks)) setBlocks(camp.blocks);
         setFloatingCtaEnabled(!!camp.floating_cta_enabled);
         if (camp.floating_cta_text) setFloatingCtaText(camp.floating_cta_text);
+        if (camp.banner_logo_url) setBannerLogoUrl(camp.banner_logo_url);
+        if (camp.cta_url) setCtaUrl(camp.cta_url);
         setLoading(false);
       }
     })();
