@@ -13,6 +13,7 @@ import { AdminSection } from '@/components/admin/AdminSection';
 import { Zap, ArrowLeft, Save, Plus, Trash2, GripVertical, Download, Link2, ExternalLink, Mail, Phone, Gift, Star, Heart, Send, CheckCircle2, MessageSquare } from 'lucide-react';
 import { FaWhatsapp, FaTelegram, FaInstagram, FaFacebook, FaYoutube, FaTiktok } from 'react-icons/fa';
 import { FlashCampaignBlocksEditor, type CampaignBlock } from '@/components/admin/FlashCampaignBlocksEditor';
+import { FlashCampaignPreview } from '@/components/admin/FlashCampaignPreview';
 
 interface PaymentLinkOpt { id: string; title: string; slug: string; }
 interface ProductOpt {
