@@ -12,6 +12,7 @@ import asaasLogo from '@/assets/gateway-asaas.png';
 import mercadoPagoLogo from '@/assets/gateway-mercadopago.png';
 import pagarMeLogo from '@/assets/gateway-pagarme.png';
 import pagBankLogo from '@/assets/gateway-pagbank.png';
+import appmaxLogo from '@/assets/gateway-appmax.png';
 
 type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax' | 'paypal';
 
@@ -20,7 +21,7 @@ const GATEWAYS: { key: GatewayKey; name: string; description: string; brandClass
   { key: 'mercadopago', name: 'Mercado Pago', description: 'Transparente ou Checkout Pro • PIX e cartão', brandClass: 'text-sky-500', logo: mercadoPagoLogo },
   { key: 'pagbank', name: 'PagBank', description: 'Redirect • PIX e cartão', brandClass: 'text-orange-500', logo: pagBankLogo },
   { key: 'pagarme', name: 'Pagar.me', description: 'Transparente v5 • PIX e cartão tokenizado', brandClass: 'text-emerald-600', logo: pagarMeLogo },
-  { key: 'appmax', name: 'Appmax', description: 'Transparente • PIX e cartão (Brasil)', brandClass: 'text-violet-600' },
+  { key: 'appmax', name: 'Appmax', description: 'Transparente • PIX e cartão (Brasil)', brandClass: 'text-violet-600', logo: appmaxLogo },
   { key: 'paypal', name: 'PayPal', description: 'Smart Buttons • multi-moeda (BRL/USD)', brandClass: 'text-blue-700' },
 ];
 
