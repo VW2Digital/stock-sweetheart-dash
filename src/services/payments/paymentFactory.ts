@@ -125,6 +125,7 @@ const GATEWAY_LABELS: Record<CheckoutGateway, string> = {
   pagarme: 'Pagar.me',
   asaas: 'Asaas',
   pagbank: 'PagBank',
+  appmax: 'Appmax',
 };
 
 /**

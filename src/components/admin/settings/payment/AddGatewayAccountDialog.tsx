@@ -22,6 +22,7 @@ const GATEWAY_NAMES: Record<GatewayKey, string> = {
   mercadopago: 'Mercado Pago',
   pagbank: 'PagBank',
   pagarme: 'Pagar.me',
+  appmax: 'Appmax',
 };
 
 const AddGatewayAccountDialog = ({ open, onOpenChange, gateway, account, onSaved }: Props) => {
