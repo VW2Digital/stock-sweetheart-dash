@@ -96,6 +96,7 @@ const GatewaySettingsPage = () => {
       case 'pagbank': return <PagBankSettings {...props} />;
       case 'pagarme': return <PagarMeSettings {...props} />;
       case 'appmax': return <AppmaxSettings {...props} />;
+      case 'paypal': return <PayPalSettings {...props} />;
     }
   };
 
