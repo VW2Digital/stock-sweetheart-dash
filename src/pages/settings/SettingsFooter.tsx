@@ -110,6 +110,8 @@ const SettingsFooter = () => {
           </div>
         </CardContent>
       </Card>
+      <FooterLogosManager />
+
 
       <Card className="border-border/50">
         <CardHeader>
