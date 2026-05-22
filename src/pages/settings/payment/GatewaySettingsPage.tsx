@@ -9,12 +9,13 @@ import MercadoPagoSettings from './MercadoPagoSettings';
 import PagBankSettings from './PagBankSettings';
 import PagarMeSettings from './PagarMeSettings';
 import AppmaxSettings from './AppmaxSettings';
+import PayPalSettings from './PayPalSettings';
 import asaasLogo from '@/assets/gateway-asaas.png';
 import mercadoPagoLogo from '@/assets/gateway-mercadopago.png';
 import pagarMeLogo from '@/assets/gateway-pagarme.png';
 import pagBankLogo from '@/assets/gateway-pagbank.png';
 
-type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax';
+type GatewayKey = 'asaas' | 'mercadopago' | 'pagbank' | 'pagarme' | 'appmax' | 'paypal';
 
 const GATEWAYS: Record<GatewayKey, {
   name: string;
