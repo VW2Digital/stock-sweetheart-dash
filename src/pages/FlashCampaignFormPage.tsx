@@ -645,6 +645,37 @@ export default function FlashCampaignFormPage() {
           <Save className="w-4 h-4 mr-2" />{saving ? 'Salvando...' : 'Salvar campanha'}
         </Button>
       </div>
+        </div>
+
+        <div className="min-w-0">
+          <div className="xl:sticky xl:top-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Pré-visualização ao vivo</Label>
+              <span className="text-[10px] text-muted-foreground">Atualiza automaticamente</span>
+            </div>
+            <div className="rounded-xl border border-border overflow-hidden bg-black shadow-lg">
+              <div className="h-[calc(100vh-10rem)] overflow-y-auto">
+                <FlashCampaignPreview
+                  title={title}
+                  headline={headline}
+                  subheadline={subheadline}
+                  ctaText={ctaText}
+                  bgColor={bgColor}
+                  accentColor={accentColor}
+                  bgImage={bgImage}
+                  expiresAt={expiresAt}
+                  startsAt={startsAt}
+                  mode={mode}
+                  totalAmount={mode === 'sale' ? totalAmount : 0}
+                  blocks={blocks}
+                  floatingCtaEnabled={floatingCtaEnabled}
+                  floatingCtaText={floatingCtaText}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
