@@ -55,7 +55,7 @@ export const GATEWAY_FIELDS: Record<GatewayKey, GatewayFieldSpec[]> = {
     { key: 'client_secret', label: 'Client Secret', type: 'password', placeholder: 'Secret do app PayPal (Live)', required: true },
     { key: 'webhook_id', label: 'Webhook ID (opcional)', type: 'text', placeholder: 'ID do webhook cadastrado no PayPal', helpText: 'Usado para validar a assinatura dos webhooks recebidos.' },
   ],
-];
+};
 
 export async function listGatewayAccounts(gateway?: GatewayKey): Promise<GatewayAccount[]> {
   let query = supabase.from('gateway_accounts' as never).select('*').order('sort_order').order('created_at');
