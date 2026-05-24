@@ -1851,6 +1851,33 @@ export type Database = {
           },
         ]
       }
+      schema_backups: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          size_bytes: number
+          source: string
+          sql_content: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          size_bytes?: number
+          source?: string
+          sql_content: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          size_bytes?: number
+          source?: string
+          sql_content?: string
+        }
+        Relationships: []
+      }
       shipping_logs: {
         Row: {
           created_at: string
@@ -2218,10 +2245,28 @@ export type Database = {
       }
     }
     Functions: {
+      create_schema_backup: {
+        Args: { _source?: string }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          id: string
+          size_bytes: number
+          source: string
+          sql_content: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "schema_backups"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       dispatch_order_email: {
         Args: { _data: Json; _subject: string; _template: string; _to: string }
         Returns: undefined
       }
+      generate_schema_dump: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
