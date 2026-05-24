@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Download, Upload, Database, AlertTriangle, Loader2, CheckCircle2, Mail, Send } from 'lucide-react';
+import { Download, Upload, Database, AlertTriangle, Loader2, CheckCircle2, Mail, Send, FileCode, RefreshCw, Trash2, Link as LinkIcon } from 'lucide-react';
 import SettingsBackButton from './SettingsBackButton';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,6 +30,100 @@ const SettingsBackup = () => {
   const [recipientEmail, setRecipientEmail] = useState('libertyluminaepharma@gmail.com');
   const [savingEmail, setSavingEmail] = useState(false);
   const [sendingTest, setSendingTest] = useState(false);
+
+  // Schema backups
+  type SchemaBackup = { id: string; created_at: string; source: 'auto' | 'manual'; size_bytes: number };
+  const [schemaBackups, setSchemaBackups] = useState<SchemaBackup[]>([]);
+  const [schemaLoading, setSchemaLoading] = useState(false);
+  const [schemaGenerating, setSchemaGenerating] = useState(false);
+  const [schemaDownloading, setSchemaDownloading] = useState(false);
+  const [schemaDeleting, setSchemaDeleting] = useState<string | null>(null);
+  const schemaEndpoint = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/schema-dump`;
+
+  const loadSchemaBackups = async () => {
+    setSchemaLoading(true);
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      const token = session.session?.access_token;
+      if (!token) throw new Error('Sessão expirada');
+      const res = await fetch(`${schemaEndpoint}?action=list`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || `Erro ${res.status}`);
+      setSchemaBackups(data.items || []);
+    } catch (err) {
+      toast({ title: 'Erro ao carregar histórico', description: String(err), variant: 'destructive' });
+    } finally {
+      setSchemaLoading(false);
+    }
+  };
+
+  const generateSchemaBackup = async () => {
+    setSchemaGenerating(true);
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      const token = session.session?.access_token;
+      if (!token) throw new Error('Sessão expirada');
+      const res = await fetch(`${schemaEndpoint}?action=create`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || `Erro ${res.status}`);
+      toast({ title: 'Backup gerado', description: `${(data.size_bytes / 1024).toFixed(1)} KB` });
+      await loadSchemaBackups();
+    } catch (err) {
+      toast({ title: 'Erro ao gerar backup', description: String(err), variant: 'destructive' });
+    } finally {
+      setSchemaGenerating(false);
+    }
+  };
+
+  const downloadSchemaBackup = async (id?: string) => {
+    setSchemaDownloading(true);
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      const token = session.session?.access_token;
+      if (!token) throw new Error('Sessão expirada');
+      const qs = id ? `?action=download&id=${id}` : '?action=download';
+      const res = await fetch(`${schemaEndpoint}${qs}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `schema-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.sql`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (err) {
+      toast({ title: 'Erro ao baixar', description: String(err), variant: 'destructive' });
+    } finally {
+      setSchemaDownloading(false);
+    }
+  };
+
+  const deleteSchemaBackup = async (id: string) => {
+    if (!confirm('Excluir este backup permanentemente?')) return;
+    setSchemaDeleting(id);
+    try {
+      const { error } = await supabase.from('schema_backups').delete().eq('id', id);
+      if (error) throw error;
+      setSchemaBackups((prev) => prev.filter((b) => b.id !== id));
+      toast({ title: 'Backup excluído' });
+    } catch (err) {
+      toast({ title: 'Erro ao excluir', description: String(err), variant: 'destructive' });
+    } finally {
+      setSchemaDeleting(null);
+    }
+  };
+
+  useEffect(() => {
+    loadSchemaBackups();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     (async () => {
