@@ -303,8 +303,101 @@ const SettingsBackup = () => {
         </div>
       </Card>
 
+      {/* Schema backups */}
+      <Card className="p-6 space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2 rounded-md bg-primary/10">
+            <FileCode className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h2 className="font-semibold text-foreground">Backups do schema do banco</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Um backup automático do schema <code className="font-mono text-xs">public</code> é gerado diariamente às <strong>03:00 (UTC)</strong>. Você também pode gerar um backup manual a qualquer momento. As 30 versões mais recentes ficam disponíveis para download.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => downloadSchemaBackup()} disabled={schemaDownloading} variant="outline" className="gap-2">
+            {schemaDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            Baixar schema.sql
+          </Button>
+          <Button asChild variant="outline" className="gap-2">
+            <a href={`${schemaEndpoint}?action=download`} target="_blank" rel="noreferrer">
+              <LinkIcon className="w-4 h-4" />
+              Via endpoint /functions/v1/schema-dump
+            </a>
+          </Button>
+        </div>
+
+        <div className="rounded-lg border border-border">
+          <div className="flex items-center justify-between p-3 border-b border-border">
+            <h3 className="font-medium text-sm text-foreground">Histórico de versões</h3>
+            <div className="flex gap-2">
+              <Button onClick={loadSchemaBackups} disabled={schemaLoading} size="sm" variant="ghost" className="gap-2">
+                <RefreshCw className={`w-3.5 h-3.5 ${schemaLoading ? 'animate-spin' : ''}`} />
+                Atualizar
+              </Button>
+              <Button onClick={generateSchemaBackup} disabled={schemaGenerating} size="sm" variant="outline" className="gap-2">
+                {schemaGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                Gerar backup agora
+              </Button>
+            </div>
+          </div>
+
+          {schemaLoading && schemaBackups.length === 0 ? (
+            <div className="p-6 text-center text-sm text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
+              Carregando...
+            </div>
+          ) : schemaBackups.length === 0 ? (
+            <div className="p-6 text-center text-sm text-muted-foreground">
+              Nenhum backup ainda. Clique em "Gerar backup agora" para criar o primeiro.
+            </div>
+          ) : (
+            <div className="divide-y divide-border">
+              {schemaBackups.map((b) => (
+                <div key={b.id} className="flex items-center justify-between p-3 hover:bg-muted/30 transition-colors">
+                  <div className="min-w-0">
+                    <div className="font-mono text-sm text-foreground">
+                      {new Date(b.created_at).toLocaleString('pt-BR')}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {b.source === 'auto' ? 'Automático' : 'Manual'} · {(b.size_bytes / 1024).toFixed(1)} KB
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      onClick={() => downloadSchemaBackup(b.id)}
+                      disabled={schemaDownloading}
+                      size="sm"
+                      variant="outline"
+                      className="gap-2"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Baixar
+                    </Button>
+                    <Button
+                      onClick={() => deleteSchemaBackup(b.id)}
+                      disabled={schemaDeleting === b.id}
+                      size="sm"
+                      variant="ghost"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      aria-label="Excluir backup"
+                    >
+                      {schemaDeleting === b.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </Card>
+
       {/* Upload */}
       <Card className="p-6 space-y-4">
+
         <div className="flex items-start gap-3">
           <div className="p-2 rounded-md bg-amber-500/10">
             <Upload className="w-5 h-5 text-amber-600" />
